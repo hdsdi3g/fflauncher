@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
 
   <name>fflauncher</name>
-  <url>http://maven.apache.org</url>
+  <url>https://github.com/hdsdi3g/fflauncher</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -36,4 +36,20 @@
   	<name>hd3g.tv</name>
   	<url>https://hd3g.tv</url>
   </organization>
+  <scm>
+  	<url>https://github.com/hdsdi3g/fflauncher.git</url>
+  	<developerConnection>hdsdi3g</developerConnection>
+  </scm>
+  <issueManagement>
+  	<url>https://github.com/hdsdi3g/fflauncher/issues</url>
+  	<system>GitHub</system>
+  </issueManagement>
+  
+	<licenses>
+	  <license>
+	    <name>GNU Lesser General Public License, Version 3</name>
+	    <url>https://www.gnu.org/licenses/lgpl.txt</url>
+	    <distribution>repo</distribution>
+	  </license>
+	</licenses>
 </project>
