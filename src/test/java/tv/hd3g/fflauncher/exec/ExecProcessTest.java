@@ -19,21 +19,20 @@ package tv.hd3g.fflauncher.exec;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicReference;
 
 import junit.framework.TestCase;
 import tv.hd3g.fflauncher.exec.processdemo.Test1;
 import tv.hd3g.fflauncher.exec.processdemo.Test2;
+import tv.hd3g.fflauncher.exec.processdemo.Test3;
 
 public class ExecProcessTest extends TestCase {
 	
 	static ThreadFactory createTF() {
-		return new ThreadFactory() {
-			
-			public Thread newThread(Runnable r) {
-				Thread t = new Thread(r, "JUnit test");
-				t.setDaemon(true);
-				return t;
-			}
+		return r -> {
+			Thread t = new Thread(r, "JUnit test");
+			t.setDaemon(true);
+			return t;
 		};
 	}
 	
@@ -41,6 +40,9 @@ public class ExecProcessTest extends TestCase {
 	
 	static ExecProcessText createExec(Class<?> exec_class) {
 		try {
+			if (java_exec.exists() == false) {// TODO2 replace this by get ExecFinder
+				return (ExecProcessText) new ExecProcessText(new File(java_exec.getAbsolutePath() + ".exe")).addParams("-cp", System.getProperty("java.class.path")).addParams(exec_class.getName());
+			}
 			return (ExecProcessText) new ExecProcessText(java_exec).addParams("-cp", System.getProperty("java.class.path")).addParams(exec_class.getName());
 		} catch (IOException e) {
 			throw new RuntimeException("Can't found java exec", e);
@@ -68,45 +70,90 @@ public class ExecProcessTest extends TestCase {
 		
 		assertEquals(wd.getPath(), result.getStdouterr(true, ""));
 		assertEquals(EndStatus.CORRECTLY_DONE, result.getEndStatus());
+	}
+	
+	public void testEndExecutionCallback() {
+		ExecProcessText ept = createExec(Test1.class);
+		
+		AtomicReference<ExecProcessResult> expected_result = new AtomicReference<>();
+		ept.addEndExecutionCallback(r -> {
+			expected_result.set(r);
+		}, t -> {
+			new Thread(t).start();
+		});
+		
+		ExecProcessTextResult result = ept.start(createTF());
+		
+		assertTrue(expected_result.get() == null);
+		
+		result.waitForEnd();
+		
+		while (expected_result.get() == null) {
+			Thread.onSpinWait();
+		}
+		
+		assertEquals(result, expected_result.get());
+	}
+	
+	public void testResultValues() throws InterruptedException {
+		long start_date = System.currentTimeMillis() - 1;
+		
+		ExecProcessText ept = createExec(Test3.class);
+		ept.setExecCodeMustBeZero(false);
+		ept.addParams(Test3.expected_in);
+		assertEquals(Test3.expected_in, ept.getParams().get(ept.getParams().size() - 1));
+		
+		if (System.getenv().containsKey("PATH")) {
+			ept.transfertSystemEnvironment();
+		} else {
+			/**
+			 * No importance
+			 */
+			ept.getEnvironment().put("PATH", "/bin");
+		}
+		ept.getEnvironment().put(Test3.ENV_KEY, Test3.ENV_VALUE);
+		
+		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
+		
+		assertEquals(Test3.expected_out, result.getStdout(false, ""));
+		assertEquals(Test3.expected_err, result.getStderr(false, ""));
+		assertEquals(Test3.exit_ok, result.getExitCode());
+		assertEquals(EndStatus.CORRECTLY_DONE, result.getEndStatus());
+		
+		assertTrue(result.getCommandline().endsWith(Test3.expected_in));
+		assertEquals(ept.executable, result.getExecutable());
+		assertTrue(result.getPID() > 0);
+		assertTrue(result.getUserExec().endsWith(System.getProperty("user.name")));
+		
+		assertEquals(Test3.exit_ok, result.getProcess().exitValue());
+		assertEquals(result.getPID(), result.getProcess().pid());
+		assertFalse(result.getProcess().isAlive());
+		
+		assertTrue(result.getStartDate() > start_date);
+		assertTrue(result.getStartDate() < System.currentTimeMillis());
+		assertTrue(result.getEnvironment().getOrDefault(Test3.ENV_KEY, "").equals(Test3.ENV_VALUE));
 		
 	}
 	
 	// XXX tests !
 	
-	// ept.addEndExecutionCallback(onEnd, executor)
-	// ept.addParams(params)
 	// ept.addStdOutErrObserver(stdouterr_observer, executor)
 	// ept.alterProcessBuilderBeforeStartIt(alter_process_builder)
 	// ept.getCaptureStreamsBehavior()
-	// ept.getEnvironment();
 	// ept.getMaxExecTime(unit)
-	// ept.getParams()
-	// ept.isExecCodeMustBeZero()
 	// ept.isKeepStderr()
 	// ept.isKeepStdout()
 	// ept.makeProcessBuilder()
 	// ept.setInteractive_handler(interactive_handler, executor)
 	// ept.start(executor)
-	// ept.transfertSystemEnvironment()
 	
-	// result.getCommandline()
 	// result.getCPUDuration(unit)
-	// result.getEndStatus()
-	// result.getEnvironment()
-	// result.getExecutable()
-	// result.getExitCode()
 	// result.getMaxExecTime(unit)
-	// result.getPID()
-	// result.getProcess()
-	// result.getStartDate()
 	// result.getStderr(keep_empty_lines, new_line_separator)
 	// result.getStderrLines(keep_empty_lines)
 	// result.getStdInInjection()
 	// result.getUptime(unit)
-	// result.getUserExec()
-	// result.isCorrectlyDone() ...
 	// result.kill() + sub process...
 	// result.waitForEnd(executor)
 	// result.waitForEnd(timeout, unit)
-	
 }

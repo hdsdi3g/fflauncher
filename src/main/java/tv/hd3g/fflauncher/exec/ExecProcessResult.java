@@ -374,6 +374,7 @@ class ExecProcessResult {
 	}
 	
 	/**
+	 * on Windows, return like "HOSTORDOMAIN"\"username"
 	 * @return null if not started of if it can't get result.
 	 */
 	public String getUserExec() {
