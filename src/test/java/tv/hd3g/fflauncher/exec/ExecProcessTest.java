@@ -26,6 +26,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -351,43 +354,46 @@ public class ExecProcessTest extends TestCase {
 		assertEquals(ept.working_directory, result.getWorkingDirectory());
 	}
 	
-	public void testGetStreams() {
+	static final Function<String[], Stream<String>> makeStringStream = s -> StreamSupport.stream(Arrays.spliterator(s), false);
+	static final Predicate<String> withoutEmptyLines = l -> l.equals("") == false;
+	static final Collector<CharSequence, ?, String> joinWithPipe = Collectors.joining("|");
+	
+	public void testOutErrStreams() {
 		ExecProcessText ept = createExec(Test7.class);
 		ept.addParams("n");
 		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
 		
-		assertEquals(StreamSupport.stream(Arrays.spliterator(Test7.std_out), false).collect(Collectors.joining("|")), result.getStdout(true, "|"));
-		assertEquals(StreamSupport.stream(Arrays.spliterator(Test7.std_err), false).collect(Collectors.joining("\\")), result.getStderr(true, "\\"));
+		assertEquals(makeStringStream.apply(Test7.std_out).collect(joinWithPipe), result.getStdout(true, "|"));
+		assertEquals(makeStringStream.apply(Test7.std_err).collect(joinWithPipe), result.getStderr(true, "|"));
 		
 		ept = createExec(Test7.class);
 		ept.addParams("1");
 		result = ept.start(createTF()).waitForEnd();
 		
-		assertEquals(StreamSupport.stream(Arrays.spliterator(Test7.std_out), false).filter(l -> l.equals("") == false).collect(Collectors.joining("|")), result.getStdout(false, "|"));
-		assertEquals(StreamSupport.stream(Arrays.spliterator(Test7.std_err), false).filter(l -> l.equals("") == false).collect(Collectors.joining("\\")), result.getStderr(false, "\\"));
+		assertEquals(makeStringStream.apply(Test7.std_out).filter(withoutEmptyLines).collect(joinWithPipe), result.getStdout(false, "|"));
+		assertEquals(makeStringStream.apply(Test7.std_err).filter(withoutEmptyLines).collect(joinWithPipe), result.getStderr(false, "|"));
 		
-		// XXX test this...
-		result.getStdouterr(true, "#");
-		result.getStdouterr(false, "#");
+		assertEquals(Stream.concat(makeStringStream.apply(Test7.std_out), makeStringStream.apply(Test7.std_err)).collect(joinWithPipe), result.getStdouterr(true, "|"));
+		assertEquals(Stream.concat(makeStringStream.apply(Test7.std_out), makeStringStream.apply(Test7.std_err)).filter(withoutEmptyLines).collect(joinWithPipe), result.getStdouterr(false, "|"));
 		
-		result.getStderrLines(true);
-		result.getStdouterrLines(true);
-		result.getStdoutLines(true);
+		assertEquals(makeStringStream.apply(Test7.std_out).collect(joinWithPipe), result.getStdoutLines(true).collect(joinWithPipe));
+		assertEquals(makeStringStream.apply(Test7.std_out).filter(withoutEmptyLines).collect(joinWithPipe), result.getStdoutLines(false).collect(joinWithPipe));
 		
-		result.getStderrLines(false);
-		result.getStdouterrLines(false);
-		result.getStdoutLines(false);
+		assertEquals(makeStringStream.apply(Test7.std_err).collect(joinWithPipe), result.getStderrLines(true).collect(joinWithPipe));
+		assertEquals(makeStringStream.apply(Test7.std_err).filter(withoutEmptyLines).collect(joinWithPipe), result.getStderrLines(false).collect(joinWithPipe));
+		
+		assertEquals(Stream.concat(makeStringStream.apply(Test7.std_out), makeStringStream.apply(Test7.std_err)).collect(joinWithPipe), result.getStdouterrLines(true).collect(joinWithPipe));
+		assertEquals(Stream.concat(makeStringStream.apply(Test7.std_out), makeStringStream.apply(Test7.std_err)).filter(withoutEmptyLines).collect(joinWithPipe), result.getStdouterrLines(false).collect(joinWithPipe));
 	}
+	
+	// XXX Test8 + ept.setInteractive_handler(interactive_handler, executor)
 	
 	// XXX tests ! + coverage
 	
 	// ept.alterProcessBuilderBeforeStartIt(alter_process_builder)
 	// ept.makeProcessBuilder()
-	// ept.setInteractive_handler(interactive_handler, executor)
 	// ept.start(executor)
 	
-	// result.getStderr(keep_empty_lines, new_line_separator)
-	// result.getStderrLines(keep_empty_lines)
 	// result.getStdInInjection()
 	// result.waitForEnd(executor)
 	// result.waitForEnd(timeout, unit)
