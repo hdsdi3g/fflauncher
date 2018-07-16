@@ -20,12 +20,15 @@ import java.util.Scanner;
 
 public class Test8 {
 	
+	public static final String QUIT = "q";
+	
 	public static void main(String[] args) throws InterruptedException {
-		Scanner s = new Scanner(System.in);
+		System.out.println(args[0].toUpperCase());
 		
+		Scanner s = new Scanner(System.in);
 		while (s.hasNext()) {
 			String line = s.next();
-			if (line.equals("q")) {
+			if (line.equals(QUIT)) {
 				break;
 			}
 			System.out.println(line.toUpperCase());

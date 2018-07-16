@@ -89,7 +89,7 @@ public class ExecProcessText extends ExecProcess {
 		return capture_streams_behavior;
 	}
 	
-	public ExecProcessText setInteractive_handler(InteractiveExecProcessHandler interactive_handler, Executor executor) {
+	public ExecProcessText setInteractiveHandler(InteractiveExecProcessHandler interactive_handler, Executor executor) {
 		if (interactive_handler == null) {
 			throw new NullPointerException("\"interactive_handler\" can't to be null");
 		}

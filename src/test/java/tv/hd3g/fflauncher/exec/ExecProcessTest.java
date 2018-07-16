@@ -41,6 +41,7 @@ import tv.hd3g.fflauncher.exec.processdemo.Test4;
 import tv.hd3g.fflauncher.exec.processdemo.Test5;
 import tv.hd3g.fflauncher.exec.processdemo.Test6;
 import tv.hd3g.fflauncher.exec.processdemo.Test7;
+import tv.hd3g.fflauncher.exec.processdemo.Test8;
 
 public class ExecProcessTest extends TestCase {
 	
@@ -386,7 +387,49 @@ public class ExecProcessTest extends TestCase {
 		assertEquals(Stream.concat(makeStringStream.apply(Test7.std_out), makeStringStream.apply(Test7.std_err)).filter(withoutEmptyLines).collect(joinWithPipe), result.getStdouterrLines(false).collect(joinWithPipe));
 	}
 	
-	// XXX Test8 + ept.setInteractive_handler(interactive_handler, executor)
+	public void testInteractiveHandler() {
+		ExecProcessText ept = createExec(Test8.class);
+		ept.addParams("foo");
+		ept.setMaxExecutionTime(500, TimeUnit.MILLISECONDS, new ScheduledThreadPoolExecutor(1));
+		
+		AtomicReference<ExecProcessTextResult> a_source = new AtomicReference<>();
+		LinkedBlockingQueue<Exception> errors = new LinkedBlockingQueue<>();
+		
+		ept.setInteractiveHandler((source, line, is_std_err) -> {// FIXME
+			a_source.set(source);
+			if (is_std_err) {
+				System.err.println("Process say: " + line);
+				errors.add(new Exception("is_std_err is true"));
+				return Test8.QUIT;
+			} else if (line.equals("FOO")) {
+				return "bar";
+			} else if (line.equals("foo")) {
+				errors.add(new Exception("foo is in lowercase"));
+				return Test8.QUIT;
+			} else if (line.equals("BAR")) {
+				return Test8.QUIT;
+			} else if (line.equals("bar")) {
+				errors.add(new Exception("bar is in lowercase"));
+				return Test8.QUIT;
+			} else {
+				errors.add(new Exception("Invalid line " + line));
+				return null;
+			}
+		}, r -> r.run());
+		
+		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
+		
+		assertEquals(result, a_source.get());
+		
+		if (errors.isEmpty() == false) {
+			errors.forEach(e -> {
+				e.printStackTrace();
+			});
+			fail();
+		}
+		
+		assertTrue(result.isCorrectlyDone());
+	}
 	
 	// XXX tests ! + coverage
 	
