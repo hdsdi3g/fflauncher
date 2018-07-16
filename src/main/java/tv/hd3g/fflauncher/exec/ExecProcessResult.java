@@ -260,6 +260,7 @@ class ExecProcessResult {
 			cant_kill.forEach(process_handle -> {
 				log.error("Can't force close process " + processHandleToString(process_handle, true));
 			});
+			throw new RuntimeException("Can't close process " + toString() + " for PID " + cant_kill.stream().map(p -> p.pid()).map(pid -> String.valueOf(pid)).collect(Collectors.joining(", ")));
 		}
 	}
 	
@@ -374,7 +375,7 @@ class ExecProcessResult {
 	}
 	
 	/**
-	 * on Windows, return like "HOSTORDOMAIN"\"username"
+	 * on Windows, return like "HOST_or_DOMAIN"\"username"
 	 * @return null if not started of if it can't get result.
 	 */
 	public String getUserExec() {

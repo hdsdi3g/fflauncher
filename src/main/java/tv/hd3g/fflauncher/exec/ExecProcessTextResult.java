@@ -235,6 +235,11 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	 */
 	public Stream<String> getStdoutLines(boolean keep_empty_lines) {
 		return lines.stream().filter(le -> {
+			if (keep_empty_lines) {
+				return true;
+			}
+			return le.line.equals("") == false;
+		}).filter(le -> {
 			return le.std_err == false;
 		}).map(le -> {
 			return le.line;
@@ -247,6 +252,11 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	 */
 	public Stream<String> getStderrLines(boolean keep_empty_lines) {
 		return lines.stream().filter(le -> {
+			if (keep_empty_lines) {
+				return true;
+			}
+			return le.line.equals("") == false;
+		}).filter(le -> {
 			return le.std_err;
 		}).map(le -> {
 			return le.line;
@@ -258,7 +268,12 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	 * @param keep_empty_lines if set false, discard all empty trimed lines
 	 */
 	public Stream<String> getStdouterrLines(boolean keep_empty_lines) {
-		return lines.stream().map(le -> {
+		return lines.stream().filter(le -> {
+			if (keep_empty_lines) {
+				return true;
+			}
+			return le.line.equals("") == false;
+		}).map(le -> {
 			return le.line;
 		});
 	}

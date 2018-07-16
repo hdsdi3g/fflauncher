@@ -18,17 +18,30 @@ package tv.hd3g.fflauncher.exec;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import junit.framework.TestCase;
 import tv.hd3g.fflauncher.exec.processdemo.Test1;
 import tv.hd3g.fflauncher.exec.processdemo.Test2;
 import tv.hd3g.fflauncher.exec.processdemo.Test3;
+import tv.hd3g.fflauncher.exec.processdemo.Test4;
+import tv.hd3g.fflauncher.exec.processdemo.Test5;
+import tv.hd3g.fflauncher.exec.processdemo.Test6;
+import tv.hd3g.fflauncher.exec.processdemo.Test7;
 
 public class ExecProcessTest extends TestCase {
 	
-	static ThreadFactory createTF() {
+	public static ThreadFactory createTF() {
 		return r -> {
 			Thread t = new Thread(r, "JUnit test");
 			t.setDaemon(true);
@@ -38,7 +51,7 @@ public class ExecProcessTest extends TestCase {
 	
 	static final File java_exec = new File(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java");
 	
-	static ExecProcessText createExec(Class<?> exec_class) {
+	public static ExecProcessText createExec(Class<?> exec_class) {
 		try {
 			if (java_exec.exists() == false) {// TODO2 replace this by get ExecFinder
 				return (ExecProcessText) new ExecProcessText(new File(java_exec.getAbsolutePath() + ".exe")).addParams("-cp", System.getProperty("java.class.path")).addParams(exec_class.getName());
@@ -135,25 +148,248 @@ public class ExecProcessTest extends TestCase {
 		
 	}
 	
-	// XXX tests !
+	public void testStdObserver() {
+		ExecProcessText ept = createExec(Test4.class);
+		
+		ept.setKeepStdout(false);
+		ept.setKeepStderr(false);
+		
+		assertFalse(ept.isKeepStdout());
+		assertFalse(ept.isKeepStderr());
+		assertEquals(CaptureOutStreamsBehavior.BOTH_STDOUT_STDERR, ept.getCaptureStreamsBehavior());
+		
+		LinkedBlockingQueue<String> catch_stdout = new LinkedBlockingQueue<>();
+		LinkedBlockingQueue<String> catch_stderr = new LinkedBlockingQueue<>();
+		LinkedBlockingQueue<ExecProcessTextResult> catch_source = new LinkedBlockingQueue<>();
+		
+		ept.addStdOutErrObserver((source, line, is_std_err) -> {
+			if (is_std_err) {
+				catch_stderr.add(line);
+			} else {
+				catch_stdout.add(line);
+			}
+			catch_source.add(source);
+		}, r -> r.run());
+		
+		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
+		
+		assertEquals(1, catch_stdout.size());
+		assertEquals(1, catch_stderr.size());
+		assertEquals(2, catch_source.size());
+		
+		assertEquals(Test4.std_out, catch_stdout.poll());
+		assertEquals(Test4.std_err, catch_stderr.poll());
+		
+		assertEquals(result, catch_source.poll());
+		assertEquals(result, catch_source.poll());
+		
+		assertNotNull(result.getStdoutLines(true));
+		assertNotNull(result.getStderrLines(true));
+		assertNotNull(result.getStdouterrLines(true));
+		
+		assertEquals(0, result.getStdoutLines(true).count());
+		assertEquals(0, result.getStderrLines(true).count());
+		assertEquals(0, result.getStdouterrLines(true).count());
+	}
 	
-	// ept.addStdOutErrObserver(stdouterr_observer, executor)
+	public void testNotCaptureStreams() {
+		ExecProcessText ept = createExec(Test4.class);
+		
+		/**
+		 * Only stdout
+		 */
+		ept.setCaptureOutStream(CaptureOutStreamsBehavior.ONLY_STDOUT);
+		assertEquals(CaptureOutStreamsBehavior.ONLY_STDOUT, ept.getCaptureStreamsBehavior());
+		
+		LinkedBlockingQueue<String> catch_stdout = new LinkedBlockingQueue<>();
+		LinkedBlockingQueue<String> catch_stderr = new LinkedBlockingQueue<>();
+		
+		ept.addStdOutErrObserver((source, line, is_std_err) -> {
+			if (is_std_err) {
+				catch_stderr.add(line);
+			} else {
+				catch_stdout.add(line);
+			}
+		}, r -> r.run());
+		
+		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
+		
+		assertEquals(1, catch_stdout.size());
+		assertEquals(0, catch_stderr.size());
+		
+		assertNotNull(result.getStdoutLines(true));
+		assertNotNull(result.getStderrLines(true));
+		assertNotNull(result.getStdouterrLines(true));
+		
+		assertEquals(1, result.getStdoutLines(true).count());
+		assertEquals(0, result.getStderrLines(true).count());
+		assertEquals(1, result.getStdouterrLines(true).count());
+		
+		/**
+		 * Only stderr
+		 */
+		ept.setCaptureOutStream(CaptureOutStreamsBehavior.ONLY_STDERR);
+		assertEquals(CaptureOutStreamsBehavior.ONLY_STDERR, ept.getCaptureStreamsBehavior());
+		
+		catch_stdout.clear();
+		catch_stderr.clear();
+		
+		result = ept.start(createTF()).waitForEnd();
+		
+		assertEquals(0, catch_stdout.size());
+		assertEquals(1, catch_stderr.size());
+		
+		assertNotNull(result.getStdoutLines(true));
+		assertNotNull(result.getStderrLines(true));
+		assertNotNull(result.getStdouterrLines(true));
+		
+		assertEquals(0, result.getStdoutLines(true).count());
+		assertEquals(1, result.getStderrLines(true).count());
+		assertEquals(1, result.getStdouterrLines(true).count());
+	}
+	
+	public void testMaxExecTime() {
+		ExecProcess ept = createExec(Test5.class);
+		
+		ScheduledThreadPoolExecutor max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1);
+		ept.setMaxExecutionTime(Test5.MAX_DURATION, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
+		
+		assertEquals(Test5.MAX_DURATION, ept.getMaxExecTime(TimeUnit.MILLISECONDS));
+		
+		long start_time = System.currentTimeMillis();
+		ExecProcessResult result = ept.start(createTF()).waitForEnd();
+		
+		long duration = System.currentTimeMillis() - start_time;
+		
+		assertTrue(duration < Test5.MAX_DURATION + 300);/** 300 is a "startup time bonus" */
+		assertEquals(EndStatus.TOO_LONG_EXECUTION_TIME, result.getEndStatus());
+		
+		assertTrue(result.isTooLongTime());
+		assertFalse(result.isCorrectlyDone());
+		assertFalse(result.isKilled());
+		assertFalse(result.isRunning());
+		
+		assertEquals(Test5.MAX_DURATION, result.getMaxExecTime(TimeUnit.MILLISECONDS));
+	}
+	
+	public void testKill() {
+		ExecProcess ept = createExec(Test5.class);
+		
+		ScheduledThreadPoolExecutor max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1);
+		
+		long start_time = System.currentTimeMillis();
+		ExecProcessResult result = ept.start(createTF());
+		
+		max_exec_time_scheduler.schedule(() -> {
+			result.kill();
+		}, Test5.MAX_DURATION, TimeUnit.MILLISECONDS);
+		
+		result.waitForEnd();
+		
+		long duration = System.currentTimeMillis() - start_time;
+		
+		assertTrue(duration < Test5.MAX_DURATION + 300);/** 300 is a "startup time bonus" */
+		assertEquals(EndStatus.KILLED, result.getEndStatus());
+		
+		assertFalse(result.isTooLongTime());
+		assertFalse(result.isCorrectlyDone());
+		assertTrue(result.isKilled());
+		assertFalse(result.isRunning());
+	}
+	
+	public void testKillSubProcess() throws InterruptedException {
+		ExecProcess ept = createExec(Test6.class);
+		
+		ScheduledThreadPoolExecutor max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1);
+		
+		long start_time = System.currentTimeMillis();
+		ExecProcessResult result = ept.start(createTF());
+		
+		max_exec_time_scheduler.schedule(() -> {
+			result.kill();
+		}, Test5.MAX_DURATION * 4, TimeUnit.MILLISECONDS);
+		
+		Thread.sleep(Test5.MAX_DURATION);
+		assertEquals(1, result.process.descendants().count());
+		
+		result.waitForEnd();
+		
+		long duration = System.currentTimeMillis() - start_time;
+		
+		assertTrue(duration < Test5.MAX_DURATION * 4 * 2);
+		assertEquals(EndStatus.KILLED, result.getEndStatus());
+		
+		assertFalse(result.isTooLongTime());
+		assertFalse(result.isCorrectlyDone());
+		assertTrue(result.isKilled());
+		assertFalse(result.isRunning());
+		
+		assertEquals(0, result.process.descendants().count());
+	}
+	
+	public void testTimesAndProcessProps() {
+		ExecProcess ept = createExec(Test5.class);
+		
+		ScheduledThreadPoolExecutor max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1);
+		ept.setMaxExecutionTime(Test5.MAX_DURATION, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
+		
+		long start_time = System.currentTimeMillis();
+		ExecProcessResult result = ept.start(createTF()).waitForEnd();
+		
+		assertEquals(result.process, result.getProcess());
+		assertEquals(result.process.info().totalCpuDuration().orElse(Duration.ZERO).toMillis(), result.getCPUDuration(TimeUnit.MILLISECONDS));
+		assertEquals(result.process.info().startInstant().orElse(Instant.EPOCH).toEpochMilli(), result.getStartDate());
+		
+		long duration = System.currentTimeMillis() - start_time;
+		assertTrue(duration >= result.getUptime(TimeUnit.MILLISECONDS));
+		
+		assertEquals(result.process.pid(), result.getPID());
+		assertEquals(ept.executable, result.getExecutable());
+		
+		assertEquals(Stream.concat(Stream.of(ept.executable.getPath()), ept.getParams().stream()).collect(Collectors.joining(" ")), result.getCommandline());
+		assertTrue(result.getUserExec().endsWith(System.getProperty("user.name")));
+		assertEquals(ept.working_directory, result.getWorkingDirectory());
+	}
+	
+	public void testGetStreams() {
+		ExecProcessText ept = createExec(Test7.class);
+		ept.addParams("n");
+		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
+		
+		assertEquals(StreamSupport.stream(Arrays.spliterator(Test7.std_out), false).collect(Collectors.joining("|")), result.getStdout(true, "|"));
+		assertEquals(StreamSupport.stream(Arrays.spliterator(Test7.std_err), false).collect(Collectors.joining("\\")), result.getStderr(true, "\\"));
+		
+		ept = createExec(Test7.class);
+		ept.addParams("1");
+		result = ept.start(createTF()).waitForEnd();
+		
+		assertEquals(StreamSupport.stream(Arrays.spliterator(Test7.std_out), false).filter(l -> l.equals("") == false).collect(Collectors.joining("|")), result.getStdout(false, "|"));
+		assertEquals(StreamSupport.stream(Arrays.spliterator(Test7.std_err), false).filter(l -> l.equals("") == false).collect(Collectors.joining("\\")), result.getStderr(false, "\\"));
+		
+		// XXX test this...
+		result.getStdouterr(true, "#");
+		result.getStdouterr(false, "#");
+		
+		result.getStderrLines(true);
+		result.getStdouterrLines(true);
+		result.getStdoutLines(true);
+		
+		result.getStderrLines(false);
+		result.getStdouterrLines(false);
+		result.getStdoutLines(false);
+	}
+	
+	// XXX tests ! + coverage
+	
 	// ept.alterProcessBuilderBeforeStartIt(alter_process_builder)
-	// ept.getCaptureStreamsBehavior()
-	// ept.getMaxExecTime(unit)
-	// ept.isKeepStderr()
-	// ept.isKeepStdout()
 	// ept.makeProcessBuilder()
 	// ept.setInteractive_handler(interactive_handler, executor)
 	// ept.start(executor)
 	
-	// result.getCPUDuration(unit)
-	// result.getMaxExecTime(unit)
 	// result.getStderr(keep_empty_lines, new_line_separator)
 	// result.getStderrLines(keep_empty_lines)
 	// result.getStdInInjection()
-	// result.getUptime(unit)
-	// result.kill() + sub process...
 	// result.waitForEnd(executor)
 	// result.waitForEnd(timeout, unit)
+	
 }
