@@ -50,30 +50,10 @@ public class StdInInjection extends OutputStream {
 	}
 	
 	/**
-	 * Send text + flush
-	 */
-	public StdInInjection print(String text) throws IOException {
-		print(text, Charset.defaultCharset());
-		return this;
-	}
-	
-	/**
 	 * Send text + new line + flush
 	 */
 	public StdInInjection println(String text) throws IOException {
 		println(text, Charset.defaultCharset());
-		return this;
-	}
-	
-	/**
-	 * Send text + flush
-	 */
-	public StdInInjection print(String text, Charset charset) throws IOException {
-		if (log.isTraceEnabled()) {
-			log.trace("Print: \"" + text + "\"");
-		}
-		write(text.getBytes(charset));
-		flush();
 		return this;
 	}
 	

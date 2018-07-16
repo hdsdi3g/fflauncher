@@ -14,24 +14,12 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec;
+package tv.hd3g.fflauncher.exec.processdemo;
 
-@FunctionalInterface
-public interface InteractiveExecProcessHandler {
+public class Test10 {
 	
-	/**
-	 * @return text to send to process
-	 * @see CaptureOutStreamsBehavior
-	 * @see StdInInjection
-	 */
-	public String onText(ExecProcessTextResult source, String line, boolean is_std_err);
-	
-	public default String onStdout(ExecProcessTextResult source, String line) {
-		return onText(source, line, false);
-	}
-	
-	public default String onStderr(ExecProcessTextResult source, String line) {
-		return onText(source, line, true);
+	public static void main(String[] args) throws InterruptedException {
+		Thread.sleep(200);
 	}
 	
 }

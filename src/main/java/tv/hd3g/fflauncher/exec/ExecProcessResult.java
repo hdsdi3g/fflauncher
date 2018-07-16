@@ -425,9 +425,16 @@ class ExecProcessResult {
 		return environment;
 	}
 	
+	/**
+	 * Blocking during the process really starts
+	 */
 	public StdInInjection getStdInInjection() {
 		if (std_in_injection == null) {
 			synchronized (this) {
+				while (process == null) {
+					Thread.onSpinWait();
+				}
+				
 				std_in_injection = new StdInInjection(process.getOutputStream());
 			}
 		}

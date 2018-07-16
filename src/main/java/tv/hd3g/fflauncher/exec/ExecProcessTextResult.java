@@ -213,11 +213,7 @@ public class ExecProcessTextResult extends ExecProcessResult {
 					}
 					if (out != null) {
 						try {
-							if (interactive_handler.addNewLineAtTheEndOfInjectedText()) {
-								getStdInInjection().println(out);
-							} else {
-								getStdInInjection().print(out);
-							}
+							getStdInInjection().println(out);
 						} catch (IOException e) {
 							log.error("Can't send some text to process", e);
 						}

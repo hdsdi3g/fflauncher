@@ -21,10 +21,12 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -35,6 +37,7 @@ import java.util.stream.StreamSupport;
 
 import junit.framework.TestCase;
 import tv.hd3g.fflauncher.exec.processdemo.Test1;
+import tv.hd3g.fflauncher.exec.processdemo.Test10;
 import tv.hd3g.fflauncher.exec.processdemo.Test2;
 import tv.hd3g.fflauncher.exec.processdemo.Test3;
 import tv.hd3g.fflauncher.exec.processdemo.Test4;
@@ -42,6 +45,7 @@ import tv.hd3g.fflauncher.exec.processdemo.Test5;
 import tv.hd3g.fflauncher.exec.processdemo.Test6;
 import tv.hd3g.fflauncher.exec.processdemo.Test7;
 import tv.hd3g.fflauncher.exec.processdemo.Test8;
+import tv.hd3g.fflauncher.exec.processdemo.Test9;
 
 public class ExecProcessTest extends TestCase {
 	
@@ -395,7 +399,7 @@ public class ExecProcessTest extends TestCase {
 		AtomicReference<ExecProcessTextResult> a_source = new AtomicReference<>();
 		LinkedBlockingQueue<Exception> errors = new LinkedBlockingQueue<>();
 		
-		ept.setInteractiveHandler((source, line, is_std_err) -> {// FIXME
+		ept.setInteractiveHandler((source, line, is_std_err) -> {
 			a_source.set(source);
 			if (is_std_err) {
 				System.err.println("Process say: " + line);
@@ -431,14 +435,41 @@ public class ExecProcessTest extends TestCase {
 		assertTrue(result.isCorrectlyDone());
 	}
 	
-	// XXX tests ! + coverage
+	public void testStdInInjection() throws IOException {
+		ExecProcessText ept = createExec(Test9.class);
+		ept.setMaxExecutionTime(500, TimeUnit.MILLISECONDS, new ScheduledThreadPoolExecutor(1));
+		ExecProcessTextResult result = ept.start(createTF());
+		
+		result.getStdInInjection().println(Test9.QUIT);
+		
+		result.waitForEnd();
+		assertTrue(result.isCorrectlyDone());
+	}
 	
+	public void testWaitForEnd() throws InterruptedException, ExecutionException, TimeoutException {
+		ExecProcessText ept = createExec(Test10.class);
+		
+		assertTrue(ept.start(createTF()).waitForEnd(r -> r.run()).get(500, TimeUnit.MILLISECONDS).isCorrectlyDone());
+		assertTrue(ept.start(createTF()).waitForEnd(500, TimeUnit.MILLISECONDS).isCorrectlyDone());
+	}
+	
+	public void testExecutor() throws InterruptedException, ExecutionException, TimeoutException {
+		ExecProcessText ept = createExec(Test1.class);
+		
+		assertTrue(ept.start(r -> r.run()).waitForEnd().isCorrectlyDone());
+	}
+	
+	// XXX tests
+	
+	// ep.setParams(Collection<String> params)
+	// ep.setParams((String... params)
+	// ep.transfertSystemEnvironment()
+	// ep.isExecCodeMustBeZero()
+	// ep.start Executor / ThreadFactory
+	// ep.tostring
+	
+	// epr.toString
 	// ept.alterProcessBuilderBeforeStartIt(alter_process_builder)
 	// ept.makeProcessBuilder()
-	// ept.start(executor)
-	
-	// result.getStdInInjection()
-	// result.waitForEnd(executor)
-	// result.waitForEnd(timeout, unit)
 	
 }

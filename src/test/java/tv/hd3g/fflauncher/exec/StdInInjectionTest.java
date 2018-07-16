@@ -16,8 +16,33 @@
 */
 package tv.hd3g.fflauncher.exec;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
 import junit.framework.TestCase;
 
 public class StdInInjectionTest extends TestCase {
-	// XXX
+	
+	public void testInject() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		
+		StdInInjection sii = new StdInInjection(baos);
+		
+		byte[] test = { 1, 2, 3 };
+		sii.write(test);
+		sii.close();
+		byte[] result = baos.toByteArray();
+		
+		assertTrue(Arrays.equals(test, result));
+		
+		baos.reset();
+		sii.println("test !", StandardCharsets.UTF_8);
+		
+		result = baos.toByteArray();
+		
+		assertTrue(Arrays.equals(("test !" + StdInInjection.LINESEPARATOR).getBytes(StandardCharsets.UTF_8), result));
+	}
+	
 }
