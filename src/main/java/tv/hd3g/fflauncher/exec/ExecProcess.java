@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -62,6 +63,8 @@ public class ExecProcess {
 	public ExecProcess(File executable) throws IOException {
 		if (executable.isFile() == false | executable.exists() == false) {
 			throw new FileNotFoundException("Can't found " + executable);
+		} else if (executable.canExecute() == false) {
+			throw new IOException("Can't execute " + executable);
 		}
 		
 		params = new ArrayList<>();
@@ -83,7 +86,8 @@ public class ExecProcess {
 			throw new NullPointerException("\"params\" can't to be null");
 		}
 		this.params.clear();
-		this.params.addAll(params);
+		
+		this.params.addAll(params.stream().filter(p -> p != null).collect(Collectors.toList()));
 		return this;
 	}
 	
@@ -106,13 +110,46 @@ public class ExecProcess {
 		if (params == null) {
 			throw new NullPointerException("\"params\" can't to be null");
 		}
-		for (int pos = 0; pos < params.length; pos++) {
-			if (params[pos] == null) {
-				continue;
-			}
-			this.params.add(params[pos]);
-		}
+		
+		this.params.addAll(Arrays.stream(params).filter(p -> {
+			return p != null;
+		}).collect(Collectors.toList()));
+		
 		return this;
+	}
+	
+	/**
+	 * @param params transform spaces in each param to new params: ["a b c", "d"] -> ["a", "b", "c", "d"]. It don't manage " or tabs.
+	 */
+	public ExecProcess addSpacedParams(String... params) {
+		if (params == null) {
+			throw new NullPointerException("\"params\" can't to be null");
+		}
+		
+		this.params.addAll(Arrays.stream(params).filter(p -> {
+			return p != null;
+		}).flatMap(p -> {
+			return Arrays.stream(p.split(" ")).filter(sub_p -> {
+				return sub_p.equals("") == false && sub_p.equals(" ") == false;
+			}).map(sub_p -> {
+				return sub_p.trim();
+			});
+		}).collect(Collectors.toList()));
+		
+		return this;
+	}
+	
+	/**
+	 * @param params transform spaces in each param to new params: ["a b c", "d"] -> ["a", "b", "c", "d"]. It don't manage " or tabs.
+	 */
+	public ExecProcess setSpacedParams(String... params) {
+		if (params == null) {
+			throw new NullPointerException("\"params\" can't to be null");
+		}
+		
+		this.params.clear();
+		
+		return addSpacedParams(params);
 	}
 	
 	public Map<String, String> getEnvironment() {

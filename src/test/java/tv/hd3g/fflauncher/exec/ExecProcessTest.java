@@ -120,7 +120,11 @@ public class ExecProcessTest extends TestCase {
 		long start_date = System.currentTimeMillis() - 1;
 		
 		ExecProcessText ept = createExec(Test3.class);
+		
+		assertTrue(ept.isExecCodeMustBeZero());
 		ept.setExecCodeMustBeZero(false);
+		assertFalse(ept.isExecCodeMustBeZero());
+		
 		ept.addParams(Test3.expected_in);
 		assertEquals(Test3.expected_in, ept.getParams().get(ept.getParams().size() - 1));
 		
@@ -455,21 +459,93 @@ public class ExecProcessTest extends TestCase {
 	
 	public void testExecutor() throws InterruptedException, ExecutionException, TimeoutException {
 		ExecProcessText ept = createExec(Test1.class);
-		
 		assertTrue(ept.start(r -> r.run()).waitForEnd().isCorrectlyDone());
+	}
+	
+	public void testParams() throws IOException {
+		ExecProcessText ept = createExec(Test1.class);
+		ExecProcess ep = new ExecProcess(ept.executable);
+		
+		assertEquals(ep.params, ep.getParams());
+		
+		ep.addParams("a", "b", null, "c");
+		ep.addParams("d");
+		assertEquals("abcd", ep.params.stream().collect(Collectors.joining()));
+		
+		ep.setParams(Arrays.asList("a", "b", null, "c"));
+		assertEquals("abc", ep.params.stream().collect(Collectors.joining()));
+		
+		ep.setParams("a", "b", "c", "d", null, "e");
+		assertEquals("abcde", ep.params.stream().collect(Collectors.joining()));
+		
+		ep.setSpacedParams("a b  c d", "e", null, "f");
+		assertEquals("abcdef".length(), ep.params.size());
+		assertEquals("abcdef", ep.params.stream().collect(Collectors.joining()));
+		
+		ep.addSpacedParams("ggg h i ", " e", null, "fff", " ");
+		assertEquals("abcdef".length() + 3 + 1 + 1, ep.params.size());
+		assertEquals("abcdefggghiefff", ep.params.stream().collect(Collectors.joining()));
+	}
+	
+	public void testToString() throws IOException {
+		ExecProcessText ept = createExec(Test1.class);
+		
+		assertNotNull(ept.toString());
+		assertNotNull(ept.start(r -> r.run()).toString());
+		
+		ExecProcess ep = new ExecProcess(ept.executable);
+		ep.setParams(ept.getParams());
+		
+		assertNotNull(ep.toString());
+		assertNotNull(ep.start(r -> r.run()).toString());
+		assertNotNull(ep.start(createTF()).toString());
+	}
+	
+	public void testTransfertEnv() {
+		ExecProcessText ept = createExec(Test1.class);
+		
+		assertTrue(ept.getEnvironment().containsKey("LANG"));
+		assertTrue(ept.getEnvironment().containsKey("PATH"));
+		assertTrue(ept.getEnvironment().get("LANG").trim().equals("") == false);
+		assertTrue(ept.getEnvironment().get("PATH").trim().equals("") == false);
+		
+		ept.transfertSystemEnvironment();
+		
+		System.getenv().forEach((k, v) -> {
+			assertTrue(ept.getEnvironment().containsKey(k));
+			assertEquals(v, ept.getEnvironment().get(k));
+		});
+	}
+	
+	public void testProcessBuilder() {
+		ExecProcessText ept = createExec(Test1.class);
+		
+		AtomicReference<ProcessBuilder> a_pb = new AtomicReference<>();
+		ept.alterProcessBuilderBeforeStartIt(pb -> {
+			a_pb.set(pb);
+		});
+		
+		AtomicReference<Runnable> a_run = new AtomicReference<>();
+		ExecProcessTextResult epr = ept.start(r -> a_run.set(r));
+		
+		assertNull(a_pb.get());
+		assertNotNull(a_run.get());
+		
+		a_run.get().run();
+		
+		assertNotNull(a_pb.get());
+		
+		assertEquals(epr.getCommandline(), a_pb.get().command().stream().collect(Collectors.joining(" ")));
+		
+		ProcessBuilder new_pb = ept.makeProcessBuilder();
+		assertEquals(epr.getCommandline(), new_pb.command().stream().collect(Collectors.joining(" ")));
+		assertEquals(ept.working_directory, new_pb.directory());
+		
+		assertEquals(ept.environment.size(), new_pb.environment().size());// XXX why ?!
 	}
 	
 	// XXX tests
 	
-	// ep.setParams(Collection<String> params)
-	// ep.setParams((String... params)
-	// ep.transfertSystemEnvironment()
-	// ep.isExecCodeMustBeZero()
-	// ep.start Executor / ThreadFactory
-	// ep.tostring
-	
-	// epr.toString
-	// ept.alterProcessBuilderBeforeStartIt(alter_process_builder)
 	// ept.makeProcessBuilder()
 	
 }
