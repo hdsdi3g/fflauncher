@@ -14,14 +14,12 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec.processdemo;
+package tv.hd3g.execprocess.processdemo;
 
-public class Test1 {
+public class Test10 {
 	
-	public static final String expected = "HELLO";
-	
-	public static void main(String[] args) {
-		System.out.println(expected);
+	public static void main(String[] args) throws InterruptedException {
+		Thread.sleep(200);
 	}
 	
 }

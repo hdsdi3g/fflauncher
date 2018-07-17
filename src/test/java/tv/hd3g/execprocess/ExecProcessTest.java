@@ -14,7 +14,7 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec;
+package tv.hd3g.execprocess;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,16 +36,23 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import junit.framework.TestCase;
-import tv.hd3g.fflauncher.exec.processdemo.Test1;
-import tv.hd3g.fflauncher.exec.processdemo.Test10;
-import tv.hd3g.fflauncher.exec.processdemo.Test2;
-import tv.hd3g.fflauncher.exec.processdemo.Test3;
-import tv.hd3g.fflauncher.exec.processdemo.Test4;
-import tv.hd3g.fflauncher.exec.processdemo.Test5;
-import tv.hd3g.fflauncher.exec.processdemo.Test6;
-import tv.hd3g.fflauncher.exec.processdemo.Test7;
-import tv.hd3g.fflauncher.exec.processdemo.Test8;
-import tv.hd3g.fflauncher.exec.processdemo.Test9;
+import tv.hd3g.execprocess.CaptureOutStreamsBehavior;
+import tv.hd3g.execprocess.EndStatus;
+import tv.hd3g.execprocess.ExecProcess;
+import tv.hd3g.execprocess.ExecProcessResult;
+import tv.hd3g.execprocess.ExecProcessText;
+import tv.hd3g.execprocess.ExecProcessTextResult;
+import tv.hd3g.execprocess.ExecutableFinder;
+import tv.hd3g.execprocess.processdemo.Test1;
+import tv.hd3g.execprocess.processdemo.Test10;
+import tv.hd3g.execprocess.processdemo.Test2;
+import tv.hd3g.execprocess.processdemo.Test3;
+import tv.hd3g.execprocess.processdemo.Test4;
+import tv.hd3g.execprocess.processdemo.Test5;
+import tv.hd3g.execprocess.processdemo.Test6;
+import tv.hd3g.execprocess.processdemo.Test7;
+import tv.hd3g.execprocess.processdemo.Test8;
+import tv.hd3g.execprocess.processdemo.Test9;
 
 public class ExecProcessTest extends TestCase {
 	
@@ -57,14 +64,9 @@ public class ExecProcessTest extends TestCase {
 		};
 	}
 	
-	static final File java_exec = new File(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java");
-	
 	public static ExecProcessText createExec(Class<?> exec_class) {
 		try {
-			if (java_exec.exists() == false) {// TODO2 replace this by get ExecFinder
-				return (ExecProcessText) new ExecProcessText(new File(java_exec.getAbsolutePath() + ".exe")).addParams("-cp", System.getProperty("java.class.path")).addParams(exec_class.getName());
-			}
-			return (ExecProcessText) new ExecProcessText(java_exec).addParams("-cp", System.getProperty("java.class.path")).addParams(exec_class.getName());
+			return (ExecProcessText) new ExecProcessText("java", new ExecutableFinder()).addParams("-cp", System.getProperty("java.class.path")).addParams(exec_class.getName());
 		} catch (IOException e) {
 			throw new RuntimeException("Can't found java exec", e);
 		}

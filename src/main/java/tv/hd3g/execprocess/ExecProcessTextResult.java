@@ -14,7 +14,7 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec;
+package tv.hd3g.execprocess;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,11 +35,12 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ExecProcessTextResult extends ExecProcessResult {
 	
-	private static Logger log = Logger.getLogger(ExecProcessTextResult.class);
+	private static Logger log = LogManager.getLogger();
 	
 	private boolean keep_stdout;
 	private boolean keep_stderr;

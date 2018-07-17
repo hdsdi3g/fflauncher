@@ -14,17 +14,18 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec;
+package tv.hd3g.execprocess;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class StdInInjection extends OutputStream {
 	
-	private static Logger log = Logger.getLogger(StdInInjection.class);
+	private static final Logger log = LogManager.getLogger();
 	public static final String LINESEPARATOR = System.getProperty("line.separator");
 	
 	private final OutputStream std_in;

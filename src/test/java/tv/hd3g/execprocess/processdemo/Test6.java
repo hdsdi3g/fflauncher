@@ -14,9 +14,9 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec.processdemo;
+package tv.hd3g.execprocess.processdemo;
 
-import tv.hd3g.fflauncher.exec.ExecProcessTest;
+import tv.hd3g.execprocess.ExecProcessTest;
 
 public class Test6 {
 	

@@ -14,12 +14,14 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec.processdemo;
+package tv.hd3g.execprocess.processdemo;
 
-public class Test2 {
+public class Test1 {
+	
+	public static final String expected = "HELLO";
 	
 	public static void main(String[] args) {
-		System.out.println(System.getProperty("user.dir"));
+		System.out.println(expected);
 	}
 	
 }

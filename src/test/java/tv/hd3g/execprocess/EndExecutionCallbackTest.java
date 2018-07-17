@@ -14,7 +14,7 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec;
+package tv.hd3g.execprocess;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,6 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import junit.framework.TestCase;
+import tv.hd3g.execprocess.EndExecutionCallback;
+import tv.hd3g.execprocess.ExecProcessResult;
 
 public class EndExecutionCallbackTest extends TestCase {
 	

@@ -14,8 +14,27 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec;
+package tv.hd3g.execprocess.processdemo;
 
-public enum EndStatus {
-	NOT_YET_DONE, CORRECTLY_DONE, DONE_WITH_ERROR, KILLED, TOO_LONG_EXECUTION_TIME, CANT_START;
+import java.util.Scanner;
+
+public class Test8 {
+	
+	public static final String QUIT = "q";
+	
+	public static void main(String[] args) throws InterruptedException {
+		System.out.println(args[0].toUpperCase());
+		
+		Scanner s = new Scanner(System.in);
+		while (s.hasNext()) {
+			String line = s.next();
+			if (line.equals(QUIT)) {
+				break;
+			}
+			System.out.println(line.toUpperCase());
+		}
+		
+		s.close();
+	}
+	
 }

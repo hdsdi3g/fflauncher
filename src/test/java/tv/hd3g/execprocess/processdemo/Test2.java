@@ -14,40 +14,12 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec;
+package tv.hd3g.execprocess.processdemo;
 
-public enum CaptureOutStreamsBehavior {
+public class Test2 {
 	
-	BOTH_STDOUT_STDERR {
-		boolean canCaptureStdout() {
-			return true;
-		}
-		
-		boolean canCaptureStderr() {
-			return true;
-		}
-	},
-	ONLY_STDOUT {
-		boolean canCaptureStdout() {
-			return true;
-		}
-		
-		boolean canCaptureStderr() {
-			return false;
-		}
-	},
-	ONLY_STDERR {
-		boolean canCaptureStdout() {
-			return false;
-		}
-		
-		boolean canCaptureStderr() {
-			return true;
-		}
-	};
-	
-	abstract boolean canCaptureStdout();
-	
-	abstract boolean canCaptureStderr();
+	public static void main(String[] args) {
+		System.out.println(System.getProperty("user.dir"));
+	}
 	
 }

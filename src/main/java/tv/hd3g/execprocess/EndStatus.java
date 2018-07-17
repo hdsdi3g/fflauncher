@@ -14,12 +14,8 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec.processdemo;
+package tv.hd3g.execprocess;
 
-public class Test10 {
-	
-	public static void main(String[] args) throws InterruptedException {
-		Thread.sleep(200);
-	}
-	
+public enum EndStatus {
+	NOT_YET_DONE, CORRECTLY_DONE, DONE_WITH_ERROR, KILLED, TOO_LONG_EXECUTION_TIME, CANT_START;
 }

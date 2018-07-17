@@ -14,30 +14,14 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec.processdemo;
+package tv.hd3g.execprocess.processdemo;
 
-import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-public class Test4 {
+public class Test5 {
 	
-	public static final String std_out = "HELLO";
-	public static final String std_err = "ERROR";
+	public static final long MAX_DURATION = 100;
 	
 	public static void main(String[] args) throws Exception {
-		ExecutorService executor = Executors.newFixedThreadPool(2);
-		
-		executor.invokeAll(Arrays.asList(() -> {
-			System.out.println(std_out);
-			return null;
-		}, () -> {
-			System.err.println(std_err);
-			return null;
-		}), 100, TimeUnit.MILLISECONDS);
-		
-		System.exit(0);
+		Thread.sleep(MAX_DURATION * 50);
 	}
 	
 }

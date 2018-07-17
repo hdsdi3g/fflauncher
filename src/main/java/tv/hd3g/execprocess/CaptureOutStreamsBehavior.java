@@ -14,27 +14,40 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  * 
 */
-package tv.hd3g.fflauncher.exec.processdemo;
+package tv.hd3g.execprocess;
 
-import java.util.Scanner;
-
-public class Test8 {
+public enum CaptureOutStreamsBehavior {
 	
-	public static final String QUIT = "q";
-	
-	public static void main(String[] args) throws InterruptedException {
-		System.out.println(args[0].toUpperCase());
-		
-		Scanner s = new Scanner(System.in);
-		while (s.hasNext()) {
-			String line = s.next();
-			if (line.equals(QUIT)) {
-				break;
-			}
-			System.out.println(line.toUpperCase());
+	BOTH_STDOUT_STDERR {
+		boolean canCaptureStdout() {
+			return true;
 		}
 		
-		s.close();
-	}
+		boolean canCaptureStderr() {
+			return true;
+		}
+	},
+	ONLY_STDOUT {
+		boolean canCaptureStdout() {
+			return true;
+		}
+		
+		boolean canCaptureStderr() {
+			return false;
+		}
+	},
+	ONLY_STDERR {
+		boolean canCaptureStdout() {
+			return false;
+		}
+		
+		boolean canCaptureStderr() {
+			return true;
+		}
+	};
+	
+	abstract boolean canCaptureStdout();
+	
+	abstract boolean canCaptureStderr();
 	
 }

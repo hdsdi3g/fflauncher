@@ -16,9 +16,10 @@
 */
 package tv.hd3g.fflauncher;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class FFbase {
-	private static Logger log = Logger.getLogger(FFbase.class);
+	private static final Logger log = LogManager.getLogger();
 	// TODO implements ffbase
 }
