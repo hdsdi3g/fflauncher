@@ -25,11 +25,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -57,7 +57,7 @@ public class ExecProcess {
 		this.executable = exec_finder.get(executable);
 		environment = new LinkedHashMap<>();
 		end_exec_callback_list = new ArrayList<>(1);
-		setup(exec_finder.getFullPath());
+		setup(exec_finder.getFullPathToString());
 	}
 	
 	public ExecProcess(File executable) throws IOException {
@@ -75,7 +75,10 @@ public class ExecProcess {
 	}
 	
 	private void setup(String path) throws IOException {
-		environment.put("LANG", Locale.getDefault().getLanguage() + "_" + Locale.getDefault().getCountry() + "." + Charset.forName("UTF-8"));
+		environment.putAll(System.getenv());
+		if (environment.containsKey("LANG") == false) {
+			environment.put("LANG", Locale.getDefault().getLanguage() + "_" + Locale.getDefault().getCountry() + "." + Charset.forName("UTF-8"));
+		}
 		environment.put("PATH", path);
 		exec_code_must_be_zero = true;
 		setWorkingDirectory(new File(System.getProperty("java.io.tmpdir", "")));
@@ -152,16 +155,36 @@ public class ExecProcess {
 		return addSpacedParams(params);
 	}
 	
-	public Map<String, String> getEnvironment() {
+	/*public Map<String, String> getEnvironment() {
 		return environment;
-	}
+	}*/
 	
 	/**
-	 * Push actual JVM environment to new process.
+	 * @return null if not found
 	 */
-	public ExecProcess transfertSystemEnvironment() {
-		environment.putAll(System.getenv());
+	public String getEnvironmentVar(String key) {
+		return environment.get(key);
+	}
+	
+	public ExecProcess setEnvironmentVar(String key, String value) {
+		if (key.equalsIgnoreCase("path") && System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+			environment.put("PATH", value);
+			environment.put("Path", value);
+		} else {
+			environment.put(key, value);
+		}
 		return this;
+	}
+	
+	public ExecProcess setEnvironmentVarIfNotFound(String key, String value) {
+		if (environment.containsKey(key)) {
+			return this;
+		}
+		return setEnvironmentVar(key, value);
+	}
+	
+	public void forEachEnvironmentVar(BiConsumer<String, String> action) {
+		environment.forEach(action);
 	}
 	
 	/**

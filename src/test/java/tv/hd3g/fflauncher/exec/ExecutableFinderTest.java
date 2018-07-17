@@ -16,8 +16,27 @@
 */
 package tv.hd3g.fflauncher.exec;
 
+import java.io.File;
+import java.io.IOException;
+
 import junit.framework.TestCase;
 
 public class ExecutableFinderTest extends TestCase {
-	// XXX
+	
+	public void test() throws IOException {
+		ExecutableFinder ef = new ExecutableFinder();
+		
+		assertTrue(ef.getFullPath().contains(new File(System.getProperty("user.dir"))));
+		assertEquals("\\", "/".replaceAll("/", "\\\\"));
+		assertEquals("/", "\\".replaceAll("\\\\", "/"));
+		
+		File exec = ef.get("test-exec");
+		if (File.separator.equals("/")) {
+			assertEquals("test-exec", exec.getName());
+		} else {
+			System.out.println(exec);
+			assertEquals("test-exec.bat", exec.getName());
+		}
+	}
+	
 }

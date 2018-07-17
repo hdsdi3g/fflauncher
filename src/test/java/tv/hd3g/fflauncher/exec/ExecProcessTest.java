@@ -128,15 +128,7 @@ public class ExecProcessTest extends TestCase {
 		ept.addParams(Test3.expected_in);
 		assertEquals(Test3.expected_in, ept.getParams().get(ept.getParams().size() - 1));
 		
-		if (System.getenv().containsKey("PATH")) {
-			ept.transfertSystemEnvironment();
-		} else {
-			/**
-			 * No importance
-			 */
-			ept.getEnvironment().put("PATH", "/bin");
-		}
-		ept.getEnvironment().put(Test3.ENV_KEY, Test3.ENV_VALUE);
+		ept.setEnvironmentVar(Test3.ENV_KEY, Test3.ENV_VALUE);
 		
 		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
 		
@@ -501,22 +493,6 @@ public class ExecProcessTest extends TestCase {
 		assertNotNull(ep.start(createTF()).toString());
 	}
 	
-	public void testTransfertEnv() {
-		ExecProcessText ept = createExec(Test1.class);
-		
-		assertTrue(ept.getEnvironment().containsKey("LANG"));
-		assertTrue(ept.getEnvironment().containsKey("PATH"));
-		assertTrue(ept.getEnvironment().get("LANG").trim().equals("") == false);
-		assertTrue(ept.getEnvironment().get("PATH").trim().equals("") == false);
-		
-		ept.transfertSystemEnvironment();
-		
-		System.getenv().forEach((k, v) -> {
-			assertTrue(ept.getEnvironment().containsKey(k));
-			assertEquals(v, ept.getEnvironment().get(k));
-		});
-	}
-	
 	public void testProcessBuilder() {
 		ExecProcessText ept = createExec(Test1.class);
 		
@@ -537,15 +513,13 @@ public class ExecProcessTest extends TestCase {
 		
 		assertEquals(epr.getCommandline(), a_pb.get().command().stream().collect(Collectors.joining(" ")));
 		
+		ept.setEnvironmentVar("PATH", "c:\\bin");
+		
 		ProcessBuilder new_pb = ept.makeProcessBuilder();
 		assertEquals(epr.getCommandline(), new_pb.command().stream().collect(Collectors.joining(" ")));
 		assertEquals(ept.working_directory, new_pb.directory());
 		
-		assertEquals(ept.environment.size(), new_pb.environment().size());// XXX why ?!
+		assertEquals(ept.environment.get("PATH"), new_pb.environment().get("PATH"));
 	}
-	
-	// XXX tests
-	
-	// ept.makeProcessBuilder()
 	
 }

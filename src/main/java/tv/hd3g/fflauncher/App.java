@@ -7,6 +7,7 @@ import java.io.IOException;
  */
 public class App {
 	public static void main(String[] args) throws IOException {
+		// TODO4 switch to log4j2
 	}
 	
 }
