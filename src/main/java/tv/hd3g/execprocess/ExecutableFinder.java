@@ -19,10 +19,10 @@ package tv.hd3g.execprocess;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
@@ -64,7 +64,7 @@ public class ExecutableFinder {
 	/**
 	 * synchronizedList
 	 */
-	private final List<File> paths;
+	private final LinkedList<File> paths;
 	private final LinkedHashMap<String, File> declared_in_configuration;
 	private final boolean is_windows_style_path;
 	
@@ -79,9 +79,7 @@ public class ExecutableFinder {
 		/**
 		 * Add only valid dirs
 		 */
-		paths = Collections.synchronizedList(new ArrayList<>(Arrays.stream(System.getenv("PATH").split(File.pathSeparator)).map(p -> new File(p)).filter(isValidDirectory).collect(Collectors.toList())));
-		
-		log.debug("System PATH: " + paths);
+		paths = new LinkedList<>();
 		
 		addLocalPath("/bin");
 		addLocalPath("/App/bin");
@@ -92,12 +90,18 @@ public class ExecutableFinder {
 			return new File(p);
 		}).filter(isValidDirectory).collect(Collectors.toList()));
 		
+		paths.addAll(Arrays.stream(System.getenv("PATH").split(File.pathSeparator)).map(p -> new File(p)).filter(isValidDirectory).collect(Collectors.toList()));
+		
 		/**
 		 * Remove duplicate entries
 		 */
 		List<File> new_list = paths.stream().distinct().collect(Collectors.toList());
 		paths.clear();
 		paths.addAll(new_list);
+		
+		if (log.isTraceEnabled()) {
+			log.trace("Full path: " + paths.stream().map(f -> f.getPath()).collect(Collectors.joining(File.pathSeparator)));
+		}
 	}
 	
 	public String getFullPathToString() {
@@ -114,6 +118,7 @@ public class ExecutableFinder {
 	}
 	
 	/**
+	 * Put in top priority.
 	 * Path / or \ will be corrected
 	 */
 	public ExecutableFinder addLocalPath(String relative_user_home_path) {
@@ -129,12 +134,17 @@ public class ExecutableFinder {
 		return addPath(f);
 	}
 	
+	/**
+	 * Put in top priority.
+	 */
 	public ExecutableFinder addPath(File file_path) {
 		File f = file_path.getAbsoluteFile();
 		
 		if (isValidDirectory.test(f)) {
-			paths.add(f);
-			log.debug("Register path: " + f.getPath());
+			synchronized (this) {
+				log.debug("Register path: " + f.getPath());
+				paths.addFirst(f);
+			}
 		}
 		return this;
 	}
@@ -175,9 +185,9 @@ public class ExecutableFinder {
 			return exec;
 		}
 		
-		List<File> all_file_candidates = Stream.concat(paths.stream(), declared_in_configuration.values().stream().map(file -> {
+		List<File> all_file_candidates = Stream.concat(declared_in_configuration.values().stream().map(file -> {
 			return file.getParentFile();
-		})).map(dir -> {
+		}), paths.stream()).map(dir -> {
 			return new File(dir + File.separator + name).getAbsoluteFile();
 		}).distinct().collect(Collectors.toList());
 		

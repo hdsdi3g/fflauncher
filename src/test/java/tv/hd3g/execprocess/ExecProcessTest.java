@@ -36,13 +36,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import junit.framework.TestCase;
-import tv.hd3g.execprocess.CaptureOutStreamsBehavior;
-import tv.hd3g.execprocess.EndStatus;
-import tv.hd3g.execprocess.ExecProcess;
-import tv.hd3g.execprocess.ExecProcessResult;
-import tv.hd3g.execprocess.ExecProcessText;
-import tv.hd3g.execprocess.ExecProcessTextResult;
-import tv.hd3g.execprocess.ExecutableFinder;
 import tv.hd3g.execprocess.processdemo.Test1;
 import tv.hd3g.execprocess.processdemo.Test10;
 import tv.hd3g.execprocess.processdemo.Test2;
@@ -64,9 +57,16 @@ public class ExecProcessTest extends TestCase {
 		};
 	}
 	
+	private static final ExecutableFinder executable_finder;
+	
+	static {
+		executable_finder = new ExecutableFinder();
+		executable_finder.addPath(new File(System.getProperty("java.home") + File.separator + "bin"));
+	}
+	
 	public static ExecProcessText createExec(Class<?> exec_class) {
 		try {
-			return (ExecProcessText) new ExecProcessText("java", new ExecutableFinder()).addParams("-cp", System.getProperty("java.class.path")).addParams(exec_class.getName());
+			return (ExecProcessText) new ExecProcessText("java", executable_finder).addParams("-cp", System.getProperty("java.class.path")).addParams(exec_class.getName());
 		} catch (IOException e) {
 			throw new RuntimeException("Can't found java exec", e);
 		}
