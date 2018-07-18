@@ -16,25 +16,26 @@
 */
 package tv.hd3g.fflauncher;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import junit.framework.TestCase;
 import tv.hd3g.execprocess.ExecutableFinder;
 
-public class FFmpeg extends FFbase {
+public class FFbaseTest extends TestCase {
 	
-	private static final Logger log = LogManager.getLogger();
-	
-	public FFmpeg(ExecutableFinder exec_finder, String exec_name) throws FileNotFoundException {
-		super(exec_finder, exec_name);
+	public void test() throws Exception {
+		FFbase b = new FFbase(new ExecutableFinder(), "ffmpeg");
+		
+		b.getCodecs();
+		
+		/*FFVersion version = b.getVersion();
+		assertNotNull(version);
+		assertNotNull(version.libavcodec_version);
+		assertNotNull(version.raw_configuration);
+		assertNotNull(version.configuration);
+		
+		assertFalse(version.libavcodec_version.isEmpty());
+		assertFalse(version.raw_configuration.isEmpty());
+		assertFalse(version.configuration.isEmpty());*/
+		
 	}
 	
-	public FFmpeg(File executable) throws FileNotFoundException {
-		super(executable);
-	}
-	
-	// TODO implements ffmpeg
 }

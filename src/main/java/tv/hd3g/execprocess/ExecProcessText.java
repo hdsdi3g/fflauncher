@@ -19,8 +19,12 @@ package tv.hd3g.execprocess;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class ExecProcessText extends ExecProcess {
 	
@@ -54,25 +58,33 @@ public class ExecProcessText extends ExecProcess {
 	}
 	
 	/**
+	 * True by default.
 	 * @param keep all resulted text during execution for get all at the end.
 	 */
-	public ExecProcess setKeepStderr(boolean keep_stderr) {
+	public ExecProcessText setKeepStderr(boolean keep_stderr) {
 		this.keep_stderr = keep_stderr;
 		return this;
 	}
 	
 	/**
+	 * True by default.
 	 * @param keep all resulted text during execution for get all at the end.
 	 */
-	public ExecProcess setKeepStdout(boolean keep_stdout) {
+	public ExecProcessText setKeepStdout(boolean keep_stdout) {
 		this.keep_stdout = keep_stdout;
 		return this;
 	}
 	
+	/**
+	 * True by default.
+	 */
 	public boolean isKeepStderr() {
 		return keep_stderr;
 	}
 	
+	/**
+	 * True by default.
+	 */
 	public boolean isKeepStdout() {
 		return keep_stdout;
 	}
@@ -122,6 +134,75 @@ public class ExecProcessText extends ExecProcess {
 		ExecProcessTextResult r = new ExecProcessTextResult(executable, params, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder);
 		r.setup(capture_streams_behavior, keep_stdout, keep_stderr, interactive_handler, interactive_handler_executor, stdouterr_callback_list);
 		return r.start(thread_factory);
+	}
+	
+	public ExecProcessText setParams(Collection<String> params) {
+		super.setParams(params);
+		return this;
+	}
+	
+	public ExecProcessText setParams(String... params) {
+		super.setParams(params);
+		return this;
+	}
+	
+	public ExecProcessText addParams(String... params) {
+		super.addParams(params);
+		return this;
+	}
+	
+	/**
+	 * @param params transform spaces in each param to new params: ["a b c", "d"] -> ["a", "b", "c", "d"]. It don't manage " or tabs.
+	 */
+	public ExecProcessText addSpacedParams(String... params) {
+		super.addSpacedParams(params);
+		return this;
+	}
+	
+	/**
+	 * @param params transform spaces in each param to new params: ["a b c", "d"] -> ["a", "b", "c", "d"]. It don't manage " or tabs.
+	 */
+	public ExecProcessText setSpacedParams(String... params) {
+		super.setSpacedParams(params);
+		return this;
+	}
+	
+	public ExecProcessText setEnvironmentVar(String key, String value) {
+		super.setEnvironmentVar(key, value);
+		return this;
+	}
+	
+	public ExecProcessText setEnvironmentVarIfNotFound(String key, String value) {
+		super.setEnvironmentVarIfNotFound(key, value);
+		return this;
+	}
+	
+	public ExecProcessText setWorkingDirectory(File working_directory) throws IOException {
+		super.setWorkingDirectory(working_directory);
+		return this;
+	}
+	
+	public ExecProcessText setMaxExecutionTime(long max_exec_time, TimeUnit unit, ScheduledExecutorService max_exec_time_scheduler) {
+		super.setMaxExecutionTime(max_exec_time, unit, max_exec_time_scheduler);
+		return this;
+	}
+	
+	/**
+	 * Default, yes.
+	 */
+	public ExecProcessText setExecCodeMustBeZero(boolean exec_code_must_be_zero) {
+		super.setExecCodeMustBeZero(exec_code_must_be_zero);
+		return this;
+	}
+	
+	public ExecProcessText addEndExecutionCallback(Consumer<ExecProcessResult> onEnd, Executor executor) {
+		super.addEndExecutionCallback(onEnd, executor);
+		return this;
+	}
+	
+	public ExecProcessText alterProcessBuilderBeforeStartIt(Consumer<ProcessBuilder> alter_process_builder) {
+		super.alterProcessBuilderBeforeStartIt(alter_process_builder);
+		return this;
 	}
 	
 }

@@ -175,7 +175,7 @@ public class ExecutableFinder {
 	 * @return never null
 	 * @throws FileNotFoundException if exec don't exists or is not correctly registed.
 	 */
-	public File get(String name) throws IOException {
+	public File get(String name) throws FileNotFoundException {
 		if (declared_in_configuration.containsKey(name)) {
 			return declared_in_configuration.get(name);
 		}
@@ -197,7 +197,7 @@ public class ExecutableFinder {
 			 */
 			return all_file_candidates.stream().filter(file -> {
 				return validExec(file);
-			}).findFirst().orElseThrow(() -> new IOException("Can't found executable \"" + name + "\""));
+			}).findFirst().orElseThrow(() -> new FileNotFoundException("Can't found executable \"" + name + "\""));
 		} else {
 			/**
 			 * Windows flavor
@@ -227,7 +227,7 @@ public class ExecutableFinder {
 						return validExec(file_ext);
 					});
 				}
-			}).findFirst().orElseThrow(() -> new IOException("Can't found executable \"" + name + "\""));
+			}).findFirst().orElseThrow(() -> new FileNotFoundException("Can't found executable \"" + name + "\""));
 		}
 	}
 	
