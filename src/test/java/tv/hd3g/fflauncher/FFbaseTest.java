@@ -199,4 +199,17 @@ public class FFbaseTest extends TestCase {
 			return pf.tag.equals("yuv444p16le") && pf.supported_input && pf.supported_output && pf.paletted == false && pf.hardware_accelerated == false && pf.nb_components == 3 && pf.bits_per_pixel == 48;
 		}).count());
 	}
+	
+	public void testHwaccels() {
+		Set<String> list = FFbase.parseBSFS(readLinesFromResource("test-hwaccels.txt").stream());
+		assertEquals(6, list.size());
+		
+		assertTrue(list.contains("cuvid"));
+		assertTrue(list.contains("cuda"));
+		assertTrue(list.contains("dxva2"));
+		assertTrue(list.contains("qsv"));
+		assertTrue(list.contains("d3d11va"));
+		assertTrue(list.contains("qsv"));
+	}
+	
 }
