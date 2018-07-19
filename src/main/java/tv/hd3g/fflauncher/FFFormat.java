@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class FFFormat {
 	
-	static List<FFFormat> parse(List<String> lines) {
+	static List<FFFormat> parseFormats(List<String> lines) {
 		return lines.stream().map(line -> line.trim()).filter(line -> {
 			return line.toLowerCase().startsWith("File formats:".toLowerCase()) == false;
 		}).filter(line -> {
@@ -54,7 +54,7 @@ public class FFFormat {
 	 */
 	public final String long_name;
 	
-	public FFFormat(String line) {
+	FFFormat(String line) {
 		
 		List<String> line_blocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(lb -> lb.trim()).collect(Collectors.toList());
 		

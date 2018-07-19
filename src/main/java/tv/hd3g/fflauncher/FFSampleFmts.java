@@ -16,10 +16,24 @@
 */
 package tv.hd3g.fflauncher;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class FFSampleFmts {
-	private static Logger log = LogManager.getLogger();
+	
+	/*
+	 * XXX in pure java
+	ffmpeg -sample_fmts 2> /dev/null
+	name   depth
+	u8        8
+	s16      16
+	s32      32
+	flt      32
+	dbl      64
+	u8p       8
+	s16p     16
+	s32p     32
+	fltp     32
+	dblp     64
+	s64      64
+	s64p     64
+	
+	*/
 }
-

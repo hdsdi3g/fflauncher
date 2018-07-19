@@ -23,11 +23,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import junit.framework.TestCase;
 import tv.hd3g.execprocess.ExecutableFinder;
 import tv.hd3g.fflauncher.FFCodec.CodecType;
+import tv.hd3g.fflauncher.FFFilter.ConnectorType;
 
 public class FFbaseTest extends TestCase {
 	
@@ -37,6 +39,11 @@ public class FFbaseTest extends TestCase {
 		assertNotNull(b.getVersion());
 		assertFalse(b.getCodecs().isEmpty());
 		assertFalse(b.getFormats().isEmpty());
+		assertFalse(b.getDevices().isEmpty());
+		assertFalse(b.getBitStreamFilters().isEmpty());
+		assertNotNull(b.getProtocols());
+		assertFalse(b.getFilters().isEmpty());
+		assertFalse(b.getPixelFormats().isEmpty());
 	}
 	
 	/**
@@ -97,7 +104,7 @@ public class FFbaseTest extends TestCase {
 	}
 	
 	public void testFormats() {
-		List<FFFormat> list = FFFormat.parse(readLinesFromResource("test-formats.txt"));
+		List<FFFormat> list = FFFormat.parseFormats(readLinesFromResource("test-formats.txt"));
 		
 		assertEquals(326, list.size());
 		
@@ -116,5 +123,80 @@ public class FFbaseTest extends TestCase {
 			return f.alternate_tags.contains("mp4");
 		}).count());
 		
+	}
+	
+	public void testDevices() {
+		List<FFDevice> list = FFDevice.parseDevices(readLinesFromResource("test-devices.txt"));
+		assertEquals(6, list.size());
+		
+		int i = 0;
+		assertEquals("DV1394 A/V grab [dv1394] demuxing only supported", list.get(i++).toString());
+		assertEquals("Linux framebuffer [fbdev] muxing and demuxing supported", list.get(i++).toString());
+		assertEquals("Libavfilter virtual input device [lavfi] demuxing only supported", list.get(i++).toString());
+		assertEquals("OSS (Open Sound System) playback [oss] muxing and demuxing supported", list.get(i++).toString());
+		assertEquals("Video4Linux2 output device [v4l2] muxing only supported", list.get(i++).toString());
+		assertEquals("Video4Linux2 device grab [video4linux2, v4l2] demuxing only supported", list.get(i++).toString());
+	}
+	
+	public void testBSFS() {
+		Set<String> filters = FFbase.parseBSFS(readLinesFromResource("test-bsfs.txt").stream());
+		
+		assertTrue(filters.contains("noise"));
+		assertEquals(17, filters.size());
+	}
+	
+	public void testProtocols() {
+		FFProtocols p = new FFProtocols(readLinesFromResource("test-protocols.txt"));
+		
+		assertFalse(p.input.contains("Input:") | p.input.contains("input:"));
+		assertFalse(p.input.contains("Output:") | p.input.contains("output:"));
+		assertFalse(p.output.contains("Input:") | p.output.contains("input:"));
+		assertFalse(p.output.contains("Output:") | p.output.contains("output:"));
+		
+		assertEquals(29, p.input.size());
+		assertEquals(24, p.output.size());
+		
+		assertTrue(p.input.contains("concat"));
+		assertFalse(p.output.contains("concat"));
+		
+		assertFalse(p.input.contains("icecast"));
+		assertTrue(p.output.contains("icecast"));
+	}
+	
+	public void testFilters() {
+		List<FFFilter> list = FFFilter.parseFilters(readLinesFromResource("test-filters.txt"));
+		
+		assertEquals(299, list.size());
+		
+		assertTrue(list.stream().anyMatch(f -> {
+			return f.tag.equals("afftfilt");
+		}));
+		
+		assertEquals(3, list.stream().filter(f -> {
+			return f.source_connectors_count == 2 && f.source_connector == ConnectorType.AUDIO;
+		}).count());
+		
+		assertEquals(1, list.stream().filter(f -> {
+			return f.source_connectors_count == 2 && f.source_connector == ConnectorType.VIDEO && f.dest_connectors_count == 2 && f.dest_connector == ConnectorType.VIDEO;
+		}).filter(f -> {
+			return f.tag.equals("scale2ref");
+		}).filter(f -> {
+			return f.long_name.equals("Scale the input video size and/or convert the image format to the given reference.");
+		}).count());
+		
+	}
+	
+	public void testPixelFormats() {
+		List<FFPixelFormat> list = FFPixelFormat.parsePixelsFormats(readLinesFromResource("test-pixelsformats.txt"));
+		
+		assertEquals(183, list.size());
+		
+		assertEquals(1, list.stream().filter(pf -> {
+			return pf.tag.equals("pal8") && pf.supported_input && pf.supported_output == false && pf.paletted && pf.nb_components == 1 && pf.bits_per_pixel == 8;
+		}).count());
+		
+		assertEquals(1, list.stream().filter(pf -> {
+			return pf.tag.equals("yuv444p16le") && pf.supported_input && pf.supported_output && pf.paletted == false && pf.hardware_accelerated == false && pf.nb_components == 3 && pf.bits_per_pixel == 48;
+		}).count());
 	}
 }

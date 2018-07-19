@@ -16,10 +16,34 @@
 */
 package tv.hd3g.fflauncher;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class FFProtocols {
-	private static Logger log = LogManager.getLogger();
+	
+	/**
+	 * Like async, bluray, httpproxy, unix...
+	 */
+	public final Set<String> input;
+	
+	/**
+	 * Like gopher, md5, tee, sftp...
+	 */
+	public final Set<String> output;
+	
+	FFProtocols(List<String> process_result) {
+		input = process_result.stream().map(line -> line.trim()).filter(line -> {
+			return line.toLowerCase().startsWith("Input:".toLowerCase()) == false;
+		}).takeWhile(line -> {
+			return line.toLowerCase().startsWith("Output:".toLowerCase()) == false;
+		}).collect(Collectors.toSet());
+		
+		output = process_result.stream().map(line -> line.trim()).dropWhile(line -> {
+			return line.toLowerCase().startsWith("Output:".toLowerCase()) == false;
+		}).filter(line -> {
+			return line.toLowerCase().startsWith("Output:".toLowerCase()) == false;
+		}).collect(Collectors.toSet());
+	}
+	
 }
-

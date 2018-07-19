@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -163,97 +164,99 @@ public class FFbase {
 		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
 		checkExecution(result);
 		
-		return FFFormat.parse(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
-	}
-	
-	/**
-	 * -muxers show available muxers
-	 */
-	public FFMuxers getMuxers() {
-		return new FFMuxers();
-	}
-	
-	/**
-	 * -demuxers show available demuxers
-	 */
-	public FFDemuxers getDemuxers() {
-		return new FFDemuxers();
+		return FFFormat.parseFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 	}
 	
 	/**
 	 * -devices show available devices
 	 */
-	public FFDevices getDevices() {
-		return new FFDevices();
-	}
-	
-	/**
-	 * -decoders show available decoders
-	 */
-	public FFDecoders getDecoders() {
-		return new FFDecoders();
-	}
-	
-	/**
-	 * -encoders show available encoders
-	 */
-	public FFEncoders getEncoders() {
-		return new FFEncoders();
+	public List<FFDevice> getDevices() throws IOException {
+		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-devices");
+		
+		if (exec_process_catcher != null) {
+			exec_process_catcher.accept(exec_process);
+		}
+		
+		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+		checkExecution(result);
+		
+		return FFDevice.parseDevices(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 	}
 	
 	/**
 	 * -bsfs show available bit stream filters
 	 */
-	public FFBsfs getBitStreamFilters() {
-		return new FFBsfs();
+	public Set<String> getBitStreamFilters() throws IOException {
+		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-bsfs");
+		
+		if (exec_process_catcher != null) {
+			exec_process_catcher.accept(exec_process);
+		}
+		
+		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+		checkExecution(result);
+		
+		return parseBSFS(result.getStdoutLines(false).map(l -> l.trim()));
+	}
+	
+	static Set<String> parseBSFS(Stream<String> lines) {
+		return lines.map(l -> l.trim()).filter(line -> {
+			return line.toLowerCase().startsWith("Bitstream filters:".toLowerCase()) == false;
+		}).collect(Collectors.toSet());
 	}
 	
 	/**
 	 * -protocols show available protocols
 	 */
-	public FFProtocols getProtocols() {
-		return new FFProtocols();
+	public FFProtocols getProtocols() throws IOException {
+		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-protocols");
+		
+		if (exec_process_catcher != null) {
+			exec_process_catcher.accept(exec_process);
+		}
+		
+		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+		checkExecution(result);
+		
+		return new FFProtocols(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 	}
 	
 	/**
 	 * -filters show available filters
 	 */
-	public FFFilters getFilters() {
-		return new FFFilters();
+	public List<FFFilter> getFilters() throws IOException {
+		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-filters");
+		
+		if (exec_process_catcher != null) {
+			exec_process_catcher.accept(exec_process);
+		}
+		
+		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+		checkExecution(result);
+		
+		return FFFilter.parseFilters(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 	}
 	
 	/**
 	 * -pix_fmts show available pixel formats
 	 */
-	public FFPixFmts getPixelFormats() {
-		return new FFPixFmts();
-	}
-	
-	/**
-	 * -layouts show standard channel layouts
-	 */
-	public FFLayouts getChannelLayouts() {
-		return new FFLayouts();
-	}
-	
-	/**
-	 * -sample_fmts show available audio sample formats
-	 */
-	public FFSampleFmts getAudioSampleFormats() {
-		return new FFSampleFmts();
-	}
-	
-	/**
-	 * -colors show available color names
-	 */
-	public FFColors getColorNames() {
-		return new FFColors();
+	public List<FFPixelFormat> getPixelFormats() throws IOException {
+		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-pix_fmts");
+		
+		if (exec_process_catcher != null) {
+			exec_process_catcher.accept(exec_process);
+		}
+		
+		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+		checkExecution(result);
+		
+		return FFPixelFormat.parsePixelsFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 	}
 	
 	/**
 	 * -hwaccels show available HW acceleration methods
 	 */
-	public Set<String> getAvailableHWAccelerationMethods() {
+	public Set<String> getAvailableHWAccelerationMethods() throws IOException {
 		return new HashSet<>();
 	}
 	

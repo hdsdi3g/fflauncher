@@ -23,9 +23,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class FFVersion {
-	// private static Logger log = LogManager.getLogger();
-	
-	// private final FFbase base;
 	
 	/**
 	 * Like "4.0 Copyright (c) 2000-2018 the FFmpeg developers"
