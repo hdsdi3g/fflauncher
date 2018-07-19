@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -136,7 +137,7 @@ public class FFbase {
 	/**
 	 * -codecs show available codecs
 	 */
-	public FFCodecs getCodecs() throws IOException {
+	public List<FFCodec> getCodecs() throws IOException {
 		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-codecs");
 		
 		if (exec_process_catcher != null) {
@@ -146,14 +147,23 @@ public class FFbase {
 		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
 		checkExecution(result);
 		
-		return new FFCodecs(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
+		return FFCodec.parse(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 	}
 	
 	/**
 	 * -formats show available formats
 	 */
-	public FFFormats getFormats() {
-		return new FFFormats();
+	public List<FFFormat> getFormats() throws IOException {
+		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-formats");
+		
+		if (exec_process_catcher != null) {
+			exec_process_catcher.accept(exec_process);
+		}
+		
+		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+		checkExecution(result);
+		
+		return FFFormat.parse(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 	}
 	
 	/**
