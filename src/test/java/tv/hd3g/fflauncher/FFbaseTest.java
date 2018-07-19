@@ -36,14 +36,14 @@ public class FFbaseTest extends TestCase {
 	public void testBase() throws Exception {
 		FFbase b = new FFbase(new ExecutableFinder(), "ffmpeg");
 		
-		assertNotNull(b.getVersion());
-		assertFalse(b.getCodecs().isEmpty());
-		assertFalse(b.getFormats().isEmpty());
-		assertFalse(b.getDevices().isEmpty());
-		assertFalse(b.getBitStreamFilters().isEmpty());
-		assertNotNull(b.getProtocols());
-		assertFalse(b.getFilters().isEmpty());
-		assertFalse(b.getPixelFormats().isEmpty());
+		assertNotNull(b.about.getVersion());
+		assertFalse(b.about.getCodecs().isEmpty());
+		assertFalse(b.about.getFormats().isEmpty());
+		assertFalse(b.about.getDevices().isEmpty());
+		assertFalse(b.about.getBitStreamFilters().isEmpty());
+		assertNotNull(b.about.getProtocols());
+		assertFalse(b.about.getFilters().isEmpty());
+		assertFalse(b.about.getPixelFormats().isEmpty());
 	}
 	
 	/**

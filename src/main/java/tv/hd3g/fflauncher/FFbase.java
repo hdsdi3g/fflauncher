@@ -178,140 +178,154 @@ public class FFbase {
 		}
 	}
 	
-	public FFVersion getVersion() throws IOException {
-		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-loglevel quiet -version");
-		
-		if (exec_process_catcher != null) {
-			exec_process_catcher.accept(exec_process);
-		}
-		
-		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-		checkExecution(result);
-		
-		return new FFVersion(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toList()));
-	}
-	
+	public final About about = new About();
 	/*
 	#-sources device     list sources of the input device
 	#-sinks device       list sinks of the output device
 	*/
 	
-	/**
-	 * -codecs show available codecs
-	 */
-	public List<FFCodec> getCodecs() throws IOException {
-		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-codecs");
+	public class About {
 		
-		if (exec_process_catcher != null) {
-			exec_process_catcher.accept(exec_process);
+		public FFVersion getVersion() throws IOException {
+			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-loglevel quiet -version");
+			
+			if (exec_process_catcher != null) {
+				exec_process_catcher.accept(exec_process);
+			}
+			
+			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+			checkExecution(result);
+			
+			return new FFVersion(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
 		
-		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-		checkExecution(result);
-		
-		return FFCodec.parse(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
-	}
-	
-	/**
-	 * -formats show available formats
-	 */
-	public List<FFFormat> getFormats() throws IOException {
-		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-formats");
-		
-		if (exec_process_catcher != null) {
-			exec_process_catcher.accept(exec_process);
+		/**
+		 * -codecs show available codecs
+		 */
+		public List<FFCodec> getCodecs() throws IOException {
+			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-codecs");
+			
+			if (exec_process_catcher != null) {
+				exec_process_catcher.accept(exec_process);
+			}
+			
+			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+			checkExecution(result);
+			
+			return FFCodec.parse(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
 		
-		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-		checkExecution(result);
-		
-		return FFFormat.parseFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
-	}
-	
-	/**
-	 * -devices show available devices
-	 */
-	public List<FFDevice> getDevices() throws IOException {
-		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-devices");
-		
-		if (exec_process_catcher != null) {
-			exec_process_catcher.accept(exec_process);
+		/**
+		 * -formats show available formats
+		 */
+		public List<FFFormat> getFormats() throws IOException {
+			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-formats");
+			
+			if (exec_process_catcher != null) {
+				exec_process_catcher.accept(exec_process);
+			}
+			
+			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+			checkExecution(result);
+			
+			return FFFormat.parseFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
 		
-		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-		checkExecution(result);
-		
-		return FFDevice.parseDevices(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
-	}
-	
-	/**
-	 * -bsfs show available bit stream filters
-	 */
-	public Set<String> getBitStreamFilters() throws IOException {
-		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-bsfs");
-		
-		if (exec_process_catcher != null) {
-			exec_process_catcher.accept(exec_process);
+		/**
+		 * -devices show available devices
+		 */
+		public List<FFDevice> getDevices() throws IOException {
+			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-devices");
+			
+			if (exec_process_catcher != null) {
+				exec_process_catcher.accept(exec_process);
+			}
+			
+			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+			checkExecution(result);
+			
+			return FFDevice.parseDevices(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
 		
-		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-		checkExecution(result);
-		
-		return parseBSFS(result.getStdoutLines(false).map(l -> l.trim()));
-	}
-	
-	static Set<String> parseBSFS(Stream<String> lines) {
-		return lines.map(l -> l.trim()).filter(line -> {
-			return line.toLowerCase().startsWith("Bitstream filters:".toLowerCase()) == false;
-		}).collect(Collectors.toSet());
-	}
-	
-	/**
-	 * -protocols show available protocols
-	 */
-	public FFProtocols getProtocols() throws IOException {
-		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-protocols");
-		
-		if (exec_process_catcher != null) {
-			exec_process_catcher.accept(exec_process);
+		/**
+		 * -bsfs show available bit stream filters
+		 */
+		public Set<String> getBitStreamFilters() throws IOException {
+			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-bsfs");
+			
+			if (exec_process_catcher != null) {
+				exec_process_catcher.accept(exec_process);
+			}
+			
+			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+			checkExecution(result);
+			
+			return parseBSFS(result.getStdoutLines(false).map(l -> l.trim()));
 		}
 		
-		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-		checkExecution(result);
-		
-		return new FFProtocols(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toList()));
-	}
-	
-	/**
-	 * -filters show available filters
-	 */
-	public List<FFFilter> getFilters() throws IOException {
-		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-filters");
-		
-		if (exec_process_catcher != null) {
-			exec_process_catcher.accept(exec_process);
+		/**
+		 * -protocols show available protocols
+		 */
+		public FFProtocols getProtocols() throws IOException {
+			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-protocols");
+			
+			if (exec_process_catcher != null) {
+				exec_process_catcher.accept(exec_process);
+			}
+			
+			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+			checkExecution(result);
+			
+			return new FFProtocols(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
 		
-		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-		checkExecution(result);
-		
-		return FFFilter.parseFilters(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
-	}
-	
-	/**
-	 * -pix_fmts show available pixel formats
-	 */
-	public List<FFPixelFormat> getPixelFormats() throws IOException {
-		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-pix_fmts");
-		
-		if (exec_process_catcher != null) {
-			exec_process_catcher.accept(exec_process);
+		/**
+		 * -filters show available filters
+		 */
+		public List<FFFilter> getFilters() throws IOException {
+			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-filters");
+			
+			if (exec_process_catcher != null) {
+				exec_process_catcher.accept(exec_process);
+			}
+			
+			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+			checkExecution(result);
+			
+			return FFFilter.parseFilters(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
 		
-		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-		checkExecution(result);
+		/**
+		 * -pix_fmts show available pixel formats
+		 */
+		public List<FFPixelFormat> getPixelFormats() throws IOException {
+			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-pix_fmts");
+			
+			if (exec_process_catcher != null) {
+				exec_process_catcher.accept(exec_process);
+			}
+			
+			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+			checkExecution(result);
+			
+			return FFPixelFormat.parsePixelsFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
+		}
 		
-		return FFPixelFormat.parsePixelsFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
+		/**
+		 * -hwaccels show available HW acceleration methods
+		 */
+		public Set<String> getAvailableHWAccelerationMethods() throws IOException {
+			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-pix_fmts");
+			
+			if (exec_process_catcher != null) {
+				exec_process_catcher.accept(exec_process);
+			}
+			
+			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
+			checkExecution(result);
+			
+			return parseHWAccelerationMethods(result.getStdoutLines(false).map(l -> l.trim()));
+		}
 	}
 	
 	static Set<String> parseHWAccelerationMethods(Stream<String> lines) {
@@ -320,20 +334,10 @@ public class FFbase {
 		}).collect(Collectors.toSet());
 	}
 	
-	/**
-	 * -hwaccels show available HW acceleration methods
-	 */
-	public Set<String> getAvailableHWAccelerationMethods() throws IOException {
-		ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-pix_fmts");
-		
-		if (exec_process_catcher != null) {
-			exec_process_catcher.accept(exec_process);
-		}
-		
-		ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-		checkExecution(result);
-		
-		return parseHWAccelerationMethods(result.getStdoutLines(false).map(l -> l.trim()));
+	static Set<String> parseBSFS(Stream<String> lines) {
+		return lines.map(l -> l.trim()).filter(line -> {
+			return line.toLowerCase().startsWith("Bitstream filters:".toLowerCase()) == false;
+		}).collect(Collectors.toSet());
 	}
 	
 }

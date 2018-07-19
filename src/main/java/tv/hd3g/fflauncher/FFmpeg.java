@@ -36,5 +36,5 @@ public class FFmpeg extends FFbase {
 		super(executable);
 	}
 	
-	// TODO implements ffmpeg
+	// TODO implements ffmpeg + ffprobe
 }

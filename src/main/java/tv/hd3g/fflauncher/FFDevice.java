@@ -33,7 +33,7 @@ public class FFDevice extends FFFormat {
 		}).map(line -> new FFDevice(line)).collect(Collectors.toList());
 	}
 	
-	public FFDevice(String line) {
+	FFDevice(String line) {
 		super(line);
 	}
 	
