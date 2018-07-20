@@ -26,6 +26,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import tv.hd3g.execprocess.CommandLineProcessor.CommandLine.ProcessedCommandLine;
+
 public class ExecProcessText extends ExecProcess {
 	
 	private boolean keep_stdout;
@@ -47,6 +49,15 @@ public class ExecProcessText extends ExecProcess {
 	
 	public ExecProcessText(File executable) throws IOException {
 		super(executable);
+		stdouterr_callback_list = new ArrayList<>();
+		setup();
+	}
+	
+	/**
+	 * @param cmd_line set exec_name and params
+	 */
+	public ExecProcessText(ProcessedCommandLine cmd_line, ExecutableFinder exec_finder) throws IOException {
+		super(cmd_line, exec_finder);
 		stdouterr_callback_list = new ArrayList<>();
 		setup();
 	}

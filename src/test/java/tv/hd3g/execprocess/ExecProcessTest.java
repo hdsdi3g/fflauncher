@@ -57,7 +57,7 @@ public class ExecProcessTest extends TestCase {
 		};
 	}
 	
-	private static final ExecutableFinder executable_finder;
+	static final ExecutableFinder executable_finder;
 	
 	static {
 		executable_finder = new ExecutableFinder();
@@ -66,7 +66,7 @@ public class ExecProcessTest extends TestCase {
 	
 	public static ExecProcessText createExec(Class<?> exec_class) {
 		try {
-			return (ExecProcessText) new ExecProcessText("java", executable_finder).addParams("-cp", System.getProperty("java.class.path")).addParams(exec_class.getName());
+			return new ExecProcessText("java", executable_finder).addParams("-cp", System.getProperty("java.class.path")).addParams(exec_class.getName());
 		} catch (IOException e) {
 			throw new RuntimeException("Can't found java exec", e);
 		}

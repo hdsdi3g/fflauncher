@@ -36,6 +36,20 @@ public class CommandLineProcessor {
 		this("<%", "%>");
 	}
 	
+	/**
+	 * @return like "%>"
+	 */
+	public String getEndVarTag() {
+		return end_var_tag;
+	}
+	
+	/**
+	 * @return like "<%"
+	 */
+	public String getStartVarTag() {
+		return start_var_tag;
+	}
+	
 	public CommandLineProcessor(String start_var_tag, String end_var_tag) {
 		this.start_var_tag = start_var_tag;
 		if (start_var_tag == null) {
@@ -59,21 +73,27 @@ public class CommandLineProcessor {
 		return new CommandLine(full_command_line_with_vars);
 	}
 	
-	public boolean isVar(String param) {
+	/**
+	 * @param param like
+	 * @return true if like "<%myvar%>"
+	 */
+	public boolean isTaggedParameter(String param) {
 		if (param == null) {
 			throw new NullPointerException("\"param\" can't to be null");
-		}
-		if (param.isEmpty()) {
+		} else if (param.isEmpty()) {
+			return false;
+		} else if (param.contains(" ")) {
 			return false;
 		}
 		return param.startsWith(start_var_tag) & param.endsWith(end_var_tag);
 	}
 	
 	/**
-	 * @return null if param is not a var of if empty.
+	 * @param param like <%myvar%>
+	 * @return like "myvar" or null if param is not a valid variable of if it's empty.
 	 */
-	public String getVarName(String param) {
-		if (isVar(param) == false) {
+	public String extractVarNameFromTaggedParameter(String param) {
+		if (isTaggedParameter(param) == false) {
 			return null;
 		}
 		if (param.length() == start_var_tag.length() + end_var_tag.length()) {
@@ -206,8 +226,9 @@ public class CommandLineProcessor {
 		/**
 		 * @param param_keys_starts_with "-" by default
 		 */
-		public void setParamKeysStartsWith(String param_keys_starts_with) {
-			this.param_keys_starts_with = param_keys_starts_with; // return this;
+		public CommandLine setParamKeysStartsWith(String param_keys_starts_with) {
+			this.param_keys_starts_with = param_keys_starts_with;
+			return this;
 		}
 		
 		/**
@@ -228,8 +249,8 @@ public class CommandLineProcessor {
 		public ProcessedCommandLine process(Map<String, String> vars_to_inject, boolean remove_params_if_no_var_to_inject) {
 			if (remove_params_if_no_var_to_inject) {
 				return new ProcessedCommandLine(original_params.stream().reduce(Collections.unmodifiableList(new ArrayList<String>()), (list, arg) -> {
-					if (isVar(arg)) {
-						String var_name = getVarName(arg);
+					if (isTaggedParameter(arg)) {
+						String var_name = extractVarNameFromTaggedParameter(arg);
 						if (vars_to_inject.containsKey(var_name)) {
 							return Stream.concat(list.stream(), Stream.of(vars_to_inject.get(var_name))).collect(Collectors.toList());
 						} else {
@@ -247,7 +268,7 @@ public class CommandLineProcessor {
 				}, LIST_COMBINER));
 			} else {
 				return new ProcessedCommandLine(original_params.stream().map(arg -> {
-					String var_name = getVarName(arg);
+					String var_name = extractVarNameFromTaggedParameter(arg);
 					if (var_name != null) {
 						return vars_to_inject.get(var_name);
 					} else {
@@ -265,24 +286,37 @@ public class CommandLineProcessor {
 				params = new ArrayList<>(processed_params);
 			}
 			
+			public String getExecName() {
+				return exec_name;
+			}
+			
 			/**
 			 * @return current list, editable
 			 */
-			public ArrayList<String> getParams() {
+			public ArrayList<String> getParameters() {
 				return params;
 			}
 			
 			/**
+			 * @param param_key add "-" in front of param_key if needed
+			 */
+			private String conformParameterKey(String param_key) {
+				if (isArgIsAParamKey(param_key) == false) {
+					return param_keys_starts_with + param_key;
+				}
+				return param_key;
+			}
+			
+			/**
 			 * @param param_key can have "-" or not (it will be added).
-			 * @return For "-param val1 -param val2 -param val3" -> val1, val2, val3 ; null if param_key cant to be found, empty if not values for param
+			 * @return For "-param val1 -param val2 -param val3" -> val1, val2, val3 ; null if param_key can't be found, empty if not values for param
 			 */
 			public List<String> getValues(String param_key) {
-				final String param;
-				if (isArgIsAParamKey(param_key) == false) {
-					param = param_keys_starts_with + param_key;
-				} else {
-					param = param_key;
+				if (param_key == null) {
+					throw new NullPointerException("\"param_key\" can't to be null");
 				}
+				
+				final String param = conformParameterKey(param_key);
 				
 				ArrayList<String> result = new ArrayList<>();
 				
@@ -307,7 +341,76 @@ public class CommandLineProcessor {
 				}
 			}
 			
-			// TODO alter/remove params...
+			/**
+			 * Search a remove all parameters with param_key as name, even associated values.
+			 * @param param_key can have "-" or not (it will be added).
+			 */
+			public boolean removeParameter(String param_key, int param_as_this_key_pos) {
+				if (param_key == null) {
+					throw new NullPointerException("\"param_key\" can't to be null");
+				}
+				
+				final String param = conformParameterKey(param_key);
+				
+				int to_skip = param_as_this_key_pos + 1;
+				
+				for (int pos = 0; pos < params.size(); pos++) {
+					String current = params.get(pos);
+					if (current.equals(param)) {
+						to_skip--;
+						if (to_skip == 0) {
+							if (params.size() > pos + 1) {
+								String next = params.get(pos + 1);
+								if (isArgIsAParamKey(next) == false) {
+									params.remove(pos + 1);
+								}
+							}
+							params.remove(pos);
+							return true;
+						}
+					}
+				}
+				
+				return false;
+			}
+			
+			/**
+			 * @param param_key can have "-" or not (it will be added).
+			 * @return true if done
+			 */
+			public boolean alterParameter(String param_key, String new_value, int param_as_this_key_pos) {
+				if (param_key == null) {
+					throw new NullPointerException("\"param_key\" can't to be null");
+				} else if (new_value == null) {
+					throw new NullPointerException("\"new_value\" can't to be null");
+				}
+				
+				final String param = conformParameterKey(param_key);
+				
+				int to_skip = param_as_this_key_pos + 1;
+				
+				for (int pos = 0; pos < params.size(); pos++) {
+					String current = params.get(pos);
+					if (current.equals(param)) {
+						to_skip--;
+						if (to_skip == 0) {
+							if (params.size() > pos + 1) {
+								String next = params.get(pos + 1);
+								if (isArgIsAParamKey(next) == false) {
+									params.set(pos + 1, new_value);
+								} else {
+									params.add(pos + 1, new_value);
+								}
+							} else {
+								params.add(new_value);
+							}
+							return true;
+						}
+					}
+				}
+				
+				return false;
+			}
 			
 		}
 		

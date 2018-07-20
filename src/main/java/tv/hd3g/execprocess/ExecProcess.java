@@ -33,6 +33,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import tv.hd3g.execprocess.CommandLineProcessor.CommandLine.ProcessedCommandLine;
+
 public class ExecProcess {
 	
 	// private static Logger log = Logger.getLogger(ExecProcess.class);
@@ -72,6 +74,14 @@ public class ExecProcess {
 		environment = new LinkedHashMap<>();
 		end_exec_callback_list = new ArrayList<>(1);
 		setup(System.getenv("PATH"));
+	}
+	
+	/**
+	 * @param cmd_line set exec_name and params
+	 */
+	public ExecProcess(ProcessedCommandLine cmd_line, ExecutableFinder exec_finder) throws IOException {
+		this(cmd_line.getExecName(), exec_finder);
+		params.addAll(cmd_line.getParameters());
 	}
 	
 	private void setup(String path) throws IOException {
