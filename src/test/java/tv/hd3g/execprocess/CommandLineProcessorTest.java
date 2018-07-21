@@ -65,7 +65,7 @@ public class CommandLineProcessorTest extends TestCase {
 		assertEquals("aaa bbb", cmd.getExecName());
 		assertEquals("-", cmd.getParamKeysStartsWith());
 		
-		ProcessedCommandLine pcl = cmd.process(new HashMap<>(), false);
+		ProcessedCommandLine pcl = cmd.process();
 		assertNotNull(pcl.getParameters());
 		
 		List<String> compare = Arrays.asList("-aa", "1", "-single", "--cc", "3", "-U", "dsfdsf sdf s  -e foo", "-g", "2", "42", "-f=f", "-h=i;j,k:l", "-m", "Ah!", "-l", "u ", "m");
@@ -81,16 +81,16 @@ public class CommandLineProcessorTest extends TestCase {
 		assertEquals(0, pcl.getValues("-h=i;j,k:l").size());
 		assertNull(pcl.getValues("-NOPE"));
 		
-		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-a", "2", "-a", "3").toArray(), clp.createCommandLine("cmd -a 1 -a 2 -a 3").process(new HashMap<>(), false).getParameters().toArray()));
+		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-a", "2", "-a", "3").toArray(), clp.createCommandLine("cmd -a 1 -a 2 -a 3").process().getParameters().toArray()));
 		
-		assertTrue(Arrays.equals(Arrays.asList("1", "2", "3").toArray(), clp.createCommandLine("cmd -a 1 -a 2 -a 3").process(new HashMap<>(), false).getValues("-a").toArray()));
-		assertTrue(clp.createCommandLine("cmd -a 1 -a 2 -b -a 3").process(new HashMap<>(), false).getValues("-b").isEmpty());
+		assertTrue(Arrays.equals(Arrays.asList("1", "2", "3").toArray(), clp.createCommandLine("cmd -a 1 -a 2 -a 3").process().getValues("-a").toArray()));
+		assertTrue(clp.createCommandLine("cmd -a 1 -a 2 -b -a 3").process().getValues("-b").isEmpty());
 		
-		pcl = clp.createCommandLine("cmd -a 1 -c 4 -a 2 -a 3 -b").process(new HashMap<>(), false);
+		pcl = clp.createCommandLine("cmd -a 1 -c 4 -a 2 -a 3 -b").process();
 		assertTrue(pcl.removeParameter("-a", 0));
 		assertTrue(Arrays.equals(Arrays.asList("-c", "4", "-a", "2", "-a", "3", "-b").toArray(), pcl.getParameters().toArray()));
 		
-		pcl = clp.createCommandLine("cmd -a 1 -c 4 -a 2 -a 3 -b").process(new HashMap<>(), false);
+		pcl = clp.createCommandLine("cmd -a 1 -c 4 -a 2 -a 3 -b").process();
 		assertTrue(pcl.removeParameter("-a", 1));
 		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-c", "4", "-a", "3", "-b").toArray(), pcl.getParameters().toArray()));
 		assertFalse(pcl.removeParameter("-a", 2));
@@ -102,26 +102,26 @@ public class CommandLineProcessorTest extends TestCase {
 		assertTrue(pcl.removeParameter("-b", 0));
 		assertTrue(Arrays.equals(Arrays.asList("-c", "4").toArray(), pcl.getParameters().toArray()));
 		
-		pcl = clp.createCommandLine("cmd -a -b -c -d").process(new HashMap<>(), false);
+		pcl = clp.createCommandLine("cmd -a -b -c -d").process();
 		assertTrue(pcl.removeParameter("-a", 0));
 		assertTrue(Arrays.equals(Arrays.asList("-b", "-c", "-d").toArray(), pcl.getParameters().toArray()));
 		assertTrue(pcl.removeParameter("-c", 0));
 		assertTrue(Arrays.equals(Arrays.asList("-b", "-d").toArray(), pcl.getParameters().toArray()));
 		
-		pcl = clp.createCommandLine("cmd -a 1 -c 4 -a 2 -a 3 -b").process(new HashMap<>(), false);
+		pcl = clp.createCommandLine("cmd -a 1 -c 4 -a 2 -a 3 -b").process();
 		assertTrue(pcl.alterParameter("-a", "Z2", 1));
 		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-c", "4", "-a", "Z2", "-a", "3", "-b").toArray(), pcl.getParameters().toArray()));
 		assertFalse(pcl.alterParameter("-a", "Z2", 3));
 		assertFalse(pcl.alterParameter("-N", "Z2", 0));
 		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-c", "4", "-a", "Z2", "-a", "3", "-b").toArray(), pcl.getParameters().toArray()));
 		
-		pcl = clp.createCommandLine("cmd -a -b").process(new HashMap<>(), false);
+		pcl = clp.createCommandLine("cmd -a -b").process();
 		assertTrue(pcl.alterParameter("-a", "1", 0));
 		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-b").toArray(), pcl.getParameters().toArray()));
 		assertTrue(pcl.alterParameter("-b", "2", 0));
 		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-b", "2").toArray(), pcl.getParameters().toArray()));
 		
-		pcl = clp.createCommandLine("cmd -a -a -a").process(new HashMap<>(), false);
+		pcl = clp.createCommandLine("cmd -a -a -a").process();
 		assertTrue(pcl.alterParameter("-a", "1", 0));
 		assertTrue(pcl.alterParameter("-a", "2", 1));
 		assertTrue(pcl.alterParameter("-a", "3", 2));
@@ -140,7 +140,7 @@ public class CommandLineProcessorTest extends TestCase {
 		assertEquals("exec", pcl.getExecName());
 		assertTrue(Arrays.equals(Arrays.asList("-a", "value1", "value2", "-b").toArray(), pcl.getParameters().toArray()));
 		
-		assertTrue(Arrays.equals(Arrays.asList("-a").toArray(), clp.createCommandLine("exec -a <%varNOPE%>").process(new HashMap<>(), false).getParameters().toArray()));
+		assertTrue(Arrays.equals(Arrays.asList("-a").toArray(), clp.createCommandLine("exec -a <%varNOPE%>").process().getParameters().toArray()));
 		assertTrue(Arrays.equals(Arrays.asList("-b").toArray(), clp.createCommandLine("exec -a <%varNOPE%> -b").process(new HashMap<>(), true).getParameters().toArray()));
 	}
 	
@@ -148,7 +148,7 @@ public class CommandLineProcessorTest extends TestCase {
 		CommandLineProcessor clp = new CommandLineProcessor();
 		CommandLine cmd = clp.createCommandLine("exec -a 1 /b 2");
 		
-		ProcessedCommandLine pcl = cmd.setParamKeysStartsWith("/").process(new HashMap<>(), false);
+		ProcessedCommandLine pcl = cmd.setParamKeysStartsWith("/").process();
 		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "/b", "2").toArray(), pcl.getParameters().toArray()));
 		assertNull(pcl.getValues("-a"));
 		assertNotNull(pcl.getValues("/b"));
@@ -160,7 +160,7 @@ public class CommandLineProcessorTest extends TestCase {
 	}
 	
 	public void testExecProcess() throws IOException {
-		ProcessedCommandLine pcl = new CommandLineProcessor().createCommandLine("java -a 1 -b 2").process(new HashMap<>(), false);
+		ProcessedCommandLine pcl = new CommandLineProcessor().createCommandLine("java -a 1 -b 2").process();
 		
 		ExecProcess ep1 = new ExecProcess(pcl, ExecProcessTest.executable_finder);
 		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-b", "2").toArray(), ep1.getParams().toArray()));

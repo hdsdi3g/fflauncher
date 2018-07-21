@@ -36,5 +36,10 @@ public class FFmpeg extends FFbase {
 		super(executable);
 	}
 	
+	// overwrite = new Option("-y", "overwrite output files").createSwitch();
+	// ignore_unknown = new Option("-ignore_unknown", "Ignore unknown stream types").createSwitch();
+	// loglevel = new Option("-loglevel", "set logging level").setAlternateParams("-v").prepareEmptyValue();
+	// stats = new Option("-stats", "print progress report during encoding").createSwitch();
+	
 	// TODO implements ffmpeg + ffprobe
 }

@@ -246,6 +246,10 @@ public class CommandLineProcessor {
 			return arg.startsWith(param_keys_starts_with);
 		}
 		
+		public ProcessedCommandLine process() {
+			return process(Collections.emptyMap(), false);
+		}
+		
 		public ProcessedCommandLine process(Map<String, String> vars_to_inject, boolean remove_params_if_no_var_to_inject) {
 			if (remove_params_if_no_var_to_inject) {
 				return new ProcessedCommandLine(original_params.stream().reduce(Collections.unmodifiableList(new ArrayList<String>()), (list, arg) -> {
