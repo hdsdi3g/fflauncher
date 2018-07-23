@@ -42,4 +42,5 @@ public class FFmpeg extends FFbase {
 	// stats = new Option("-stats", "print progress report during encoding").createSwitch();
 	
 	// TODO implements ffmpeg + ffprobe
+	// check output file(s) if exists and not empty
 }
