@@ -16,7 +16,6 @@
 */
 package tv.hd3g.fflauncher;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -25,23 +24,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import tv.hd3g.execprocess.CommandLineProcessor.CommandLine;
 import tv.hd3g.execprocess.ExecProcessText;
 import tv.hd3g.execprocess.ExecProcessTextResult;
 import tv.hd3g.execprocess.ExecutableFinder;
 
-public class FFbase {
-	private static final Logger log = LogManager.getLogger();
+abstract class FFbase extends ConversionTool {
 	
 	/**
 	 * Get by ffmpeg -sample_fmts
@@ -101,81 +92,8 @@ public class FFbase {
 		channel_layouts = Collections.unmodifiableMap(cl);
 	}
 	
-	protected final File executable;
-	private long max_exec_time_ms;
-	private ScheduledExecutorService max_exec_time_scheduler;
-	private Consumer<ExecProcessText> exec_process_catcher;
-	
-	public FFbase(ExecutableFinder exec_finder, String exec_name) throws FileNotFoundException {
-		this(exec_finder.get(exec_name));
-	}
-	
-	public FFbase(File executable) throws FileNotFoundException {
-		this.executable = executable;
-		if (executable.exists() == false) {
-			throw new FileNotFoundException("Can't found " + executable);
-		} else if (executable.isFile() == false) {
-			throw new FileNotFoundException("Not a regular file: " + executable);
-		} else if (executable.canRead() == false) {
-			throw new FileNotFoundException("Can't read " + executable);
-		} else if (executable.canExecute() == false) {
-			throw new FileNotFoundException("Can't execute " + executable);
-		}
-		log.debug("Use executable {}", executable.getPath());
-		
-		max_exec_time_ms = 5000;
-		
-		AtomicLong counter = new AtomicLong();
-		
-		max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1, r -> {
-			Thread t = new Thread(r);
-			t.setName("ScheduledTask #" + counter.getAndIncrement() + " for " + getClass().getSimpleName());
-			t.setDaemon(true);
-			return t;
-		}, (r, executor) -> log.error("Can't schedule task on {}", executor));
-	}
-	
-	public File getExecutable() {
-		return executable;
-	}
-	
-	public FFbase setMaxExecutionTimeForShortCommands(long max_exec_time, TimeUnit unit) {
-		max_exec_time_ms = unit.toMillis(max_exec_time);
-		return this;
-	}
-	
-	public FFbase setMaxExecTimeScheduler(ScheduledThreadPoolExecutor max_exec_time_scheduler) {
-		this.max_exec_time_scheduler = max_exec_time_scheduler;
-		this.max_exec_time_scheduler = max_exec_time_scheduler;
-		if (max_exec_time_scheduler == null) {
-			throw new NullPointerException("\"max_exec_time_scheduler\" can't to be null");
-		}
-		return this;
-	}
-	
-	/**
-	 * Can operate on process before execution.
-	 */
-	public FFbase setExecProcessCatcher(Consumer<ExecProcessText> new_instance_catcher) {
-		exec_process_catcher = new_instance_catcher;
-		if (new_instance_catcher == null) {
-			throw new NullPointerException("\"new_instance_catcher\" can't to be null");
-		}
-		return this;
-	}
-	
-	public Consumer<ExecProcessText> getExecProcessCatcher() {
-		return exec_process_catcher;
-	}
-	
-	ExecProcessText prepareExecProcessForShortCommands() throws IOException {
-		return new ExecProcessText(executable).setMaxExecutionTime(max_exec_time_ms, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
-	}
-	
-	protected void checkExecution(ExecProcessTextResult result) throws IOException {
-		if (result.isCorrectlyDone() == false) {
-			throw new IOException("Can't execute correcly " + result.getCommandline() + ", " + result.getEndStatus() + " [" + result.getExitCode() + "] \"" + result.getStderr(false, " ") + "\"");
-		}
+	public FFbase(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
+		super(exec_finder, command_line);
 	}
 	
 	public final About about = new About();
@@ -186,12 +104,13 @@ public class FFbase {
 	
 	public class About {
 		
+		private About() {
+		}
+		
 		public FFVersion getVersion() throws IOException {
 			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-loglevel quiet -version");
 			
-			if (exec_process_catcher != null) {
-				exec_process_catcher.accept(exec_process);
-			}
+			applyExecProcessCatcher(exec_process);
 			
 			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
 			checkExecution(result);
@@ -205,9 +124,7 @@ public class FFbase {
 		public List<FFCodec> getCodecs() throws IOException {
 			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-codecs");
 			
-			if (exec_process_catcher != null) {
-				exec_process_catcher.accept(exec_process);
-			}
+			applyExecProcessCatcher(exec_process);
 			
 			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
 			checkExecution(result);
@@ -221,9 +138,7 @@ public class FFbase {
 		public List<FFFormat> getFormats() throws IOException {
 			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-formats");
 			
-			if (exec_process_catcher != null) {
-				exec_process_catcher.accept(exec_process);
-			}
+			applyExecProcessCatcher(exec_process);
 			
 			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
 			checkExecution(result);
@@ -237,9 +152,7 @@ public class FFbase {
 		public List<FFDevice> getDevices() throws IOException {
 			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-devices");
 			
-			if (exec_process_catcher != null) {
-				exec_process_catcher.accept(exec_process);
-			}
+			applyExecProcessCatcher(exec_process);
 			
 			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
 			checkExecution(result);
@@ -253,9 +166,7 @@ public class FFbase {
 		public Set<String> getBitStreamFilters() throws IOException {
 			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-bsfs");
 			
-			if (exec_process_catcher != null) {
-				exec_process_catcher.accept(exec_process);
-			}
+			applyExecProcessCatcher(exec_process);
 			
 			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
 			checkExecution(result);
@@ -269,9 +180,7 @@ public class FFbase {
 		public FFProtocols getProtocols() throws IOException {
 			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-protocols");
 			
-			if (exec_process_catcher != null) {
-				exec_process_catcher.accept(exec_process);
-			}
+			applyExecProcessCatcher(exec_process);
 			
 			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
 			checkExecution(result);
@@ -285,9 +194,7 @@ public class FFbase {
 		public List<FFFilter> getFilters() throws IOException {
 			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-filters");
 			
-			if (exec_process_catcher != null) {
-				exec_process_catcher.accept(exec_process);
-			}
+			applyExecProcessCatcher(exec_process);
 			
 			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
 			checkExecution(result);
@@ -301,9 +208,7 @@ public class FFbase {
 		public List<FFPixelFormat> getPixelFormats() throws IOException {
 			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-pix_fmts");
 			
-			if (exec_process_catcher != null) {
-				exec_process_catcher.accept(exec_process);
-			}
+			applyExecProcessCatcher(exec_process);
 			
 			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
 			checkExecution(result);
@@ -317,9 +222,7 @@ public class FFbase {
 		public Set<String> getAvailableHWAccelerationMethods() throws IOException {
 			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-pix_fmts");
 			
-			if (exec_process_catcher != null) {
-				exec_process_catcher.accept(exec_process);
-			}
+			applyExecProcessCatcher(exec_process);
 			
 			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
 			checkExecution(result);

@@ -17,6 +17,7 @@
 package tv.hd3g.fflauncher;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import junit.framework.TestCase;
+import tv.hd3g.execprocess.CommandLineProcessor;
+import tv.hd3g.execprocess.CommandLineProcessor.CommandLine;
 import tv.hd3g.execprocess.ExecutableFinder;
 import tv.hd3g.fflauncher.FFCodec.CodecType;
 import tv.hd3g.fflauncher.FFFilter.ConnectorType;
@@ -34,7 +37,16 @@ import tv.hd3g.fflauncher.FFFilter.ConnectorType;
 public class FFbaseTest extends TestCase {
 	
 	public void testBase() throws Exception {
-		FFbase b = new FFbase(new ExecutableFinder(), "ffmpeg");
+		
+		class FFbaseImpl extends FFbase {
+			
+			public FFbaseImpl(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
+				super(exec_finder, command_line);
+			}
+			
+		}
+		
+		FFbaseImpl b = new FFbaseImpl(new ExecutableFinder(), new CommandLineProcessor().createEmptyCommandLine("ffmpeg"));
 		
 		assertNotNull(b.about.getVersion());
 		assertFalse(b.about.getCodecs().isEmpty());

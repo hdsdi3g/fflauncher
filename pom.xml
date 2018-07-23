@@ -39,7 +39,15 @@
 	  <artifactId>log4j-core</artifactId>
 	  <version>2.11.0</version>
 	</dependency>
+	
+	<dependency>
+	  <groupId>org.ffmpeg</groupId>
+	  <artifactId>ffprobe-jaxb</artifactId>
+	  <version>4.0.2</version>
+	</dependency>
+	
   </dependencies>
+
   <organization>
   	<name>hd3g.tv</name>
   	<url>https://hd3g.tv</url>
@@ -89,4 +97,17 @@
 			</extension>
 		</extensions>
 	</build>
+	
+	<repositories>
+	  <repository>
+	    <id>hd3gtv</id>
+	    <url>https://hd3g.tv/maven</url>
+	    <releases>
+	      <enabled>true</enabled>
+	    </releases>
+	    <snapshots>
+	      <enabled>true</enabled>
+	    </snapshots>
+	  </repository>
+	</repositories>  
 </project>

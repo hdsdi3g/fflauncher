@@ -16,24 +16,20 @@
 */
 package tv.hd3g.fflauncher;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tv.hd3g.execprocess.CommandLineProcessor.CommandLine;
 import tv.hd3g.execprocess.ExecutableFinder;
 
 public class FFmpeg extends FFbase {
 	
 	private static final Logger log = LogManager.getLogger();
 	
-	public FFmpeg(ExecutableFinder exec_finder, String exec_name) throws FileNotFoundException {
-		super(exec_finder, exec_name);
-	}
-	
-	public FFmpeg(File executable) throws FileNotFoundException {
-		super(executable);
+	public FFmpeg(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
+		super(exec_finder, command_line);
 	}
 	
 	// overwrite = new Option("-y", "overwrite output files").createSwitch();
@@ -41,6 +37,6 @@ public class FFmpeg extends FFbase {
 	// loglevel = new Option("-loglevel", "set logging level").setAlternateParams("-v").prepareEmptyValue();
 	// stats = new Option("-stats", "print progress report during encoding").createSwitch();
 	
-	// TODO implements ffmpeg + ffprobe
+	// TODO implements ffmpeg
 	// check output file(s) if exists and not empty
 }
