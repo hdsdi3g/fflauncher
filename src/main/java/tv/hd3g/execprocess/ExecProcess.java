@@ -277,6 +277,13 @@ public class ExecProcess {
 	}
 	
 	/**
+	 * Blocking. It will call waitForEnd before return.
+	 */
+	public ExecProcessResult run() {
+		return start(r -> r.run()).waitForEnd();
+	}
+	
+	/**
 	 * @return new ProcessBuilder based on this configuration, without start the process.
 	 */
 	public ProcessBuilder makeProcessBuilder() {

@@ -139,6 +139,13 @@ public class ExecProcessText extends ExecProcess {
 	}
 	
 	/**
+	 * Blocking. It will call waitForEnd before return.
+	 */
+	public ExecProcessTextResult run() {
+		return start(r -> r.run()).waitForEnd();
+	}
+	
+	/**
 	 * Non-blocking
 	 */
 	public ExecProcessTextResult start(ThreadFactory thread_factory) {

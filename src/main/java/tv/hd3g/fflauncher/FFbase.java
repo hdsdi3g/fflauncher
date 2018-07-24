@@ -92,8 +92,16 @@ abstract class FFbase extends ConversionTool {
 		channel_layouts = Collections.unmodifiableMap(cl);
 	}
 	
-	public FFbase(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
-		super(exec_finder, command_line);
+	static Set<String> parseHWAccelerationMethods(Stream<String> lines) {
+		return lines.map(l -> l.trim()).filter(line -> {
+			return line.toLowerCase().startsWith("Hardware acceleration methods:".toLowerCase()) == false;
+		}).collect(Collectors.toSet());
+	}
+	
+	static Set<String> parseBSFS(Stream<String> lines) {
+		return lines.map(l -> l.trim()).filter(line -> {
+			return line.toLowerCase().startsWith("Bitstream filters:".toLowerCase()) == false;
+		}).collect(Collectors.toSet());
 	}
 	
 	public final About about = new About();
@@ -108,12 +116,7 @@ abstract class FFbase extends ConversionTool {
 		}
 		
 		public FFVersion getVersion() throws IOException {
-			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-loglevel quiet -version");
-			
-			applyExecProcessCatcher(exec_process);
-			
-			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-			checkExecution(result);
+			ExecProcessTextResult result = checkExecution(createExec(true).addSpacedParams("-loglevel quiet -version").run());
 			
 			return new FFVersion(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -122,12 +125,7 @@ abstract class FFbase extends ConversionTool {
 		 * -codecs show available codecs
 		 */
 		public List<FFCodec> getCodecs() throws IOException {
-			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-codecs");
-			
-			applyExecProcessCatcher(exec_process);
-			
-			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-			checkExecution(result);
+			ExecProcessTextResult result = checkExecution(createExec(true).addSpacedParams("-codecs").run());
 			
 			return FFCodec.parse(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -136,12 +134,7 @@ abstract class FFbase extends ConversionTool {
 		 * -formats show available formats
 		 */
 		public List<FFFormat> getFormats() throws IOException {
-			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-formats");
-			
-			applyExecProcessCatcher(exec_process);
-			
-			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-			checkExecution(result);
+			ExecProcessTextResult result = checkExecution(createExec(true).addSpacedParams("-formats").run());
 			
 			return FFFormat.parseFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -150,12 +143,7 @@ abstract class FFbase extends ConversionTool {
 		 * -devices show available devices
 		 */
 		public List<FFDevice> getDevices() throws IOException {
-			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-devices");
-			
-			applyExecProcessCatcher(exec_process);
-			
-			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-			checkExecution(result);
+			ExecProcessTextResult result = checkExecution(createExec(true).addSpacedParams("-devices").run());
 			
 			return FFDevice.parseDevices(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -164,12 +152,7 @@ abstract class FFbase extends ConversionTool {
 		 * -bsfs show available bit stream filters
 		 */
 		public Set<String> getBitStreamFilters() throws IOException {
-			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-bsfs");
-			
-			applyExecProcessCatcher(exec_process);
-			
-			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-			checkExecution(result);
+			ExecProcessTextResult result = checkExecution(createExec(true).addSpacedParams("-bsfs").run());
 			
 			return parseBSFS(result.getStdoutLines(false).map(l -> l.trim()));
 		}
@@ -178,12 +161,7 @@ abstract class FFbase extends ConversionTool {
 		 * -protocols show available protocols
 		 */
 		public FFProtocols getProtocols() throws IOException {
-			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-protocols");
-			
-			applyExecProcessCatcher(exec_process);
-			
-			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-			checkExecution(result);
+			ExecProcessTextResult result = checkExecution(createExec(true).addSpacedParams("-protocols").run());
 			
 			return new FFProtocols(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -192,12 +170,7 @@ abstract class FFbase extends ConversionTool {
 		 * -filters show available filters
 		 */
 		public List<FFFilter> getFilters() throws IOException {
-			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-filters");
-			
-			applyExecProcessCatcher(exec_process);
-			
-			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-			checkExecution(result);
+			ExecProcessTextResult result = checkExecution(createExec(true).addSpacedParams("-filters").run());
 			
 			return FFFilter.parseFilters(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -206,12 +179,7 @@ abstract class FFbase extends ConversionTool {
 		 * -pix_fmts show available pixel formats
 		 */
 		public List<FFPixelFormat> getPixelFormats() throws IOException {
-			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-pix_fmts");
-			
-			applyExecProcessCatcher(exec_process);
-			
-			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-			checkExecution(result);
+			ExecProcessTextResult result = checkExecution(createExec(true).addSpacedParams("-pix_fmts").run());
 			
 			return FFPixelFormat.parsePixelsFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -220,27 +188,70 @@ abstract class FFbase extends ConversionTool {
 		 * -hwaccels show available HW acceleration methods
 		 */
 		public Set<String> getAvailableHWAccelerationMethods() throws IOException {
-			ExecProcessText exec_process = prepareExecProcessForShortCommands().addSpacedParams("-pix_fmts");
-			
-			applyExecProcessCatcher(exec_process);
-			
-			ExecProcessTextResult result = exec_process.start(r -> r.run()).waitForEnd();
-			checkExecution(result);
+			ExecProcessTextResult result = checkExecution(createExec(true).addSpacedParams("-pix_fmts").run());
 			
 			return parseHWAccelerationMethods(result.getStdoutLines(false).map(l -> l.trim()));
 		}
 	}
 	
-	static Set<String> parseHWAccelerationMethods(Stream<String> lines) {
-		return lines.map(l -> l.trim()).filter(line -> {
-			return line.toLowerCase().startsWith("Hardware acceleration methods:".toLowerCase()) == false;
-		}).collect(Collectors.toSet());
+	protected void applyExecProcessCatcher(ExecProcessText exec_process) {
+		if (exec_process.getEnvironmentVar("AV_LOG_FORCE_COLOR") == null) {
+			exec_process.setEnvironmentVarIfNotFound("AV_LOG_FORCE_NOCOLOR", "1");
+		}
+		super.applyExecProcessCatcher(exec_process);
 	}
 	
-	static Set<String> parseBSFS(Stream<String> lines) {
-		return lines.map(l -> l.trim()).filter(line -> {
-			return line.toLowerCase().startsWith("Bitstream filters:".toLowerCase()) == false;
-		}).collect(Collectors.toSet());
+	public FFbase(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
+		super(exec_finder, command_line);
+		
+	}
+	
+	public enum FFLogLevel {
+		/**
+		 * Show nothing at all; be silent.
+		 */
+		quiet,
+		
+		/**
+		 * Only show fatal errors which could lead the process to crash, such as an assertion failure. This is not currently used for anything.
+		 */
+		panic,
+		
+		/**
+		 * Only show fatal errors. These are errors after which the process absolutely cannot continue.
+		 */
+		fatal,
+		
+		/**
+		 * Show all errors, including ones which can be recovered from.
+		 */
+		error,
+		
+		/**
+		 * Show all warnings and errors. Any message related to possibly incorrect or unexpected events will be shown.
+		 */
+		warning,
+		
+		/**
+		 * Show informative messages during processing. This is in addition to warnings and errors. This is the default value.
+		 */
+		info,
+		/**
+		 * Same as info, except more verbose.
+		 */
+		verbose,
+		
+		/**
+		 * Show everything, including debugging information.
+		 */
+		debug,
+		
+		trace
+	}
+	
+	public FFbase addLogLevel(FFLogLevel level, boolean repeat, boolean display_level) {
+		// XXX command_line.add("") ...
+		return this;
 	}
 	
 }

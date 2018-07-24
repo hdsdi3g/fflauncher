@@ -17,9 +17,11 @@
 package tv.hd3g.execprocess;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -66,11 +68,28 @@ public class CommandLineProcessor {
 		
 	}
 	
+	/**
+	 * @param full_command_line_with_vars MUST containt an executable reference (exec name or path)
+	 */
 	public CommandLine createCommandLine(String full_command_line_with_vars) {
 		if (full_command_line_with_vars == null) {
 			throw new NullPointerException("\"full_command_line_with_vars\" can't to be null");
 		}
 		return new CommandLine(full_command_line_with_vars);
+	}
+	
+	/**
+	 * @param params_with_vars must NOT containt an executable reference
+	 */
+	public CommandLine createCommandLine(String exec_name, String params_with_vars) {
+		if (params_with_vars == null) {
+			throw new NullPointerException("\"full_command_line_with_vars\" can't to be null");
+		}
+		return new CommandLine(exec_name + " " + params_with_vars);
+	}
+	
+	public CommandLine createEmptyCommandLine(String exec_name) {
+		return new CommandLine(exec_name);
 	}
 	
 	/**
@@ -127,8 +146,10 @@ public class CommandLineProcessor {
 	public class CommandLine {
 		
 		private final String exec_name;
-		private final List<String> original_params;
+		private final ArrayList<String> parameters_with_vars;
 		private String param_keys_starts_with = "-";
+		
+		// TODO can add params, and params with "" via parser => create a base toolkit for this class, this sub, conversion tool, and Process
 		
 		CommandLine(String full_command_line_with_vars) {
 			
@@ -216,10 +237,9 @@ public class CommandLineProcessor {
 			}
 			
 			exec_name = full_args.get(0);
+			parameters_with_vars = new ArrayList<>();
 			if (full_args.size() > 1) {
-				original_params = Collections.unmodifiableList(full_args.stream().skip(1).collect(Collectors.toList()));
-			} else {
-				original_params = Collections.emptyList();
+				parameters_with_vars.addAll(full_args.stream().skip(1).collect(Collectors.toList()));
 			}
 		}
 		
@@ -246,13 +266,52 @@ public class CommandLineProcessor {
 			return arg.startsWith(param_keys_starts_with);
 		}
 		
+		/**
+		 * @return true if the update is done
+		 */
+		public boolean injectParamsAroundVariable(String var_name, Collection<String> add_before, Collection<String> add_after) {
+			if (var_name == null) {
+				throw new NullPointerException("\"var_name\" can't to be null");
+			} else if (add_before == null) {
+				throw new NullPointerException("\"add_before\" can't to be null");
+			} else if (add_after == null) {
+				throw new NullPointerException("\"add_after\" can't to be null");
+			}
+			
+			AtomicBoolean is_done = new AtomicBoolean(false);
+			
+			List<String> new_parameters = parameters_with_vars.stream().reduce(Collections.unmodifiableList(new ArrayList<String>()), (list, arg) -> {
+				if (isTaggedParameter(arg)) {
+					String current_var_name = extractVarNameFromTaggedParameter(arg);
+					if (current_var_name.equals(var_name)) {
+						is_done.set(true);
+						return Stream.concat(Stream.concat(add_before.stream(), Stream.of(arg)), add_after.stream()).collect(Collectors.toList());
+					}
+				}
+				
+				return Stream.concat(list.stream(), Stream.of(arg)).collect(Collectors.toList());
+			}, LIST_COMBINER);
+			
+			parameters_with_vars.clear();
+			parameters_with_vars.addAll(new_parameters);
+			
+			return is_done.get();
+		}
+		
+		/**
+		 * @return with var names
+		 */
+		public String toString() {
+			return exec_name + " " + parameters_with_vars.stream().collect(Collectors.joining(" "));
+		}
+		
 		public ProcessedCommandLine process() {
 			return process(Collections.emptyMap(), false);
 		}
 		
 		public ProcessedCommandLine process(Map<String, String> vars_to_inject, boolean remove_params_if_no_var_to_inject) {
 			if (remove_params_if_no_var_to_inject) {
-				return new ProcessedCommandLine(original_params.stream().reduce(Collections.unmodifiableList(new ArrayList<String>()), (list, arg) -> {
+				return new ProcessedCommandLine(parameters_with_vars.stream().reduce(Collections.unmodifiableList(new ArrayList<String>()), (list, arg) -> {
 					if (isTaggedParameter(arg)) {
 						String var_name = extractVarNameFromTaggedParameter(arg);
 						if (vars_to_inject.containsKey(var_name)) {
@@ -271,7 +330,7 @@ public class CommandLineProcessor {
 					}
 				}, LIST_COMBINER));
 			} else {
-				return new ProcessedCommandLine(original_params.stream().map(arg -> {
+				return new ProcessedCommandLine(parameters_with_vars.stream().map(arg -> {
 					String var_name = extractVarNameFromTaggedParameter(arg);
 					if (var_name != null) {
 						return vars_to_inject.get(var_name);
@@ -284,10 +343,14 @@ public class CommandLineProcessor {
 		
 		public class ProcessedCommandLine {
 			
-			private final ArrayList<String> params;
+			private final ArrayList<String> parameters;
 			
 			ProcessedCommandLine(List<String> processed_params) {
-				params = new ArrayList<>(processed_params);
+				parameters = new ArrayList<>(processed_params);
+			}
+			
+			public String toString() {
+				return exec_name + " " + parameters.stream().collect(Collectors.joining(" "));
 			}
 			
 			public String getExecName() {
@@ -298,7 +361,7 @@ public class CommandLineProcessor {
 			 * @return current list, editable
 			 */
 			public ArrayList<String> getParameters() {
-				return params;
+				return parameters;
 			}
 			
 			/**
@@ -325,12 +388,12 @@ public class CommandLineProcessor {
 				ArrayList<String> result = new ArrayList<>();
 				
 				boolean has = false;
-				for (int pos = 0; pos < params.size(); pos++) {
-					String current = params.get(pos);
+				for (int pos = 0; pos < parameters.size(); pos++) {
+					String current = parameters.get(pos);
 					if (current.equals(param)) {
 						has = true;
-						if (params.size() > pos + 1) {
-							String next = params.get(pos + 1);
+						if (parameters.size() > pos + 1) {
+							String next = parameters.get(pos + 1);
 							if (isArgIsAParamKey(next) == false) {
 								result.add(next);
 							}
@@ -358,18 +421,18 @@ public class CommandLineProcessor {
 				
 				int to_skip = param_as_this_key_pos + 1;
 				
-				for (int pos = 0; pos < params.size(); pos++) {
-					String current = params.get(pos);
+				for (int pos = 0; pos < parameters.size(); pos++) {
+					String current = parameters.get(pos);
 					if (current.equals(param)) {
 						to_skip--;
 						if (to_skip == 0) {
-							if (params.size() > pos + 1) {
-								String next = params.get(pos + 1);
+							if (parameters.size() > pos + 1) {
+								String next = parameters.get(pos + 1);
 								if (isArgIsAParamKey(next) == false) {
-									params.remove(pos + 1);
+									parameters.remove(pos + 1);
 								}
 							}
-							params.remove(pos);
+							parameters.remove(pos);
 							return true;
 						}
 					}
@@ -393,20 +456,20 @@ public class CommandLineProcessor {
 				
 				int to_skip = param_as_this_key_pos + 1;
 				
-				for (int pos = 0; pos < params.size(); pos++) {
-					String current = params.get(pos);
+				for (int pos = 0; pos < parameters.size(); pos++) {
+					String current = parameters.get(pos);
 					if (current.equals(param)) {
 						to_skip--;
 						if (to_skip == 0) {
-							if (params.size() > pos + 1) {
-								String next = params.get(pos + 1);
+							if (parameters.size() > pos + 1) {
+								String next = parameters.get(pos + 1);
 								if (isArgIsAParamKey(next) == false) {
-									params.set(pos + 1, new_value);
+									parameters.set(pos + 1, new_value);
 								} else {
-									params.add(pos + 1, new_value);
+									parameters.add(pos + 1, new_value);
 								}
 							} else {
-								params.add(new_value);
+								parameters.add(new_value);
 							}
 							return true;
 						}

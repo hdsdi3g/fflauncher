@@ -24,14 +24,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -50,13 +49,19 @@ public class ConversionTool {
 	private static Logger log = LogManager.getLogger();
 	
 	protected final File executable;
-	private long max_exec_time_ms;
-	private ScheduledExecutorService max_exec_time_scheduler;
+	protected long max_exec_time_ms;
+	protected ScheduledExecutorService max_exec_time_scheduler;
 	private Consumer<ExecProcessText> exec_process_catcher;
 	
-	private final CommandLine command_line;
+	protected final CommandLine command_line;
 	protected final ArrayList<ParameterReference> input_sources;
 	protected final ArrayList<ParameterReference> output_expected_destinations;
+	
+	/**
+	 * Set values for variables like <%myvar%> in the command line, do NOT set input/output references if they was set with addInputSource/addOutputDestination.
+	 */
+	public final LinkedHashMap<String, String> parameters_variables;
+	private boolean remove_params_if_no_var_to_inject;
 	
 	public ConversionTool(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
 		this.command_line = command_line;
@@ -89,6 +94,24 @@ public class ConversionTool {
 		
 		input_sources = new ArrayList<>(1);
 		output_expected_destinations = new ArrayList<>(1);
+		
+		parameters_variables = new LinkedHashMap<>(1);
+		remove_params_if_no_var_to_inject = false;
+	}
+	
+	/**
+	 * @return false by default
+	 */
+	public boolean isRemove_params_if_no_var_to_inject() {
+		return remove_params_if_no_var_to_inject;
+	}
+	
+	/**
+	 * @param remove_params_if_no_var_to_inject false by default
+	 */
+	public ConversionTool setRemove_params_if_no_var_to_inject(boolean remove_params_if_no_var_to_inject) {
+		this.remove_params_if_no_var_to_inject = remove_params_if_no_var_to_inject;
+		return this;
 	}
 	
 	public File getExecutable() {
@@ -130,14 +153,19 @@ public class ConversionTool {
 		}
 	}
 	
+	@Deprecated
 	ExecProcessText prepareExecProcessForShortCommands() throws IOException {
 		return new ExecProcessText(executable).setMaxExecutionTime(max_exec_time_ms, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
 	}
 	
-	protected void checkExecution(ExecProcessTextResult result) throws IOException {
+	/**
+	 * @return result
+	 */
+	protected ExecProcessTextResult checkExecution(ExecProcessTextResult result) throws IOException {
 		if (result.isCorrectlyDone() == false) {
 			throw new IOException("Can't execute correcly " + result.getCommandline() + ", " + result.getEndStatus() + " [" + result.getExitCode() + "] \"" + result.getStderr(false, " ") + "\"");
 		}
+		return result;
 	}
 	
 	class ParameterReference {
@@ -228,12 +256,12 @@ public class ConversionTool {
 		return this;
 	}
 	
-	/**
-	 * @param vars_to_inject do NOT set input/output references if they was set with addInputSource/addOutputDestination
-	 * @param onMissingInputOutputVar var_name -> ressource (source or dest)
-	 */
-	public ProcessedCommandLine createProcessedCommandLine(Map<String, String> vars_to_inject, boolean remove_params_if_no_var_to_inject, BiConsumer<String, String> onMissingInputOutputVar) {
-		final HashMap<String, String> all_vars_to_inject = new HashMap<>(vars_to_inject);
+	protected void onMissingInputOutputVar(String var_name, String ressource) {
+		log.warn("Missing I/O variable \"" + var_name + "\" in command line \"" + command_line.toString() + "\". Ressource \"" + ressource + "\" will be ignored");
+	}
+	
+	public ProcessedCommandLine createProcessedCommandLine() {
+		final HashMap<String, String> all_vars_to_inject = new HashMap<>(parameters_variables);
 		
 		Stream.concat(input_sources.stream(), output_expected_destinations.stream()).forEach(param_ref -> {
 			String var_name = param_ref.var_name_in_command_line;
@@ -245,11 +273,34 @@ public class ConversionTool {
 				}
 				all_vars_to_inject.put(var_name, param_ref.ressource);
 			} else {
-				onMissingInputOutputVar.accept(var_name, param_ref.ressource);
+				onMissingInputOutputVar(var_name, param_ref.ressource);
 			}
 		});
 		
 		return command_line.process(all_vars_to_inject, remove_params_if_no_var_to_inject);
+	}
+	
+	/**
+	 * @param short_command_limited_execution_time controlled by setMaxExecutionTimeForShortCommands()
+	 * @param working_directory can be null
+	 */
+	public ExecProcessText createExec(boolean short_command_limited_execution_time, File working_directory) throws IOException {
+		ExecProcessText exec_process = new ExecProcessText(executable);
+		
+		if (working_directory != null) {
+			exec_process.setWorkingDirectory(working_directory);
+		} else if (short_command_limited_execution_time) {
+			exec_process.setMaxExecutionTime(max_exec_time_ms, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
+		}
+		
+		exec_process.setParams(createProcessedCommandLine().getParameters());
+		applyExecProcessCatcher(exec_process);
+		
+		return exec_process;
+	}
+	
+	public ExecProcessText createExec(boolean limited_execution_time) throws IOException {
+		return createExec(limited_execution_time, null);
 	}
 	
 	private static final Function<ParameterReference, String> getRessourceFromParameterReference = param_ref -> param_ref.ressource;

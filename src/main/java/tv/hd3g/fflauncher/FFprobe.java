@@ -48,10 +48,6 @@ public class FFprobe extends FFbase {
 		super(exec_finder, command_line);
 	}
 	
-	// TODO implements ffprobe
-	
-	// TODO add recipe: ffprobe -print_format xml -show_streams -show_format -hide_banner -i <my-media-file>
-	
 	/**
 	 * @see https://github.com/hdsdi3g/ffprobe-jaxb
 	 */
@@ -66,19 +62,18 @@ public class FFprobe extends FFbase {
 			return true;
 		});
 		
-		/**
-		 * load XML datas
-		 */
 		DocumentBuilderFactory xmlDocumentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder xmlDocumentBuilder = xmlDocumentBuilderFactory.newDocumentBuilder();
 		xmlDocumentBuilder.setErrorHandler(null);
+		
 		Document document = xmlDocumentBuilder.parse(new ByteArrayInputStream(xml_content.getBytes(StandardCharsets.UTF_8)));
 		
-		/**
-		 * An do the importing
-		 */
 		JAXBElement<FfprobeType> result = unmarshaller.unmarshal(document, FfprobeType.class);
 		return result.getValue();
 	}
+	
+	// TODO implements ffprobe
+	
+	// TODO add recipe: ffprobe -print_format xml -show_streams -show_format -hide_banner -i <my-media-file>
 	
 }
