@@ -66,7 +66,7 @@ public class ExecProcessTest extends TestCase {
 	
 	public static ExecProcessText createExec(Class<?> exec_class) {
 		try {
-			return new ExecProcessText("java", executable_finder).addParams("-cp", System.getProperty("java.class.path")).addParams(exec_class.getName());
+			return new ExecProcessText("java", executable_finder).addParameters("-cp", System.getProperty("java.class.path")).addParameters(exec_class.getName());
 		} catch (IOException e) {
 			throw new RuntimeException("Can't found java exec", e);
 		}
@@ -127,8 +127,8 @@ public class ExecProcessTest extends TestCase {
 		ept.setExecCodeMustBeZero(false);
 		assertFalse(ept.isExecCodeMustBeZero());
 		
-		ept.addParams(Test3.expected_in);
-		assertEquals(Test3.expected_in, ept.getParams().get(ept.getParams().size() - 1));
+		ept.addParameters(Test3.expected_in);
+		assertEquals(Test3.expected_in, ept.getParameters().get(ept.getParameters().size() - 1));
 		
 		ept.setEnvironmentVar(Test3.ENV_KEY, Test3.ENV_VALUE);
 		
@@ -352,7 +352,7 @@ public class ExecProcessTest extends TestCase {
 		assertEquals(result.process.pid(), result.getPID());
 		assertEquals(ept.executable, result.getExecutable());
 		
-		assertEquals(Stream.concat(Stream.of(ept.executable.getPath()), ept.getParams().stream()).collect(Collectors.joining(" ")), result.getCommandline());
+		assertEquals(Stream.concat(Stream.of(ept.executable.getPath()), ept.getParameters().stream()).collect(Collectors.joining(" ")), result.getCommandline());
 		assertTrue(result.getUserExec().endsWith(System.getProperty("user.name")));
 		assertEquals(ept.working_directory, result.getWorkingDirectory());
 	}
@@ -363,14 +363,14 @@ public class ExecProcessTest extends TestCase {
 	
 	public void testOutErrStreams() {
 		ExecProcessText ept = createExec(Test7.class);
-		ept.addParams("n");
+		ept.addParameters("n");
 		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
 		
 		assertEquals(makeStringStream.apply(Test7.std_out).collect(joinWithPipe), result.getStdout(true, "|"));
 		assertEquals(makeStringStream.apply(Test7.std_err).collect(joinWithPipe), result.getStderr(true, "|"));
 		
 		ept = createExec(Test7.class);
-		ept.addParams("1");
+		ept.addParameters("1");
 		result = ept.start(createTF()).waitForEnd();
 		
 		assertEquals(makeStringStream.apply(Test7.std_out).filter(withoutEmptyLines).collect(joinWithPipe), result.getStdout(false, "|"));
@@ -391,7 +391,7 @@ public class ExecProcessTest extends TestCase {
 	
 	public void testInteractiveHandler() {
 		ExecProcessText ept = createExec(Test8.class);
-		ept.addParams("foo");
+		ept.addParameters("foo");
 		ept.setMaxExecutionTime(500, TimeUnit.MILLISECONDS, new ScheduledThreadPoolExecutor(1));
 		
 		AtomicReference<ExecProcessTextResult> a_source = new AtomicReference<>();
@@ -456,31 +456,6 @@ public class ExecProcessTest extends TestCase {
 		assertTrue(ept.start(r -> r.run()).waitForEnd().isCorrectlyDone());
 	}
 	
-	public void testParams() throws IOException {
-		ExecProcessText ept = createExec(Test1.class);
-		ExecProcess ep = new ExecProcess(ept.executable);
-		
-		assertEquals(ep.params, ep.getParams());
-		
-		ep.addParams("a", "b", null, "c");
-		ep.addParams("d");
-		assertEquals("abcd", ep.params.stream().collect(Collectors.joining()));
-		
-		ep.setParams(Arrays.asList("a", "b", null, "c"));
-		assertEquals("abc", ep.params.stream().collect(Collectors.joining()));
-		
-		ep.setParams("a", "b", "c", "d", null, "e");
-		assertEquals("abcde", ep.params.stream().collect(Collectors.joining()));
-		
-		ep.setSpacedParams("a b  c d", "e", null, "f");
-		assertEquals("abcdef".length(), ep.params.size());
-		assertEquals("abcdef", ep.params.stream().collect(Collectors.joining()));
-		
-		ep.addSpacedParams("ggg h i ", " e", null, "fff", " ");
-		assertEquals("abcdef".length() + 3 + 1 + 1, ep.params.size());
-		assertEquals("abcdefggghiefff", ep.params.stream().collect(Collectors.joining()));
-	}
-	
 	public void testToString() throws IOException {
 		ExecProcessText ept = createExec(Test1.class);
 		
@@ -488,7 +463,7 @@ public class ExecProcessTest extends TestCase {
 		assertNotNull(ept.start(r -> r.run()).toString());
 		
 		ExecProcess ep = new ExecProcess(ept.executable);
-		ep.setParams(ept.getParams());
+		ep.importParametersFrom(ept);
 		
 		assertNotNull(ep.toString());
 		assertNotNull(ep.start(r -> r.run()).toString());

@@ -21,8 +21,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.concurrent.Executor;
@@ -35,12 +33,11 @@ import java.util.stream.Collectors;
 
 import tv.hd3g.execprocess.CommandLineProcessor.CommandLine.ProcessedCommandLine;
 
-public class ExecProcess {
+public class ExecProcess extends ParametersUtility {
 	
 	// private static Logger log = Logger.getLogger(ExecProcess.class);
 	// T O D O ProcessBuilder.startPipeline(builders) :: external laucher
 	
-	protected final ArrayList<String> params;
 	protected final File executable;
 	protected final LinkedHashMap<String, String> environment;
 	protected final ArrayList<EndExecutionCallback> end_exec_callback_list;
@@ -55,7 +52,6 @@ public class ExecProcess {
 	 * @param executable can be a simple file or an exact full path
 	 */
 	public ExecProcess(String executable, ExecutableFinder exec_finder) throws IOException {
-		params = new ArrayList<>();
 		this.executable = exec_finder.get(executable);
 		environment = new LinkedHashMap<>();
 		end_exec_callback_list = new ArrayList<>(1);
@@ -69,7 +65,6 @@ public class ExecProcess {
 			throw new IOException("Can't execute " + executable);
 		}
 		
-		params = new ArrayList<>();
 		this.executable = executable;
 		environment = new LinkedHashMap<>();
 		end_exec_callback_list = new ArrayList<>(1);
@@ -77,11 +72,11 @@ public class ExecProcess {
 	}
 	
 	/**
-	 * @param cmd_line set exec_name and params
+	 * @param cmd_line set exec_name and parammeters
 	 */
 	public ExecProcess(ProcessedCommandLine cmd_line, ExecutableFinder exec_finder) throws IOException {
 		this(cmd_line.getExecName(), exec_finder);
-		params.addAll(cmd_line.getParameters());
+		parameters.addAll(cmd_line.getParameters());
 	}
 	
 	private void setup(String path) throws IOException {
@@ -92,77 +87,6 @@ public class ExecProcess {
 		environment.put("PATH", path);
 		exec_code_must_be_zero = true;
 		setWorkingDirectory(new File(System.getProperty("java.io.tmpdir", "")));
-	}
-	
-	public ExecProcess setParams(Collection<String> params) {
-		if (params == null) {
-			throw new NullPointerException("\"params\" can't to be null");
-		}
-		this.params.clear();
-		
-		this.params.addAll(params.stream().filter(p -> p != null).collect(Collectors.toList()));
-		return this;
-	}
-	
-	public ExecProcess setParams(String... params) {
-		if (params == null) {
-			throw new NullPointerException("\"params\" can't to be null");
-		}
-		this.params.clear();
-		return addParams(params);
-	}
-	
-	/**
-	 * @return never null
-	 */
-	public ArrayList<String> getParams() {
-		return params;
-	}
-	
-	public ExecProcess addParams(String... params) {
-		if (params == null) {
-			throw new NullPointerException("\"params\" can't to be null");
-		}
-		
-		this.params.addAll(Arrays.stream(params).filter(p -> {
-			return p != null;
-		}).collect(Collectors.toList()));
-		
-		return this;
-	}
-	
-	/**
-	 * @param params transform spaces in each param to new params: ["a b c", "d"] -> ["a", "b", "c", "d"]. It don't manage " or tabs.
-	 */
-	public ExecProcess addSpacedParams(String... params) {
-		if (params == null) {
-			throw new NullPointerException("\"params\" can't to be null");
-		}
-		
-		this.params.addAll(Arrays.stream(params).filter(p -> {
-			return p != null;
-		}).flatMap(p -> {
-			return Arrays.stream(p.split(" ")).filter(sub_p -> {
-				return sub_p.equals("") == false && sub_p.equals(" ") == false;
-			}).map(sub_p -> {
-				return sub_p.trim();
-			});
-		}).collect(Collectors.toList()));
-		
-		return this;
-	}
-	
-	/**
-	 * @param params transform spaces in each param to new params: ["a b c", "d"] -> ["a", "b", "c", "d"]. It don't manage " or tabs.
-	 */
-	public ExecProcess setSpacedParams(String... params) {
-		if (params == null) {
-			throw new NullPointerException("\"params\" can't to be null");
-		}
-		
-		this.params.clear();
-		
-		return addSpacedParams(params);
 	}
 	
 	/*public Map<String, String> getEnvironment() {
@@ -265,7 +189,7 @@ public class ExecProcess {
 	 * Don't process here stdin/out/err
 	 */
 	public ExecProcessResult start(Executor executor) {
-		return new ExecProcessResult(executable, params, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder).start(executor);
+		return new ExecProcessResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder).start(executor);
 	}
 	
 	/**
@@ -273,7 +197,7 @@ public class ExecProcess {
 	 * Don't process here stdin/out/err
 	 */
 	public ExecProcessResult start(ThreadFactory thread_factory) {
-		return new ExecProcessResult(executable, params, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder).start(thread_factory);
+		return new ExecProcessResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder).start(thread_factory);
 	}
 	
 	/**
@@ -287,10 +211,24 @@ public class ExecProcess {
 	 * @return new ProcessBuilder based on this configuration, without start the process.
 	 */
 	public ProcessBuilder makeProcessBuilder() {
-		return new ExecProcessResult(executable, params, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder).makeProcessBuilder();
+		return new ExecProcessResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder).makeProcessBuilder();
 	}
 	
 	public String toString() {
-		return executable.getName() + " " + getParams().stream().collect(Collectors.joining(" "));
+		return executable.getName() + " " + getParameters().stream().collect(Collectors.joining(" "));
 	}
+	
+	public ExecProcess addParameters(String... params) {
+		super.addParameters(params);
+		return this;
+	}
+	
+	/**
+	 * @param params transform spaces in each param to new parameters: "a b c d" -> ["a", "b", "c", "d"], and it manage " but not tabs.
+	 */
+	public ExecProcess addBulkParameters(String params) {
+		super.addBulkParameters(params);
+		return this;
+	}
+	
 }

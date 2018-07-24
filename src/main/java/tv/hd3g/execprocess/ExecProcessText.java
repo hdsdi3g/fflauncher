@@ -19,7 +19,6 @@ package tv.hd3g.execprocess;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -133,7 +132,7 @@ public class ExecProcessText extends ExecProcess {
 	 * Non-blocking
 	 */
 	public ExecProcessTextResult start(Executor executor) {
-		ExecProcessTextResult r = new ExecProcessTextResult(executable, params, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder);
+		ExecProcessTextResult r = new ExecProcessTextResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder);
 		r.setup(capture_streams_behavior, keep_stdout, keep_stderr, interactive_handler, interactive_handler_executor, stdouterr_callback_list);
 		return r.start(executor);
 	}
@@ -149,40 +148,9 @@ public class ExecProcessText extends ExecProcess {
 	 * Non-blocking
 	 */
 	public ExecProcessTextResult start(ThreadFactory thread_factory) {
-		ExecProcessTextResult r = new ExecProcessTextResult(executable, params, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder);
+		ExecProcessTextResult r = new ExecProcessTextResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder);
 		r.setup(capture_streams_behavior, keep_stdout, keep_stderr, interactive_handler, interactive_handler_executor, stdouterr_callback_list);
 		return r.start(thread_factory);
-	}
-	
-	public ExecProcessText setParams(Collection<String> params) {
-		super.setParams(params);
-		return this;
-	}
-	
-	public ExecProcessText setParams(String... params) {
-		super.setParams(params);
-		return this;
-	}
-	
-	public ExecProcessText addParams(String... params) {
-		super.addParams(params);
-		return this;
-	}
-	
-	/**
-	 * @param params transform spaces in each param to new params: ["a b c", "d"] -> ["a", "b", "c", "d"]. It don't manage " or tabs.
-	 */
-	public ExecProcessText addSpacedParams(String... params) {
-		super.addSpacedParams(params);
-		return this;
-	}
-	
-	/**
-	 * @param params transform spaces in each param to new params: ["a b c", "d"] -> ["a", "b", "c", "d"]. It don't manage " or tabs.
-	 */
-	public ExecProcessText setSpacedParams(String... params) {
-		super.setSpacedParams(params);
-		return this;
 	}
 	
 	public ExecProcessText setEnvironmentVar(String key, String value) {
@@ -220,6 +188,19 @@ public class ExecProcessText extends ExecProcess {
 	
 	public ExecProcessText alterProcessBuilderBeforeStartIt(Consumer<ProcessBuilder> alter_process_builder) {
 		super.alterProcessBuilderBeforeStartIt(alter_process_builder);
+		return this;
+	}
+	
+	public ExecProcessText addParameters(String... params) {
+		super.addParameters(params);
+		return this;
+	}
+	
+	/**
+	 * @param params transform spaces in each param to new parameters: "a b c d" -> ["a", "b", "c", "d"], and it manage " but not tabs.
+	 */
+	public ExecProcessText addBulkParameters(String params) {
+		super.addBulkParameters(params);
 		return this;
 	}
 	

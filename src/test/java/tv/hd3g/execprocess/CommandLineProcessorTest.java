@@ -63,7 +63,7 @@ public class CommandLineProcessorTest extends TestCase {
 		assertNotNull(cmd);
 		
 		assertEquals("aaa bbb", cmd.getExecName());
-		assertEquals("-", cmd.getParamKeysStartsWith());
+		assertEquals("-", cmd.getParametersKeysStartsWith());
 		
 		ProcessedCommandLine pcl = cmd.process();
 		assertNotNull(pcl.getParameters());
@@ -148,7 +148,8 @@ public class CommandLineProcessorTest extends TestCase {
 		CommandLineProcessor clp = new CommandLineProcessor();
 		CommandLine cmd = clp.createCommandLine("exec -a 1 /b 2");
 		
-		ProcessedCommandLine pcl = cmd.setParamKeysStartsWith("/").process();
+		cmd.setParametersKeysStartsWith("/");
+		ProcessedCommandLine pcl = cmd.process();
 		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "/b", "2").toArray(), pcl.getParameters().toArray()));
 		assertNull(pcl.getValues("-a"));
 		assertNotNull(pcl.getValues("/b"));
@@ -163,10 +164,10 @@ public class CommandLineProcessorTest extends TestCase {
 		ProcessedCommandLine pcl = new CommandLineProcessor().createCommandLine("java -a 1 -b 2").process();
 		
 		ExecProcess ep1 = new ExecProcess(pcl, ExecProcessTest.executable_finder);
-		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-b", "2").toArray(), ep1.getParams().toArray()));
+		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-b", "2").toArray(), ep1.getParameters().toArray()));
 		
 		ExecProcessText ep2 = new ExecProcessText(pcl, ExecProcessTest.executable_finder);
-		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-b", "2").toArray(), ep2.getParams().toArray()));
+		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-b", "2").toArray(), ep2.getParameters().toArray()));
 	}
 	
 }

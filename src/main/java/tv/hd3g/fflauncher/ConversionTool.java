@@ -293,7 +293,7 @@ public class ConversionTool {
 			exec_process.setMaxExecutionTime(max_exec_time_ms, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
 		}
 		
-		exec_process.setParams(createProcessedCommandLine().getParameters());
+		exec_process.importParametersFrom(createProcessedCommandLine());
 		applyExecProcessCatcher(exec_process);
 		
 		return exec_process;
