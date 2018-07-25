@@ -125,7 +125,7 @@ public class CommandLineProcessor {
 		
 		private final String exec_name;
 		
-		CommandLine(String full_command_line_with_vars) {
+		private CommandLine(String full_command_line_with_vars) {
 			super(full_command_line_with_vars);
 			
 			if (parameters.isEmpty()) {
@@ -138,6 +138,22 @@ public class CommandLineProcessor {
 		
 		public String getExecName() {
 			return exec_name;
+		}
+		
+		/**
+		 * @return var_name
+		 */
+		public String addVariable(String var_name) {
+			addParameters(start_var_tag + var_name + end_var_tag);
+			return var_name;
+		}
+		
+		/**
+		 * @return var_name
+		 */
+		public String prependVariable(String var_name) {
+			prependParameters(start_var_tag + var_name + end_var_tag);
+			return var_name;
 		}
 		
 		/**
@@ -222,7 +238,7 @@ public class CommandLineProcessor {
 		
 		public class ProcessedCommandLine extends ParametersUtility {
 			
-			ProcessedCommandLine(List<String> processed_params) {
+			private ProcessedCommandLine(List<String> processed_params) {
 				super(processed_params);
 			}
 			

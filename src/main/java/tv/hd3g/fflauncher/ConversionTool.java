@@ -153,11 +153,6 @@ public class ConversionTool {
 		}
 	}
 	
-	@Deprecated
-	ExecProcessText prepareExecProcessForShortCommands() throws IOException {
-		return new ExecProcessText(executable).setMaxExecutionTime(max_exec_time_ms, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
-	}
-	
 	/**
 	 * @return result
 	 */

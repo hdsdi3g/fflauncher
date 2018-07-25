@@ -206,53 +206,78 @@ abstract class FFbase extends ConversionTool {
 		
 	}
 	
-	public enum FFLogLevel {
-		/**
-		 * Show nothing at all; be silent.
-		 */
-		quiet,
+	/**
+	 * Add like -loglevel repeat+level+verbose
+	 */
+	public FFbase addLogLevel(FFLogLevel level, boolean repeat, boolean display_level) {
+		command_line.ifHasNotParameter(() -> {
+			StringBuilder sb = new StringBuilder();
+			if (repeat) {
+				sb.append("repeat+");
+			}
+			if (display_level) {
+				sb.append("level+");
+			}
+			sb.append(level.name());
+			command_line.prependParameters("-loglevel", sb.toString());
+		}, "-loglevel", "-v");
 		
-		/**
-		 * Only show fatal errors which could lead the process to crash, such as an assertion failure. This is not currently used for anything.
-		 */
-		panic,
-		
-		/**
-		 * Only show fatal errors. These are errors after which the process absolutely cannot continue.
-		 */
-		fatal,
-		
-		/**
-		 * Show all errors, including ones which can be recovered from.
-		 */
-		error,
-		
-		/**
-		 * Show all warnings and errors. Any message related to possibly incorrect or unexpected events will be shown.
-		 */
-		warning,
-		
-		/**
-		 * Show informative messages during processing. This is in addition to warnings and errors. This is the default value.
-		 */
-		info,
-		/**
-		 * Same as info, except more verbose.
-		 */
-		verbose,
-		
-		/**
-		 * Show everything, including debugging information.
-		 */
-		debug,
-		
-		trace
+		return this;
 	}
 	
-	public FFbase addLogLevel(FFLogLevel level, boolean repeat, boolean display_level) {
-		// TODO command_line.addParams(params)
+	public boolean isLogLevelSet() {
+		return command_line.hasParameters("-loglevel", "-v");
+	}
+	
+	public FFbase setHidebanner() {
+		command_line.ifHasNotParameter(() -> {
+			command_line.prependParameters("-hide_banner");
+		}, "-hide_banner");
+		return this;
+	}
+	
+	public boolean isHidebanner() {
+		return command_line.hasParameters("-hide_banner");
+	}
+	
+	public FFbase setOverwriteOutputFiles() {
+		command_line.ifHasNotParameter(() -> {
+			command_line.prependParameters("-y");
+		}, "-y");
+		return this;
+	}
+	
+	public boolean isOverwriteOutputFiles() {
+		return command_line.hasParameters("-y");
+	}
+	
+	public FFbase setNeverOverwriteOutputFiles() {
+		command_line.ifHasNotParameter(() -> {
+			command_line.prependParameters("-n");
+		}, "-n");
+		return this;
+	}
+	
+	public boolean isNeverOverwriteOutputFiles() {
+		return command_line.hasParameters("-n");
+	}
+	
+	/**
+	 * Define cmd var name like <%IN_AUTOMATIC_n%> with "n" the # of setted sources.
+	 * Add -i parameter
+	 */
+	public FFbase addSimpleInputSource(String source_name, String... source_options) {
+		if (source_name == null) {
+			throw new NullPointerException("\"source_name\" can't to be null");
+		}
 		
-		// ffmpeg -loglevel repeat+level+verbose
+		Stream<String> s_source_options = Stream.empty();
+		if (source_options != null) {
+			s_source_options = Arrays.stream(source_options);
+		}
+		
+		String varname = command_line.addVariable("IN_AUTOMATIC_" + input_sources.size());
+		addInputSource(source_name, varname, Stream.concat(s_source_options, Stream.of("-i")).collect(Collectors.toList()), Collections.emptyList());
 		
 		return this;
 	}

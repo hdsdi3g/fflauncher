@@ -279,6 +279,7 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	 * Only set if setKeepStdout is set (false by default), else return empty text.
 	 * @param keep_empty_lines if set false, discard all empty trimed lines
 	 * @param new_line_separator replace new line char by this
+	 *        Use System.lineSeparator() if needed
 	 */
 	public String getStdout(boolean keep_empty_lines, String new_line_separator) {
 		return getStdoutLines(keep_empty_lines).collect(Collectors.joining(new_line_separator));
@@ -288,6 +289,7 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	 * Only set if setKeepStdout is set (false by default), else return empty text.
 	 * @param keep_empty_lines if set false, discard all empty trimed lines
 	 * @param new_line_separator replace new line char by this
+	 *        Use System.lineSeparator() if needed
 	 */
 	public String getStderr(boolean keep_empty_lines, String new_line_separator) {
 		return getStderrLines(keep_empty_lines).collect(Collectors.joining(new_line_separator));
@@ -297,6 +299,7 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	 * Only set if setKeepStdout is set (false by default), else return empty text.
 	 * @param keep_empty_lines if set false, discard all empty trimed lines
 	 * @param new_line_separator replace new line char by this
+	 *        Use System.lineSeparator() if needed
 	 */
 	public String getStdouterr(boolean keep_empty_lines, String new_line_separator) {
 		return getStdouterrLines(keep_empty_lines).collect(Collectors.joining(new_line_separator));

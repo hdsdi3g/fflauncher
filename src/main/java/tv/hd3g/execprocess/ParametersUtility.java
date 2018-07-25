@@ -181,6 +181,36 @@ public class ParametersUtility {
 	}
 	
 	/**
+	 * @param params OR link
+	 */
+	public boolean hasParameters(String... params) {
+		if (params == null) {
+			throw new NullPointerException("\"params\" can't to be null");
+		}
+		
+		return Arrays.stream(params).filter(p -> {
+			return p != null;
+		}).anyMatch(parameter -> {
+			String param = conformParameterKey(parameter);
+			return parameters.contains(param);
+		});
+	}
+	
+	/**
+	 * @param in_parameters OR link
+	 */
+	public ParametersUtility ifHasNotParameter(Runnable to_do_if_missing, String... in_parameters) {
+		if (to_do_if_missing == null) {
+			throw new NullPointerException("\"to_do_if_missing\" can't to be null");
+		}
+		if (hasParameters(in_parameters) == false) {
+			to_do_if_missing.run();
+		}
+		
+		return this;
+	}
+	
+	/**
 	 * @return never null
 	 */
 	public ArrayList<String> getParameters() {
