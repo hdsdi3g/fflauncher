@@ -238,6 +238,53 @@ public class ParametersUtility {
 		return this;
 	}
 	
+	/**
+	 * @param params don't alter params
+	 */
+	public ParametersUtility prependParameters(Collection<String> params) {
+		if (params == null) {
+			throw new NullPointerException("\"params\" can't to be null");
+		}
+		
+		List<String> new_list = Stream.concat(params.stream().filter(p -> p != null), parameters.stream()).collect(Collectors.toList());
+		parameters.clear();
+		parameters.addAll(new_list);
+		
+		log.trace("Prepend parameters: {}", () -> params);
+		
+		return this;
+	}
+	
+	/**
+	 * @param params add all in front of command line, don't alter params
+	 */
+	public ParametersUtility prependParameters(String... params) {
+		if (params == null) {
+			throw new NullPointerException("\"params\" can't to be null");
+		}
+		
+		prependParameters(Arrays.stream(params).filter(p -> {
+			return p != null;
+		}).collect(Collectors.toList()));
+		
+		return this;
+	}
+	
+	/**
+	 * @param params params add all in front of command line, transform spaces in each param to new params: "a b c d" -> ["a", "b", "c", "d"], and it manage " but not tabs.
+	 */
+	public ParametersUtility prependBulkParameters(String params) {
+		if (params == null) {
+			throw new NullPointerException("\"params\" can't to be null");
+		}
+		
+		prependParameters(filterAnTransformParameter.apply(params).map(arg -> {
+			return arg.toString();
+		}).collect(Collectors.toList()));
+		
+		return this;
+	}
+	
 	public String toString() {
 		return parameters.stream().collect(Collectors.joining(" "));
 	}

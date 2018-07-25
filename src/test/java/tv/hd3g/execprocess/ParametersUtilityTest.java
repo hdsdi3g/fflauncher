@@ -149,4 +149,23 @@ public class ParametersUtilityTest extends TestCase {
 		assertEquals("$", pu2.getParametersKeysStartsWith());
 	}
 	
+	public void testPrepend() {
+		ParametersUtility pu = new ParametersUtility("-3 -4");
+		pu.prependBulkParameters("-1 -2");
+		
+		assertEquals(4, pu.getParameters().size());
+		assertEquals("-1 -2 -3 -4", pu.toString());
+		
+		pu.clear();
+		pu.prependParameters("-3", "-4");
+		pu.prependParameters("-1", "-2");
+		assertEquals(4, pu.getParameters().size());
+		assertEquals("-1 -2 -3 -4", pu.toString());
+		
+		pu.clear();
+		pu.prependParameters(Arrays.asList("-3", "-4"));
+		pu.prependParameters(Arrays.asList("-1", "-2"));
+		assertEquals(4, pu.getParameters().size());
+		assertEquals("-1 -2 -3 -4", pu.toString());
+	}
 }

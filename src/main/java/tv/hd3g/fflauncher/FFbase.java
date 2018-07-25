@@ -252,6 +252,8 @@ abstract class FFbase extends ConversionTool {
 	public FFbase addLogLevel(FFLogLevel level, boolean repeat, boolean display_level) {
 		// TODO command_line.addParams(params)
 		
+		// ffmpeg -loglevel repeat+level+verbose
+		
 		return this;
 	}
 	
