@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
+ * Manipulate command line parameters: add, parse, get, list...
  * Don't manage executable name here.
  */
 public class ParametersUtility {
@@ -64,6 +65,16 @@ public class ParametersUtility {
 		parameters = new ArrayList<>();
 	}
 	
+	public ParametersUtility(String bulk_parameters) {
+		this();
+		addBulkParameters(bulk_parameters);
+	}
+	
+	public ParametersUtility(Collection<String> parameters) {
+		this();
+		addParameters(parameters);
+	}
+	
 	/**
 	 * Don't touch to current parameters, only parameter_keys_starts_with
 	 */
@@ -76,6 +87,8 @@ public class ParametersUtility {
 	 * Transfer (clone) current parameters and parameter_keys_starts_with
 	 */
 	public ParametersUtility importParametersFrom(ParametersUtility previous_instance) {
+		log.trace("Import from {}", () -> previous_instance);
+		
 		parameter_keys_starts_with = previous_instance.parameter_keys_starts_with;
 		parameters.clear();
 		parameters.addAll(previous_instance.parameters);
@@ -162,6 +175,7 @@ public class ParametersUtility {
 	};
 	
 	public ParametersUtility clear() {
+		log.trace("Clear all");
 		parameters.clear();
 		return this;
 	}
@@ -185,6 +199,8 @@ public class ParametersUtility {
 			return p != null;
 		}).collect(Collectors.toList()));
 		
+		log.trace("Add parameters: {}", () -> Arrays.stream(params).collect(Collectors.toList()));
+		
 		return this;
 	}
 	
@@ -199,6 +215,8 @@ public class ParametersUtility {
 		parameters.addAll(params.stream().filter(p -> {
 			return p != null;
 		}).collect(Collectors.toList()));
+		
+		log.trace("Add parameters: {}", () -> params);
 		
 		return this;
 	}
@@ -215,6 +233,8 @@ public class ParametersUtility {
 			return arg.toString();
 		}).collect(Collectors.toList()));
 		
+		log.trace("Add parameters: " + params);
+		
 		return this;
 	}
 	
@@ -227,6 +247,7 @@ public class ParametersUtility {
 	 */
 	public ParametersUtility setParametersKeysStartsWith(String parameters_keys_starts_with) {
 		parameter_keys_starts_with = parameters_keys_starts_with;
+		log.debug("Set parameters key start with: " + parameters_keys_starts_with);
 		return this;
 	}
 	
@@ -309,7 +330,7 @@ public class ParametersUtility {
 							parameters.remove(pos + 1);
 						}
 					}
-					parameters.remove(pos);
+					log.trace("Remove parameter: " + parameters.remove(pos));
 					return true;
 				}
 			}
@@ -348,6 +369,7 @@ public class ParametersUtility {
 					} else {
 						parameters.add(new_value);
 					}
+					log.trace("Add parameter: " + new_value);
 					return true;
 				}
 			}

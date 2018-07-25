@@ -52,6 +52,7 @@ public class ExecProcess extends ParametersUtility {
 	 * @param executable can be a simple file or an exact full path
 	 */
 	public ExecProcess(String executable, ExecutableFinder exec_finder) throws IOException {
+		super();
 		this.executable = exec_finder.get(executable);
 		environment = new LinkedHashMap<>();
 		end_exec_callback_list = new ArrayList<>(1);
@@ -59,6 +60,7 @@ public class ExecProcess extends ParametersUtility {
 	}
 	
 	public ExecProcess(File executable) throws IOException {
+		super();
 		if (executable.isFile() == false | executable.exists() == false) {
 			throw new FileNotFoundException("Can't found " + executable);
 		} else if (executable.canExecute() == false) {
@@ -88,10 +90,6 @@ public class ExecProcess extends ParametersUtility {
 		exec_code_must_be_zero = true;
 		setWorkingDirectory(new File(System.getProperty("java.io.tmpdir", "")));
 	}
-	
-	/*public Map<String, String> getEnvironment() {
-		return environment;
-	}*/
 	
 	/**
 	 * @return null if not found

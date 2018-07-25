@@ -126,8 +126,7 @@ public class CommandLineProcessor {
 		private final String exec_name;
 		
 		CommandLine(String full_command_line_with_vars) {
-			super();
-			addBulkParameters(full_command_line_with_vars);
+			super(full_command_line_with_vars);
 			
 			if (parameters.isEmpty()) {
 				throw new RuntimeException("Empty params");
@@ -224,8 +223,7 @@ public class CommandLineProcessor {
 		public class ProcessedCommandLine extends ParametersUtility {
 			
 			ProcessedCommandLine(List<String> processed_params) {
-				super();
-				addParameters(processed_params);
+				super(processed_params);
 			}
 			
 			public String toString() {
