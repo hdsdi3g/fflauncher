@@ -45,7 +45,7 @@ public class GenerateVideoFile extends Recipe {
 		ffmpeg.setOverwriteOutputFiles();
 		
 		CommandLine cmd = ffmpeg.getCommandLine();
-		cmd.addBulkParameters("-f lavfi -i smptebars=duration=10:size=1920x1080:rate=25");
+		cmd.addBulkParameters("-f lavfi -i smptebars=duration=5:size=1920x1080:rate=25");
 		cmd.addParameters("-vf", "drawtext=\"fontsize=15:timecode='00\\:00\\:00\\:00':rate=25:fontsize=72:fontcolor='white':boxcolor=0x000000AA:box=1:x=1920/2:y=800\"");
 		
 		cmd.addBulkParameters("-codec:v ffv1"); // TODO add audio -codec:a opus
