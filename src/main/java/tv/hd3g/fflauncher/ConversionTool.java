@@ -42,7 +42,6 @@ import org.apache.logging.log4j.Logger;
 import tv.hd3g.execprocess.CommandLineProcessor.CommandLine;
 import tv.hd3g.execprocess.CommandLineProcessor.CommandLine.ProcessedCommandLine;
 import tv.hd3g.execprocess.ExecProcessText;
-import tv.hd3g.execprocess.ExecProcessTextResult;
 import tv.hd3g.execprocess.ExecutableFinder;
 
 public class ConversionTool {
@@ -125,10 +124,6 @@ public class ConversionTool {
 	
 	public ConversionTool setMaxExecTimeScheduler(ScheduledThreadPoolExecutor max_exec_time_scheduler) {
 		this.max_exec_time_scheduler = max_exec_time_scheduler;
-		this.max_exec_time_scheduler = max_exec_time_scheduler;
-		if (max_exec_time_scheduler == null) {
-			throw new NullPointerException("\"max_exec_time_scheduler\" can't to be null");
-		}
 		return this;
 	}
 	
@@ -151,16 +146,6 @@ public class ConversionTool {
 		if (exec_process_catcher != null) {
 			exec_process_catcher.accept(exec_process);
 		}
-	}
-	
-	/**
-	 * @return result
-	 */
-	protected ExecProcessTextResult checkExecution(ExecProcessTextResult result) throws IOException {
-		if (result.isCorrectlyDone() == false) {
-			throw new IOException("Can't execute correcly " + result.getCommandline() + ", " + result.getEndStatus() + " [" + result.getExitCode() + "] \"" + result.getStderr(false, " ") + "\"");
-		}
-		return result;
 	}
 	
 	class ParameterReference {
@@ -255,11 +240,12 @@ public class ConversionTool {
 		log.warn("Missing I/O variable \"" + var_name + "\" in command line \"" + command_line.toString() + "\". Ressource \"" + ressource + "\" will be ignored");
 	}
 	
-	public ProcessedCommandLine createProcessedCommandLine() {
+	public ProcessedCommandLine createProcessedCommandLine() {// TODO tests !
 		final HashMap<String, String> all_vars_to_inject = new HashMap<>(parameters_variables);
 		
 		Stream.concat(input_sources.stream(), output_expected_destinations.stream()).forEach(param_ref -> {
 			String var_name = param_ref.var_name_in_command_line;
+			
 			boolean done = command_line.injectParamsAroundVariable(var_name, param_ref.parameters_before_ref, param_ref.parameters_after_ref);
 			
 			if (done) {
@@ -275,17 +261,15 @@ public class ConversionTool {
 		return command_line.process(all_vars_to_inject, remove_params_if_no_var_to_inject);
 	}
 	
-	/**
-	 * @param short_command_limited_execution_time controlled by setMaxExecutionTimeForShortCommands()
-	 * @param working_directory can be null
-	 */
-	public ExecProcessText createExec(boolean short_command_limited_execution_time, File working_directory) throws IOException {
+	private ExecProcessText createExec(boolean short_command_limited_execution_time, File working_directory) throws IOException {
 		ExecProcessText exec_process = new ExecProcessText(executable);
+		
+		if (short_command_limited_execution_time) {
+			exec_process.setMaxExecutionTime(max_exec_time_ms, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
+		}
 		
 		if (working_directory != null) {
 			exec_process.setWorkingDirectory(working_directory);
-		} else if (short_command_limited_execution_time) {
-			exec_process.setMaxExecutionTime(max_exec_time_ms, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
 		}
 		
 		exec_process.importParametersFrom(createProcessedCommandLine());
@@ -294,8 +278,30 @@ public class ConversionTool {
 		return exec_process;
 	}
 	
-	public ExecProcessText createExec(boolean limited_execution_time) throws IOException {
-		return createExec(limited_execution_time, null);
+	/**
+	 * Time controlled by setMaxExecutionTimeForShortCommands()
+	 * @param working_directory can be null
+	 */
+	public ExecProcessText createExecWithLimitedExecutionTime(File working_directory) throws IOException {
+		return createExec(true, working_directory);
+	}
+	
+	/**
+	 * Time controlled by setMaxExecutionTimeForShortCommands()
+	 */
+	public ExecProcessText createExecWithLimitedExecutionTime() throws IOException {
+		return createExec(true, null);
+	}
+	
+	public ExecProcessText createExec() throws IOException {
+		return createExec(false, null);
+	}
+	
+	/**
+	 * @param working_directory can be null
+	 */
+	public ExecProcessText createExec(File working_directory) throws IOException {
+		return createExec(false, working_directory);
 	}
 	
 	private static final Function<ParameterReference, String> getRessourceFromParameterReference = param_ref -> param_ref.ressource;
@@ -326,6 +332,10 @@ public class ConversionTool {
 	 */
 	public List<String> getDeclaredDestinations() {
 		return output_expected_destinations.stream().map(getRessourceFromParameterReference).collect(Collectors.toList());
+	}
+	
+	public CommandLine getCommandLine() {
+		return command_line;
 	}
 	
 }

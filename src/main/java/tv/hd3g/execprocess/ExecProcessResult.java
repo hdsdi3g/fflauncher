@@ -106,6 +106,7 @@ class ExecProcessResult {
 		return this;
 	}
 	
+	@Deprecated
 	ExecProcessResult start(ThreadFactory thread_factory) {
 		thread_factory.newThread(getStart()).start();
 		return this;
@@ -269,7 +270,7 @@ class ExecProcessResult {
 	 * Async
 	 * @return CF of this
 	 */
-	public CompletableFuture<? extends ExecProcessResult> waitForEnd(Executor executor) {
+	public CompletableFuture<? extends ExecProcessResult> waitForEnd(Executor executor) {// XXX non-blocking
 		return CompletableFuture.supplyAsync(() -> {
 			return waitForEnd();
 		}, executor);
@@ -440,6 +441,16 @@ class ExecProcessResult {
 			}
 		}
 		return std_in_injection;
+	}
+	
+	/**
+	 * @return this
+	 */
+	public ExecProcessResult checkExecution() throws IOException {
+		if (isCorrectlyDone() == false) {
+			throw new IOException("Can't execute correcly " + getCommandline() + ", " + getEndStatus() + " [" + getExitCode() + "]");
+		}
+		return this;
 	}
 	
 }

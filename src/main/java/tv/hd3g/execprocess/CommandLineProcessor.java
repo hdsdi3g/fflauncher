@@ -159,7 +159,7 @@ public class CommandLineProcessor {
 		/**
 		 * @return true if the update is done
 		 */
-		public boolean injectParamsAroundVariable(String var_name, Collection<String> add_before, Collection<String> add_after) {
+		public boolean injectParamsAroundVariable(String var_name, Collection<String> add_before, Collection<String> add_after) { // TODO tests !
 			if (var_name == null) {
 				throw new NullPointerException("\"var_name\" can't to be null");
 			} else if (add_before == null) {
@@ -175,7 +175,7 @@ public class CommandLineProcessor {
 					String current_var_name = extractVarNameFromTaggedParameter(arg);
 					if (current_var_name.equals(var_name)) {
 						is_done.set(true);
-						return Stream.concat(Stream.concat(add_before.stream(), Stream.of(arg)), add_after.stream()).collect(Collectors.toList());
+						return Stream.concat(list.stream(), Stream.concat(Stream.concat(add_before.stream(), Stream.of(arg)), add_after.stream())).collect(Collectors.toList());
 					}
 				}
 				

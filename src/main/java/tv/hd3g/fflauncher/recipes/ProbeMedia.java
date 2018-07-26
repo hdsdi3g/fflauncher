@@ -18,8 +18,6 @@ package tv.hd3g.fflauncher.recipes;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ForkJoinPool;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -35,75 +33,40 @@ import tv.hd3g.execprocess.ExecutableFinder;
 import tv.hd3g.fflauncher.FFprobe;
 import tv.hd3g.fflauncher.FFprobe.FFPrintFormat;
 
-public class ProbeMedia {
+public class ProbeMedia extends Recipe {
 	private static Logger log = LogManager.getLogger();
 	
-	private final ExecutableFinder exec_finder;
-	private final String exec_name;
-	private final Executor executor;
-	
-	public ProbeMedia(ExecutableFinder exec_finder, String exec_name, Executor executor) {
-		this.exec_finder = exec_finder;
-		if (exec_finder == null) {
-			throw new NullPointerException("\"exec_finder\" can't to be null");
-		}
-		this.exec_name = exec_name;
-		if (exec_name == null) {
-			throw new NullPointerException("\"exec_name\" can't to be null");
-		}
-		this.executor = executor;
-		if (executor == null) {
-			throw new NullPointerException("\"executor\" can't to be null");
-		}
-	}
-	
-	/**
-	 * Use ffprobe as exec_name
-	 */
-	public ProbeMedia(ExecutableFinder exec_finder, Executor executor) {
-		this(exec_finder, "ffprobe", executor);
-	}
-	
-	/**
-	 * ForkJoinPool as executor
-	 */
-	public ProbeMedia(ExecutableFinder exec_finder, String exec_name) {
-		this(exec_finder, exec_name, ForkJoinPool.commonPool());
-	}
-	
-	/**
-	 * Use ffprobe as exec_name
-	 */
-	public ProbeMedia(Executor executor) {
-		this(new ExecutableFinder(), "ffprobe", executor);
-	}
-	
-	/**
-	 * Use ffprobe as exec_name and ForkJoinPool as executor
-	 */
 	public ProbeMedia() {
-		this(new ExecutableFinder(), "ffprobe", ForkJoinPool.commonPool());
+		super();
+	}
+	
+	public ProbeMedia(ExecutableFinder exec_finder, String exec_name) {
+		super(exec_finder, exec_name);
 	}
 	
 	/**
 	 * Get streams, format and chapters.
 	 */
 	CompletableFuture<FfprobeType> doAnalysing(String source) throws IOException {
-		FFprobe ffprobe = new FFprobe(exec_finder, new CommandLineProcessor().createEmptyCommandLine(exec_name));
+		FFprobe ffprobe = new FFprobe(getExecFinder(), new CommandLineProcessor().createEmptyCommandLine(getExecName()));
 		
 		ffprobe.setPrintFormat(FFPrintFormat.xml).setShowStreams().setShowFormat().setShowChapters().isHidebanner();
 		ffprobe.addSimpleInputSource(source);
 		
-		ExecProcessText exec = ffprobe.createExec(true);
+		ExecProcessText exec = ffprobe.createExecWithLimitedExecutionTime();
 		log.info("Queue \"" + source + "\" ffprobe analysing");
 		
-		return exec.start(executor).waitForEnd(executor).thenApplyAsync(result -> {
+		return exec.start(getExecutionExecutor()).waitForEnd(getPostProcessExecutor()).thenApplyAsync(result -> {
 			try {
-				return FFprobe.fromXML(result.getStdout(false, System.lineSeparator()));
+				return FFprobe.fromXML(result.checkExecution().getStdout(false, System.lineSeparator()));
 			} catch (JAXBException | ParserConfigurationException | SAXException | IOException e) {
 				throw new RuntimeException("Can't analyst " + source, e);
 			}
-		}, executor);
+		}, getPostProcessExecutor());
+	}
+	
+	protected String getDefaultExecName() {
+		return "ffprobe";
 	}
 	
 }

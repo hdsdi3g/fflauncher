@@ -32,11 +32,46 @@ public class FFmpeg extends FFbase {
 		super(exec_finder, command_line);
 	}
 	
-	// overwrite = new Option("-y", "overwrite output files").createSwitch();
-	// ignore_unknown = new Option("-ignore_unknown", "Ignore unknown stream types").createSwitch();
-	// loglevel = new Option("-loglevel", "set logging level").setAlternateParams("-v").prepareEmptyValue();
-	// stats = new Option("-stats", "print progress report during encoding").createSwitch();
+	/**
+	 * Define cmd var name like <%OUT_AUTOMATIC_n%> with "n" the # of setted destination.
+	 * Add -i parameter
+	 */
+	public FFbase addSimpleOutputDestination(String destination_name, String destination_container) {
+		if (destination_name == null) {
+			throw new NullPointerException("\"destination_name\" can't to be null");
+		} else if (destination_container == null) {
+			throw new NullPointerException("\"destination_container\" can't to be null");
+		}
+		
+		/*Stream<String> s_source_options = Stream.empty();
+		if (source_options != null) {
+			s_source_options = Arrays.stream(source_options);
+		}*/
+		
+		String varname = command_line.addVariable("OUT_AUTOMATIC_" + output_expected_destinations.size());
+		addOutputDestination(destination_name, varname, "-f", destination_container);
+		return this;
+	}
 	
-	// TODO implements ffmpeg
-	// check output file(s) if exists and not empty
+	/**
+	 * Define cmd var name like <%OUT_AUTOMATIC_n%> with "n" the # of setted destination.
+	 * Add -i parameter
+	 */
+	public FFbase addSimpleOutputDestination(String destination_name) {
+		if (destination_name == null) {
+			throw new NullPointerException("\"destination_name\" can't to be null");
+		}
+		
+		/*Stream<String> s_source_options = Stream.empty();
+		if (source_options != null) {
+			s_source_options = Arrays.stream(source_options);
+		}*/
+		
+		String varname = command_line.addVariable("OUT_AUTOMATIC_" + output_expected_destinations.size());
+		addOutputDestination(destination_name, varname);
+		return this;
+	}
+	
+	// TODO check output file(s) if exists (only if file is expected) and not empty after exec
+	// TODO what is ffmetadata in ffmpeg's formats ?
 }

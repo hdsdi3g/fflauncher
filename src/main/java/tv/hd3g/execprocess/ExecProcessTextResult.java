@@ -83,6 +83,7 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	/**
 	 * Async !
 	 */
+	@Deprecated
 	ExecProcessTextResult start(ThreadFactory thread_factory) {
 		super.start(thread_factory);
 		return this;
@@ -325,10 +326,21 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	 * Async
 	 * @return CF of this
 	 */
-	public CompletableFuture<ExecProcessTextResult> waitForEnd(Executor executor) {
+	public CompletableFuture<ExecProcessTextResult> waitForEnd(Executor executor) {// XXX non-blocking
 		return CompletableFuture.supplyAsync(() -> {
 			return waitForEnd();
 		}, executor);
+	}
+	
+	/**
+	 * @return this
+	 * @throws RuntimeException
+	 */
+	public ExecProcessTextResult checkExecution() {
+		if (isCorrectlyDone() == false) {
+			throw new RuntimeException(new IOException("Can't execute correcly \"" + getCommandline() + "\", " + getEndStatus() + " [" + getExitCode() + "] \"" + getStderr(false, System.lineSeparator()) + "\""));
+		}
+		return this;
 	}
 	
 }

@@ -116,7 +116,7 @@ abstract class FFbase extends ConversionTool {
 		}
 		
 		public FFVersion getVersion() throws IOException {
-			ExecProcessTextResult result = checkExecution(createExec(true).addBulkParameters("-loglevel quiet -version").run());
+			ExecProcessTextResult result = createExecWithLimitedExecutionTime().addBulkParameters("-loglevel quiet -version").run().checkExecution();
 			
 			return new FFVersion(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -125,7 +125,7 @@ abstract class FFbase extends ConversionTool {
 		 * -codecs show available codecs
 		 */
 		public List<FFCodec> getCodecs() throws IOException {
-			ExecProcessTextResult result = checkExecution(createExec(true).addBulkParameters("-codecs").run());
+			ExecProcessTextResult result = createExecWithLimitedExecutionTime().addBulkParameters("-codecs").run().checkExecution();
 			
 			return FFCodec.parse(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -134,7 +134,7 @@ abstract class FFbase extends ConversionTool {
 		 * -formats show available formats
 		 */
 		public List<FFFormat> getFormats() throws IOException {
-			ExecProcessTextResult result = checkExecution(createExec(true).addBulkParameters("-formats").run());
+			ExecProcessTextResult result = createExecWithLimitedExecutionTime().addBulkParameters("-formats").run().checkExecution();
 			
 			return FFFormat.parseFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -143,7 +143,7 @@ abstract class FFbase extends ConversionTool {
 		 * -devices show available devices
 		 */
 		public List<FFDevice> getDevices() throws IOException {
-			ExecProcessTextResult result = checkExecution(createExec(true).addBulkParameters("-devices").run());
+			ExecProcessTextResult result = createExecWithLimitedExecutionTime().addBulkParameters("-devices").run().checkExecution();
 			
 			return FFDevice.parseDevices(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -152,7 +152,7 @@ abstract class FFbase extends ConversionTool {
 		 * -bsfs show available bit stream filters
 		 */
 		public Set<String> getBitStreamFilters() throws IOException {
-			ExecProcessTextResult result = checkExecution(createExec(true).addBulkParameters("-bsfs").run());
+			ExecProcessTextResult result = createExecWithLimitedExecutionTime().addBulkParameters("-bsfs").run().checkExecution();
 			
 			return parseBSFS(result.getStdoutLines(false).map(l -> l.trim()));
 		}
@@ -161,7 +161,7 @@ abstract class FFbase extends ConversionTool {
 		 * -protocols show available protocols
 		 */
 		public FFProtocols getProtocols() throws IOException {
-			ExecProcessTextResult result = checkExecution(createExec(true).addBulkParameters("-protocols").run());
+			ExecProcessTextResult result = createExecWithLimitedExecutionTime().addBulkParameters("-protocols").run().checkExecution();
 			
 			return new FFProtocols(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -170,7 +170,7 @@ abstract class FFbase extends ConversionTool {
 		 * -filters show available filters
 		 */
 		public List<FFFilter> getFilters() throws IOException {
-			ExecProcessTextResult result = checkExecution(createExec(true).addBulkParameters("-filters").run());
+			ExecProcessTextResult result = createExecWithLimitedExecutionTime().addBulkParameters("-filters").run().checkExecution();
 			
 			return FFFilter.parseFilters(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -179,7 +179,7 @@ abstract class FFbase extends ConversionTool {
 		 * -pix_fmts show available pixel formats
 		 */
 		public List<FFPixelFormat> getPixelFormats() throws IOException {
-			ExecProcessTextResult result = checkExecution(createExec(true).addBulkParameters("-pix_fmts").run());
+			ExecProcessTextResult result = createExecWithLimitedExecutionTime().addBulkParameters("-pix_fmts").run().checkExecution();
 			
 			return FFPixelFormat.parsePixelsFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
 		}
@@ -188,7 +188,7 @@ abstract class FFbase extends ConversionTool {
 		 * -hwaccels show available HW acceleration methods
 		 */
 		public Set<String> getAvailableHWAccelerationMethods() throws IOException {
-			ExecProcessTextResult result = checkExecution(createExec(true).addBulkParameters("-pix_fmts").run());
+			ExecProcessTextResult result = createExecWithLimitedExecutionTime().addBulkParameters("-pix_fmts").run().checkExecution();
 			
 			return parseHWAccelerationMethods(result.getStdoutLines(false).map(l -> l.trim()));
 		}
