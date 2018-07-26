@@ -20,18 +20,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import junit.framework.TestCase;
-import tv.hd3g.execprocess.EndExecutionCallback;
-import tv.hd3g.execprocess.ExecProcessResult;
 
 public class EndExecutionCallbackTest extends TestCase {
 	
 	public void test() {
 		
-		ExecProcessResult ref = new ExecProcessResult(new File(""), new ArrayList<>(), new HashMap<>(), new ArrayList<>(), false, null, null, 0, null);
+		ExecProcessResult ref = new ExecProcessResult(new File(""), new ArrayList<>(), new HashMap<>(), new ArrayList<>(), false, null, null, 0, null, ForkJoinPool.commonPool());
 		
 		AtomicInteger t1_pass = new AtomicInteger(0);
 		Consumer<ExecProcessResult> onEnd = t -> {

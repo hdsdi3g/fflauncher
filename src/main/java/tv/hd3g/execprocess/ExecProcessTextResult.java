@@ -26,11 +26,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,8 +56,8 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	 */
 	private List<StdOutErrCallback> stdouterr_callback_list;
 	
-	ExecProcessTextResult(File executable, List<String> params, Map<String, String> environment, List<EndExecutionCallback> observers, boolean exec_code_must_be_zero, File working_directory, ScheduledExecutorService max_exec_time_scheduler, long max_exec_time, Consumer<ProcessBuilder> alter_process_builder) {
-		super(executable, params, environment, observers, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder);
+	ExecProcessTextResult(File executable, List<String> params, Map<String, String> environment, List<EndExecutionCallback> observers, boolean exec_code_must_be_zero, File working_directory, ScheduledExecutorService max_exec_time_scheduler, long max_exec_time, Consumer<ProcessBuilder> alter_process_builder, Executor executor) {
+		super(executable, params, environment, observers, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder, executor);
 		lines = new LinkedBlockingQueue<>();
 	}
 	
@@ -75,33 +74,25 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	/**
 	 * Async !
 	 */
-	ExecProcessTextResult start(Executor executor) {
-		super.start(executor);
+	ExecProcessTextResult start() {
+		super.start();
 		return this;
 	}
 	
 	/**
-	 * Async !
+	 * Please keep override...
 	 */
-	@Deprecated
-	ExecProcessTextResult start(ThreadFactory thread_factory) {
-		super.start(thread_factory);
-		return this;
-	}
-	
-	protected void postStartupAction() {
-		if (process == null) {
-			return;
-		}
+	@Override
+	protected void postStartupAction(Process process) {
 		if (process.isAlive() == false) {
 			return;
 		}
 		
 		if (capture_streams_behavior.canCaptureStdout()) {
-			/*stdout_parser =*/ new StdTextParser(process.getInputStream(), false);
+			/*stdout_parser =*/ new StdTextParser(process.getInputStream(), false, process.pid());
 		}
 		if (capture_streams_behavior.canCaptureStderr()) {
-			/*stderr_parser = */new StdTextParser(process.getErrorStream(), true);
+			/*stderr_parser = */new StdTextParser(process.getErrorStream(), true, process.pid());
 		}
 	}
 	
@@ -110,14 +101,14 @@ public class ExecProcessTextResult extends ExecProcessResult {
 		private final InputStream is;
 		private final boolean std_err;
 		
-		public StdTextParser(InputStream is, boolean std_err) {
+		public StdTextParser(InputStream is, boolean std_err, long pid) {
 			this.is = is;
 			this.std_err = std_err;
 			
 			if (std_err) {
-				setName("StdErr for " + getExecutable().getName() + "#" + getPID());
+				setName("StdErr for " + getExecutable().getName() + "#" + pid);
 			} else {
-				setName("StdOut for " + getExecutable().getName() + "#" + getPID());
+				setName("StdOut for " + getExecutable().getName() + "#" + pid);
 			}
 			
 			setPriority(MIN_PRIORITY);
@@ -209,16 +200,20 @@ public class ExecProcessTextResult extends ExecProcessResult {
 		if (interactive_handler_executor != null && interactive_handler != null) {
 			try {
 				interactive_handler_executor.execute(() -> {
-					String out = interactive_handler.onText(this, line, std_err);
-					if (process.isAlive() == false) {
-						return;
-					}
-					if (out != null) {
-						try {
-							getStdInInjection().println(out);
-						} catch (IOException e) {
-							log.error("Can't send some text to process", e);
+					try {
+						String out = interactive_handler.onText(this, line, std_err);
+						if (getProcess().get().isAlive() == false) {
+							return;
 						}
+						if (out != null) {
+							try {
+								getStdInInjection(r -> r.run()).println(out);
+							} catch (IOException e) {
+								log.error("Can't send some text to process", e);
+							}
+						}
+					} catch (InterruptedException | ExecutionException e1) {
+						throw new RuntimeException("Can't get process", e1);
 					}
 				});
 			} catch (Exception e) {
@@ -309,36 +304,20 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	/**
 	 * Blocking
 	 */
-	public ExecProcessTextResult waitForEnd() {
-		super.waitForEnd();
-		return this;
+	public CompletableFuture<? extends ExecProcessTextResult> waitForEnd() {
+		return super.waitForEnd().thenApply(_this -> this);
 	}
 	
 	/**
-	 * Blocking
-	 */
-	public ExecProcessTextResult waitForEnd(long timeout, TimeUnit unit) {
-		super.waitForEnd(timeout, unit);
-		return this;
-	}
-	
-	/**
-	 * Async
-	 * @return CF of this
-	 */
-	public CompletableFuture<ExecProcessTextResult> waitForEnd(Executor executor) {// XXX non-blocking
-		return CompletableFuture.supplyAsync(() -> {
-			return waitForEnd();
-		}, executor);
-	}
-	
-	/**
-	 * @return this
-	 * @throws RuntimeException
+	 * Blocking during the process ends
 	 */
 	public ExecProcessTextResult checkExecution() {
-		if (isCorrectlyDone() == false) {
-			throw new RuntimeException(new IOException("Can't execute correcly \"" + getCommandline() + "\", " + getEndStatus() + " [" + getExitCode() + "] \"" + getStderr(false, System.lineSeparator()) + "\""));
+		try {
+			if (isCorrectlyDone().get() == false) {
+				throw new RuntimeException("Can't execute correcly \"" + getCommandline() + "\", " + getEndStatus() + " [" + getExitCode() + "] \"" + getStderr(false, System.lineSeparator()) + "\"");
+			}
+		} catch (InterruptedException | ExecutionException e) {
+			throw new RuntimeException("Can't start process " + getCommandline());
 		}
 		return this;
 	}

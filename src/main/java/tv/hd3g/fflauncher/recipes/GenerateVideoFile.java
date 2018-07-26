@@ -55,7 +55,7 @@ public class GenerateVideoFile extends Recipe {
 		ExecProcessText exec = ffmpeg.createExec();
 		log.info("Generate test file to \"" + destination + "\"");
 		
-		return exec.start(getExecutionExecutor()).waitForEnd(getPostProcessExecutor()).thenAcceptAsync(result -> {
+		return exec.start(getExecutionExecutor()).waitForEnd().thenAcceptAsync(result -> {
 			result.checkExecution();
 		}, getPostProcessExecutor());
 	}

@@ -19,9 +19,9 @@ package tv.hd3g.execprocess;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -132,25 +132,20 @@ public class ExecProcessText extends ExecProcess {
 	 * Non-blocking
 	 */
 	public ExecProcessTextResult start(Executor executor) {
-		ExecProcessTextResult r = new ExecProcessTextResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder);
+		ExecProcessTextResult r = new ExecProcessTextResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder, executor);
 		r.setup(capture_streams_behavior, keep_stdout, keep_stderr, interactive_handler, interactive_handler_executor, stdouterr_callback_list);
-		return r.start(executor);
+		return r.start();
 	}
 	
 	/**
-	 * Blocking. It will call waitForEnd before return.
+	 * Blocking, in this current Thread.
 	 */
 	public ExecProcessTextResult run() {
-		return start(r -> r.run()).waitForEnd();
-	}
-	
-	/**
-	 * Non-blocking
-	 */
-	public ExecProcessTextResult start(ThreadFactory thread_factory) {
-		ExecProcessTextResult r = new ExecProcessTextResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder);
-		r.setup(capture_streams_behavior, keep_stdout, keep_stderr, interactive_handler, interactive_handler_executor, stdouterr_callback_list);
-		return r.start(thread_factory);
+		try {
+			return start(r -> r.run()).waitForEnd().get();
+		} catch (InterruptedException | ExecutionException e) {
+			throw new RuntimeException("Can't execute \"" + toString() + "\"", e);
+		}
 	}
 	
 	public ExecProcessText setEnvironmentVar(String key, String value) {

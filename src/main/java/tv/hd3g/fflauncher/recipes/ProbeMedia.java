@@ -56,7 +56,7 @@ public class ProbeMedia extends Recipe {
 		ExecProcessText exec = ffprobe.createExecWithLimitedExecutionTime();
 		log.info("Queue \"" + source + "\" ffprobe analysing");
 		
-		return exec.start(getExecutionExecutor()).waitForEnd(getPostProcessExecutor()).thenApplyAsync(result -> {
+		return exec.start(getExecutionExecutor()).waitForEnd().thenApplyAsync(result -> {
 			try {
 				return FFprobe.fromXML(result.checkExecution().getStdout(false, System.lineSeparator()));
 			} catch (JAXBException | ParserConfigurationException | SAXException | IOException e) {

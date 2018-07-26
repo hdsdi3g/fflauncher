@@ -23,9 +23,10 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -187,29 +188,25 @@ public class ExecProcess extends ParametersUtility {
 	 * Don't process here stdin/out/err
 	 */
 	public ExecProcessResult start(Executor executor) {
-		return new ExecProcessResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder).start(executor);
+		return new ExecProcessResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder, executor).start();
 	}
 	
 	/**
-	 * Non-blocking
-	 * Don't process here stdin/out/err
-	 */
-	public ExecProcessResult start(ThreadFactory thread_factory) {
-		return new ExecProcessResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder).start(thread_factory);
-	}
-	
-	/**
-	 * Blocking. It will call waitForEnd before return.
+	 * Blocking, in this current Thread.
 	 */
 	public ExecProcessResult run() {
-		return start(r -> r.run()).waitForEnd();
+		try {
+			return start(r -> r.run()).waitForEnd().get();
+		} catch (InterruptedException | ExecutionException e) {
+			throw new RuntimeException("Can't execute \"" + toString() + "\"", e);
+		}
 	}
 	
 	/**
 	 * @return new ProcessBuilder based on this configuration, without start the process.
 	 */
 	public ProcessBuilder makeProcessBuilder() {
-		return new ExecProcessResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder).makeProcessBuilder();
+		return new ExecProcessResult(executable, parameters, environment, end_exec_callback_list, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder, ForkJoinPool.commonPool()).makeProcessBuilder();
 	}
 	
 	public String toString() {

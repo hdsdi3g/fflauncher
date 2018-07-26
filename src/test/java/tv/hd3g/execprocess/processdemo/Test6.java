@@ -16,12 +16,14 @@
 */
 package tv.hd3g.execprocess.processdemo;
 
+import java.util.concurrent.Executors;
+
 import tv.hd3g.execprocess.ExecProcessTest;
 
 public class Test6 {
 	
 	public static void main(String[] args) throws Exception {
-		ExecProcessTest.createExec(Test5.class).start(ExecProcessTest.createTF()).waitForEnd();
+		ExecProcessTest.createExec(Test5.class).start(Executors.newSingleThreadExecutor()).waitForEnd();
 	}
 	
 }

@@ -22,9 +22,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -49,13 +50,7 @@ import tv.hd3g.execprocess.processdemo.Test9;
 
 public class ExecProcessTest extends TestCase {
 	
-	public static ThreadFactory createTF() {
-		return r -> {
-			Thread t = new Thread(r, "JUnit test");
-			t.setDaemon(true);
-			return t;
-		};
-	}
+	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 	
 	static final ExecutableFinder executable_finder;
 	
@@ -72,27 +67,27 @@ public class ExecProcessTest extends TestCase {
 		}
 	}
 	
-	public void testSimpleExec() {
+	public void testSimpleExec() throws InterruptedException, ExecutionException {
 		ExecProcessText ept = createExec(Test1.class);
-		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
+		ExecProcessTextResult result = ept.start(executor).waitForEnd().get();
 		
 		assertEquals(Test1.expected, result.getStdouterr(true, ""));
-		assertEquals(0, result.getExitCode());
-		assertEquals(EndStatus.CORRECTLY_DONE, result.getEndStatus());
+		assertEquals(0, (int) result.getExitCode().get());
+		assertEquals(EndStatus.CORRECTLY_DONE, result.getEndStatus().get());
 	}
 	
-	public void testWorkingDirectory() throws IOException {
+	public void testWorkingDirectory() throws IOException, InterruptedException, ExecutionException {
 		ExecProcessText ept = createExec(Test2.class);
 		File wd = new File(System.getProperty("user.dir")).getCanonicalFile();
 		ept.setWorkingDirectory(wd);
 		
 		assertEquals(wd, ept.getWorkingDirectory());
 		
-		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
+		ExecProcessTextResult result = ept.start(executor).waitForEnd().get();
 		assertEquals(wd, result.getWorkingDirectory());
 		
 		assertEquals(wd.getPath(), result.getStdouterr(true, ""));
-		assertEquals(EndStatus.CORRECTLY_DONE, result.getEndStatus());
+		assertEquals(EndStatus.CORRECTLY_DONE, result.getEndStatus().get());
 	}
 	
 	public void testEndExecutionCallback() {
@@ -105,7 +100,7 @@ public class ExecProcessTest extends TestCase {
 			new Thread(t).start();
 		});
 		
-		ExecProcessTextResult result = ept.start(createTF());
+		ExecProcessTextResult result = ept.start(executor);
 		
 		assertTrue(expected_result.get() == null);
 		
@@ -118,7 +113,7 @@ public class ExecProcessTest extends TestCase {
 		assertEquals(result, expected_result.get());
 	}
 	
-	public void testResultValues() throws InterruptedException {
+	public void testResultValues() throws InterruptedException, ExecutionException {
 		long start_date = System.currentTimeMillis() - 1;
 		
 		ExecProcessText ept = createExec(Test3.class);
@@ -132,29 +127,29 @@ public class ExecProcessTest extends TestCase {
 		
 		ept.setEnvironmentVar(Test3.ENV_KEY, Test3.ENV_VALUE);
 		
-		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
+		ExecProcessTextResult result = ept.start(executor).waitForEnd().get();
 		
 		assertEquals(Test3.expected_out, result.getStdout(false, ""));
 		assertEquals(Test3.expected_err, result.getStderr(false, ""));
-		assertEquals(Test3.exit_ok, result.getExitCode());
-		assertEquals(EndStatus.CORRECTLY_DONE, result.getEndStatus());
+		assertEquals(Test3.exit_ok, (int) result.getExitCode().get());
+		assertEquals(EndStatus.CORRECTLY_DONE, result.getEndStatus().get());
 		
 		assertTrue(result.getCommandline().endsWith(Test3.expected_in));
 		assertEquals(ept.executable, result.getExecutable());
-		assertTrue(result.getPID() > 0);
-		assertTrue(result.getUserExec().endsWith(System.getProperty("user.name")));
+		assertTrue(result.getPID().get() > 0);
+		assertTrue(result.getUserExec().get().get().endsWith(System.getProperty("user.name")));
 		
-		assertEquals(Test3.exit_ok, result.getProcess().exitValue());
-		assertEquals(result.getPID(), result.getProcess().pid());
-		assertFalse(result.getProcess().isAlive());
+		assertEquals(Test3.exit_ok, result.getProcess().get().exitValue());
+		assertEquals((long) result.getPID().get(), result.getProcess().get().pid());
+		assertFalse(result.getProcess().get().isAlive());
 		
-		assertTrue(result.getStartDate() > start_date);
-		assertTrue(result.getStartDate() < System.currentTimeMillis());
+		assertTrue(result.getStartDate().get() > start_date);
+		assertTrue(result.getStartDate().get() < System.currentTimeMillis());
 		assertTrue(result.getEnvironment().getOrDefault(Test3.ENV_KEY, "").equals(Test3.ENV_VALUE));
 		
 	}
 	
-	public void testStdObserver() {
+	public void testStdObserver() throws InterruptedException, ExecutionException {
 		ExecProcessText ept = createExec(Test4.class);
 		
 		ept.setKeepStdout(false);
@@ -177,7 +172,7 @@ public class ExecProcessTest extends TestCase {
 			catch_source.add(source);
 		}, r -> r.run());
 		
-		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
+		ExecProcessTextResult result = ept.start(executor).waitForEnd().get();
 		
 		assertEquals(1, catch_stdout.size());
 		assertEquals(1, catch_stderr.size());
@@ -198,7 +193,7 @@ public class ExecProcessTest extends TestCase {
 		assertEquals(0, result.getStdouterrLines(true).count());
 	}
 	
-	public void testNotCaptureStreams() {
+	public void testNotCaptureStreams() throws InterruptedException, ExecutionException {
 		ExecProcessText ept = createExec(Test4.class);
 		
 		/**
@@ -218,7 +213,7 @@ public class ExecProcessTest extends TestCase {
 			}
 		}, r -> r.run());
 		
-		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
+		ExecProcessTextResult result = ept.start(executor).waitForEnd().get();
 		
 		assertEquals(1, catch_stdout.size());
 		assertEquals(0, catch_stderr.size());
@@ -240,7 +235,7 @@ public class ExecProcessTest extends TestCase {
 		catch_stdout.clear();
 		catch_stderr.clear();
 		
-		result = ept.start(createTF()).waitForEnd();
+		result = ept.start(executor).waitForEnd().get();
 		
 		assertEquals(0, catch_stdout.size());
 		assertEquals(1, catch_stderr.size());
@@ -254,7 +249,7 @@ public class ExecProcessTest extends TestCase {
 		assertEquals(1, result.getStdouterrLines(true).count());
 	}
 	
-	public void testMaxExecTime() {
+	public void testMaxExecTime() throws InterruptedException, ExecutionException {
 		ExecProcess ept = createExec(Test5.class);
 		
 		ScheduledThreadPoolExecutor max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1);
@@ -263,97 +258,104 @@ public class ExecProcessTest extends TestCase {
 		assertEquals(Test5.MAX_DURATION, ept.getMaxExecTime(TimeUnit.MILLISECONDS));
 		
 		long start_time = System.currentTimeMillis();
-		ExecProcessResult result = ept.start(createTF()).waitForEnd();
+		ExecProcessResult result = ept.start(executor).waitForEnd().get();
 		
 		long duration = System.currentTimeMillis() - start_time;
 		
 		assertTrue(duration < Test5.MAX_DURATION + 300);/** 300 is a "startup time bonus" */
-		assertEquals(EndStatus.TOO_LONG_EXECUTION_TIME, result.getEndStatus());
+		assertEquals(EndStatus.TOO_LONG_EXECUTION_TIME, result.getEndStatus().get());
 		
 		assertTrue(result.isTooLongTime());
-		assertFalse(result.isCorrectlyDone());
+		assertFalse(result.isCorrectlyDone().get());
 		assertFalse(result.isKilled());
-		assertFalse(result.isRunning());
+		assertFalse(result.isRunning().get());
 		
 		assertEquals(Test5.MAX_DURATION, result.getMaxExecTime(TimeUnit.MILLISECONDS));
 	}
 	
-	public void testKill() {
+	public void testKill() throws InterruptedException, ExecutionException {
 		ExecProcess ept = createExec(Test5.class);
 		
 		ScheduledThreadPoolExecutor max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1);
 		
 		long start_time = System.currentTimeMillis();
-		ExecProcessResult result = ept.start(createTF());
+		ExecProcessResult result = ept.start(executor);
 		
 		max_exec_time_scheduler.schedule(() -> {
-			result.kill();
+			try {
+				result.kill(r -> r.run()).get();
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException("Can't kill", e);
+			}
 		}, Test5.MAX_DURATION, TimeUnit.MILLISECONDS);
 		
-		result.waitForEnd();
+		result.waitForEnd().get();
 		
 		long duration = System.currentTimeMillis() - start_time;
 		
 		assertTrue(duration < Test5.MAX_DURATION + 300);/** 300 is a "startup time bonus" */
-		assertEquals(EndStatus.KILLED, result.getEndStatus());
+		assertEquals(EndStatus.KILLED, result.getEndStatus().get());
 		
 		assertFalse(result.isTooLongTime());
-		assertFalse(result.isCorrectlyDone());
+		assertFalse(result.isCorrectlyDone().get());
 		assertTrue(result.isKilled());
-		assertFalse(result.isRunning());
+		assertFalse(result.isRunning().get());
 	}
 	
-	public void testKillSubProcess() throws InterruptedException {
+	public void testKillSubProcess() throws InterruptedException, ExecutionException {
 		ExecProcess ept = createExec(Test6.class);
 		
 		ScheduledThreadPoolExecutor max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1);
 		
 		long start_time = System.currentTimeMillis();
-		ExecProcessResult result = ept.start(createTF());
+		ExecProcessResult result = ept.start(executor);
 		
 		max_exec_time_scheduler.schedule(() -> {
-			result.kill();
+			try {
+				result.kill(r -> r.run()).get();
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException("Can't kill", e);
+			}
 		}, Test5.MAX_DURATION * 4, TimeUnit.MILLISECONDS);
 		
 		Thread.sleep(Test5.MAX_DURATION);
-		assertEquals(1, result.process.descendants().count());
+		assertEquals(1, result.getProcess().get().descendants().count());
 		
-		result.waitForEnd();
+		result.waitForEnd().get();
 		
 		long duration = System.currentTimeMillis() - start_time;
 		
 		assertTrue(duration < Test5.MAX_DURATION * 4 * 2);
-		assertEquals(EndStatus.KILLED, result.getEndStatus());
+		assertEquals(EndStatus.KILLED, result.getEndStatus().get());
 		
 		assertFalse(result.isTooLongTime());
-		assertFalse(result.isCorrectlyDone());
+		assertFalse(result.isCorrectlyDone().get());
 		assertTrue(result.isKilled());
-		assertFalse(result.isRunning());
+		assertFalse(result.isRunning().get());
 		
-		assertEquals(0, result.process.descendants().count());
+		assertEquals(0, result.getProcess().get().descendants().count());
 	}
 	
-	public void testTimesAndProcessProps() {
+	public void testTimesAndProcessProps() throws InterruptedException, ExecutionException {
 		ExecProcess ept = createExec(Test5.class);
 		
 		ScheduledThreadPoolExecutor max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1);
 		ept.setMaxExecutionTime(Test5.MAX_DURATION, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
 		
 		long start_time = System.currentTimeMillis();
-		ExecProcessResult result = ept.start(createTF()).waitForEnd();
+		ExecProcessResult result = ept.start(executor).waitForEnd().get();
 		
-		assertEquals(result.process, result.getProcess());
-		assertEquals(result.process.info().totalCpuDuration().orElse(Duration.ZERO).toMillis(), result.getCPUDuration(TimeUnit.MILLISECONDS));
-		assertEquals(result.process.info().startInstant().orElse(Instant.EPOCH).toEpochMilli(), result.getStartDate());
+		assertEquals(result.getProcess().get().info().totalCpuDuration().orElse(Duration.ZERO).toMillis(), (long) result.getCPUDuration(TimeUnit.MILLISECONDS).get());
+		assertEquals(result.getProcess().get().info().startInstant().orElse(Instant.EPOCH).toEpochMilli(), (long) result.getStartDate().get());
 		
 		long duration = System.currentTimeMillis() - start_time;
-		assertTrue(duration >= result.getUptime(TimeUnit.MILLISECONDS));
+		assertTrue(duration >= result.getUptime(TimeUnit.MILLISECONDS).get());
 		
-		assertEquals(result.process.pid(), result.getPID());
+		assertEquals(result.getProcess().get().pid(), (long) result.getPID().get());
 		assertEquals(ept.executable, result.getExecutable());
 		
 		assertEquals(Stream.concat(Stream.of(ept.executable.getPath()), ept.getParameters().stream()).collect(Collectors.joining(" ")), result.getCommandline());
-		assertTrue(result.getUserExec().endsWith(System.getProperty("user.name")));
+		assertTrue(result.getUserExec().get().get().endsWith(System.getProperty("user.name")));
 		assertEquals(ept.working_directory, result.getWorkingDirectory());
 	}
 	
@@ -361,17 +363,17 @@ public class ExecProcessTest extends TestCase {
 	static final Predicate<String> withoutEmptyLines = l -> l.equals("") == false;
 	static final Collector<CharSequence, ?, String> joinWithPipe = Collectors.joining("|");
 	
-	public void testOutErrStreams() {
+	public void testOutErrStreams() throws InterruptedException, ExecutionException {
 		ExecProcessText ept = createExec(Test7.class);
 		ept.addParameters("n");
-		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
+		ExecProcessTextResult result = ept.start(executor).waitForEnd().get();
 		
 		assertEquals(makeStringStream.apply(Test7.std_out).collect(joinWithPipe), result.getStdout(true, "|"));
 		assertEquals(makeStringStream.apply(Test7.std_err).collect(joinWithPipe), result.getStderr(true, "|"));
 		
 		ept = createExec(Test7.class);
 		ept.addParameters("1");
-		result = ept.start(createTF()).waitForEnd();
+		result = ept.start(executor).waitForEnd().get();
 		
 		assertEquals(makeStringStream.apply(Test7.std_out).filter(withoutEmptyLines).collect(joinWithPipe), result.getStdout(false, "|"));
 		assertEquals(makeStringStream.apply(Test7.std_err).filter(withoutEmptyLines).collect(joinWithPipe), result.getStderr(false, "|"));
@@ -389,7 +391,7 @@ public class ExecProcessTest extends TestCase {
 		assertEquals(Stream.concat(makeStringStream.apply(Test7.std_out), makeStringStream.apply(Test7.std_err)).filter(withoutEmptyLines).collect(joinWithPipe), result.getStdouterrLines(false).collect(joinWithPipe));
 	}
 	
-	public void testInteractiveHandler() {
+	public void testInteractiveHandler() throws InterruptedException, ExecutionException {
 		ExecProcessText ept = createExec(Test8.class);
 		ept.addParameters("foo");
 		ept.setMaxExecutionTime(500, TimeUnit.MILLISECONDS, new ScheduledThreadPoolExecutor(1));
@@ -417,10 +419,13 @@ public class ExecProcessTest extends TestCase {
 				errors.add(new Exception("Invalid line " + line));
 				return null;
 			}
-		}, r -> r.run());
+		}, r -> {
+			r.run();
+		});
 		
-		ExecProcessTextResult result = ept.start(createTF()).waitForEnd();
+		ExecProcessTextResult result = ept.start(executor).waitForEnd().get();
 		
+		assertNotNull(a_source.get());
 		assertEquals(result, a_source.get());
 		
 		if (errors.isEmpty() == false) {
@@ -430,30 +435,31 @@ public class ExecProcessTest extends TestCase {
 			fail();
 		}
 		
-		assertTrue(result.isCorrectlyDone());
+		assertEquals(EndStatus.CORRECTLY_DONE, result.getEndStatus().get());
+		assertTrue(result.isCorrectlyDone().get());
 	}
 	
-	public void testStdInInjection() throws IOException {
+	public void testStdInInjection() throws IOException, InterruptedException, ExecutionException {
 		ExecProcessText ept = createExec(Test9.class);
 		ept.setMaxExecutionTime(500, TimeUnit.MILLISECONDS, new ScheduledThreadPoolExecutor(1));
-		ExecProcessTextResult result = ept.start(createTF());
+		ExecProcessTextResult result = ept.start(executor);
 		
-		result.getStdInInjection().println(Test9.QUIT);
+		result.getStdInInjection(executor).println(Test9.QUIT);
 		
-		result.waitForEnd();
-		assertTrue(result.isCorrectlyDone());
+		result.waitForEnd().get();
+		assertTrue(result.isCorrectlyDone().get());
 	}
 	
 	public void testWaitForEnd() throws InterruptedException, ExecutionException, TimeoutException {
 		ExecProcessText ept = createExec(Test10.class);
 		
-		assertTrue(ept.start(createTF()).waitForEnd(r -> r.run()).get(500, TimeUnit.MILLISECONDS).isCorrectlyDone());
-		assertTrue(ept.start(createTF()).waitForEnd(500, TimeUnit.MILLISECONDS).isCorrectlyDone());
+		assertTrue(ept.start(executor).waitForEnd().get(500, TimeUnit.MILLISECONDS).isCorrectlyDone().get());
+		assertTrue(ept.start(executor).waitForEnd(500, TimeUnit.MILLISECONDS).get().isCorrectlyDone().get());
 	}
 	
 	public void testExecutor() throws InterruptedException, ExecutionException, TimeoutException {
 		ExecProcessText ept = createExec(Test1.class);
-		assertTrue(ept.start(r -> r.run()).waitForEnd().isCorrectlyDone());
+		assertTrue(ept.start(r -> r.run()).waitForEnd().get().isCorrectlyDone().get());
 	}
 	
 	public void testToString() throws IOException {
@@ -467,7 +473,7 @@ public class ExecProcessTest extends TestCase {
 		
 		assertNotNull(ep.toString());
 		assertNotNull(ep.start(r -> r.run()).toString());
-		assertNotNull(ep.start(createTF()).toString());
+		assertNotNull(ep.start(executor).toString());
 	}
 	
 	public void testProcessBuilder() {
