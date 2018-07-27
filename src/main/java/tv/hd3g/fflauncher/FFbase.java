@@ -27,9 +27,14 @@ import tv.hd3g.execprocess.CommandLineProcessor.CommandLine;
 import tv.hd3g.execprocess.ExecProcessText;
 import tv.hd3g.execprocess.ExecutableFinder;
 
-abstract class FFbase extends ConversionTool {
+class FFbase extends ConversionTool {
 	
 	private FFAbout about;
+	
+	public FFbase(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
+		super(exec_finder, command_line);
+		
+	}
 	
 	public FFAbout getAbout() {
 		synchronized (this) {
@@ -49,11 +54,6 @@ abstract class FFbase extends ConversionTool {
 			exec_process.setEnvironmentVarIfNotFound("AV_LOG_FORCE_NOCOLOR", "1");
 		}
 		super.applyExecProcessCatcher(exec_process);
-	}
-	
-	public FFbase(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
-		super(exec_finder, command_line);
-		
 	}
 	
 	/**

@@ -56,6 +56,13 @@ public class FFbaseTest extends TestCase {
 		assertNotNull(b.getAbout().getProtocols());
 		assertFalse(b.getAbout().getFilters().isEmpty());
 		assertFalse(b.getAbout().getPixelFormats().isEmpty());
+		
+		assertTrue(b.getAbout().isCoderIsAvaliable("ffv1"));
+		assertFalse(b.getAbout().isCoderIsAvaliable("nonono"));
+		assertTrue(b.getAbout().isFilterIsAvaliable("color"));
+		assertFalse(b.getAbout().isFilterIsAvaliable("nonono"));
+		assertTrue(b.getAbout().isToFormatIsAvaliable("wav"));
+		assertFalse(b.getAbout().isToFormatIsAvaliable("nonono"));
 	}
 	
 	/**

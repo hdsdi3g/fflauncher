@@ -16,6 +16,7 @@
 */
 package tv.hd3g.fflauncher.recipes;
 
+import java.awt.Point;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
@@ -39,20 +40,32 @@ public class GenerateVideoFile extends Recipe {
 		super(exec_finder, exec_name);
 	}
 	
-	public CompletableFuture<Void> generate(String destination) throws IOException {
+	public CompletableFuture<Void> generateBarsAnd1k(String destination, int duration_in_sec, Point resolution) throws IOException {
 		FFmpeg ffmpeg = new FFmpeg(getExecFinder(), new CommandLineProcessor().createEmptyCommandLine(getExecName()));
 		
-		// ffmpeg.about.getFilters()
+		if (ffmpeg.getAbout().isFromFormatIsAvaliable("lavfi") == false) {
+			throw new IOException("This ffmpeg (" + ffmpeg.getExecutable() + ") can't handle \"lavfi\"");
+		}
 		
 		ffmpeg.setOverwriteOutputFiles();
 		
 		CommandLine cmd = ffmpeg.getCommandLine();
-		cmd.addBulkParameters("-f lavfi -i smptebars=duration=5:size=1920x1080:rate=25");
-		cmd.addParameters("-vf", "drawtext=\"fontsize=15:timecode='00\\:00\\:00\\:00':rate=25:fontsize=72:fontcolor='white':boxcolor=0x000000AA:box=1:x=1920/2:y=800\"");
+		cmd.addBulkParameters("-f lavfi -i smptehdbars=duration=" + duration_in_sec + ":size=" + resolution.x + "x" + resolution.y + ":rate=25");
+		cmd.addBulkParameters("-f lavfi -i sine=frequency=1000:sample_rate=48000:duration=" + duration_in_sec);
 		
-		cmd.addBulkParameters("-codec:v ffv1"); // TODO add audio -codec:a opus
+		if (ffmpeg.getAbout().isCoderIsAvaliable("h264")) {
+			cmd.addBulkParameters("-codec:v h264");
+		} else {
+			cmd.addBulkParameters("-codec:v ffv1");
+		}
 		
-		ffmpeg.addSimpleOutputDestination(destination);
+		if (ffmpeg.getAbout().isCoderIsAvaliable("aac")) {
+			cmd.addBulkParameters("-codec:a aac");
+		} else {
+			cmd.addBulkParameters("-codec:a opus");
+		}
+		
+		ffmpeg.addFastStartMovMp4File().addSimpleOutputDestination(destination);
 		
 		ExecProcessText exec = ffmpeg.createExec();
 		log.info("Generate test file to \"" + destination + "\"");

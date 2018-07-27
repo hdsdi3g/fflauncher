@@ -43,6 +43,7 @@ import tv.hd3g.execprocess.CommandLineProcessor.CommandLine;
 import tv.hd3g.execprocess.CommandLineProcessor.CommandLine.ProcessedCommandLine;
 import tv.hd3g.execprocess.ExecProcessText;
 import tv.hd3g.execprocess.ExecutableFinder;
+import tv.hd3g.execprocess.ParametersUtility;
 
 public class ConversionTool {
 	private static Logger log = LogManager.getLogger();
@@ -157,8 +158,8 @@ public class ConversionTool {
 	class ParameterReference {
 		final String ressource;
 		final String var_name_in_command_line;
-		final ArrayList<String> parameters_before_ref;
-		final ArrayList<String> parameters_after_ref;
+		final ParametersUtility parameters_before_ref;
+		final ParametersUtility parameters_after_ref;
 		
 		ParameterReference(String reference, String var_name_in_command_line, Collection<String> parameters_before_ref, Collection<String> parameters_after_ref) {
 			ressource = reference;
@@ -170,14 +171,14 @@ public class ConversionTool {
 				throw new NullPointerException("\"var_name_in_command_line\" can't to be null");
 			}
 			if (parameters_before_ref == null) {
-				this.parameters_before_ref = new ArrayList<>(1);
+				this.parameters_before_ref = new ParametersUtility();
 			} else {
-				this.parameters_before_ref = new ArrayList<>(parameters_before_ref);
+				this.parameters_before_ref = new ParametersUtility(parameters_before_ref);
 			}
 			if (parameters_after_ref == null) {
-				this.parameters_after_ref = new ArrayList<>(1);
+				this.parameters_after_ref = new ParametersUtility();
 			} else {
-				this.parameters_after_ref = new ArrayList<>(parameters_after_ref);
+				this.parameters_after_ref = new ParametersUtility(parameters_after_ref);
 			}
 		}
 	}
@@ -252,7 +253,7 @@ public class ConversionTool {
 		Stream.concat(input_sources.stream(), output_expected_destinations.stream()).forEach(param_ref -> {
 			String var_name = param_ref.var_name_in_command_line;
 			
-			boolean done = command_line.injectParamsAroundVariable(var_name, param_ref.parameters_before_ref, param_ref.parameters_after_ref);
+			boolean done = command_line.injectParamsAroundVariable(var_name, param_ref.parameters_before_ref.getParameters(), param_ref.parameters_after_ref.getParameters());
 			
 			if (done) {
 				if (all_vars_to_inject.containsKey(var_name)) {

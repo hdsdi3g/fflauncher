@@ -16,6 +16,7 @@
 */
 package tv.hd3g.fflauncher.recipes;
 
+import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -29,9 +30,9 @@ public class GenerateVideoFileTest extends TestCase {
 		
 		File test_file = File.createTempFile("smptebars", ".mkv");
 		
-		gvf.generate(test_file.getPath()).get();
+		gvf.generateBarsAnd1k(test_file.getPath(), 5, new Point(1280, 720)).get();
 		
 		assertTrue(test_file.exists());
-		assertTrue(test_file.delete());
+		// assertTrue(test_file.delete());
 	}
 }

@@ -79,6 +79,7 @@ class ExecProcessResult {
 	private CompletableFuture<Process> startup_process_exec;
 	
 	private CompletableFuture<StdInInjection> std_in_injection;
+	private final Thread shutdown_hook;
 	
 	ExecProcessResult(File executable, List<String> params, Map<String, String> environment, List<EndExecutionCallback> end_exec_callback_list, boolean exec_code_must_be_zero, File working_directory, ScheduledExecutorService max_exec_time_scheduler, long max_exec_time, Consumer<ProcessBuilder> alter_process_builder, Executor executor) {
 		this.executable = executable;
@@ -102,6 +103,22 @@ class ExecProcessResult {
 		this.alter_process_builder = alter_process_builder;
 		
 		startup_process_exec = CompletableFuture.failedFuture(new NullPointerException("Process is not yet pending to start..."));
+		
+		shutdown_hook = new Thread(() -> {
+			if (startup_process_exec.isDone()) {
+				try {
+					log.warn("Try to kill " + toString());
+					killProcessTree(startup_process_exec.get());
+				} catch (InterruptedException | ExecutionException e) {
+				}
+			} else {
+				log.warn("Cancel " + toString());
+				startup_process_exec.cancel(true);
+			}
+		});
+		shutdown_hook.setDaemon(false);
+		shutdown_hook.setPriority(Thread.MAX_PRIORITY);
+		shutdown_hook.setName("ShutdownHook for " + executable.getName());
 	}
 	
 	synchronized ExecProcessResult start() {
@@ -139,11 +156,16 @@ class ExecProcessResult {
 					}, max_exec_time_scheduler);
 				}
 				
-				process.onExit().thenRun(() -> end_exec_callback_list.forEach(observer -> {
-					observer.onEnd(this);
-				}));
+				process.onExit().thenRun(() -> {
+					Runtime.getRuntime().removeShutdownHook(shutdown_hook);
+					end_exec_callback_list.forEach(observer -> {
+						observer.onEnd(this);
+					});
+				});
 				
 				postStartupAction(process);
+				
+				Runtime.getRuntime().addShutdownHook(shutdown_hook);
 				
 				return process;
 			}
@@ -197,7 +219,11 @@ class ExecProcessResult {
 		}
 	}
 	
+	/**
+	 * Blocking
+	 */
 	private void killProcessTree(Process process) {
+		log.debug("Internal kill " + toString());
 		List<ProcessHandle> cant_kill = process.descendants().filter(process_handle -> {
 			return process_handle.isAlive();
 		}).filter(process_handle -> {
