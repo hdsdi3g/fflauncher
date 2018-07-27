@@ -42,6 +42,8 @@ public class GenerateVideoFile extends Recipe {
 	public CompletableFuture<Void> generate(String destination) throws IOException {
 		FFmpeg ffmpeg = new FFmpeg(getExecFinder(), new CommandLineProcessor().createEmptyCommandLine(getExecName()));
 		
+		// ffmpeg.about.getFilters()
+		
 		ffmpeg.setOverwriteOutputFiles();
 		
 		CommandLine cmd = ffmpeg.getCommandLine();

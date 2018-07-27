@@ -45,6 +45,8 @@ public abstract class Recipe {
 		}
 		execution_executor = ForkJoinPool.commonPool();
 		post_process_executor = ForkJoinPool.commonPool();
+		
+		log.debug("Init recipe " + getClass().getSimpleName() + " with " + exec_name);
 	}
 	
 	public Recipe() {
@@ -57,6 +59,8 @@ public abstract class Recipe {
 		}
 		execution_executor = ForkJoinPool.commonPool();
 		post_process_executor = ForkJoinPool.commonPool();
+		
+		log.debug("Init recipe " + getClass().getSimpleName() + " with " + exec_name + " (DefaultExecName)");
 	}
 	
 	protected abstract String getDefaultExecName();
@@ -70,7 +74,11 @@ public abstract class Recipe {
 	}
 	
 	public Recipe setExecutionExecutor(Executor execution_executor) {
+		if (execution_executor == null) {
+			throw new NullPointerException("\"execution_executor\" can't to be null");
+		}
 		this.execution_executor = execution_executor;
+		log.debug("Set executor for recipe " + getClass().getSimpleName() + ": " + execution_executor.getClass().getSimpleName());
 		return this;
 	}
 	
@@ -79,7 +87,11 @@ public abstract class Recipe {
 	}
 	
 	public Recipe setPostProcessExecutor(Executor post_process_executor) {
+		if (post_process_executor == null) {
+			throw new NullPointerException("\"post_process_executor\" can't to be null");
+		}
 		this.post_process_executor = post_process_executor;
+		log.debug("Set executor for recipe " + getClass().getSimpleName() + ": " + post_process_executor.getClass().getSimpleName());
 		return this;
 	}
 	

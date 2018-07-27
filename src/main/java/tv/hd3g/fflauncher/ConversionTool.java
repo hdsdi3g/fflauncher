@@ -62,10 +62,16 @@ public class ConversionTool {
 	public final LinkedHashMap<String, String> parameters_variables;
 	private boolean remove_params_if_no_var_to_inject;
 	
+	protected final ExecutableFinder exec_finder;
+	
 	public ConversionTool(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
 		this.command_line = command_line;
 		if (command_line == null) {
 			throw new NullPointerException("\"command_line\" can't to be null");
+		}
+		this.exec_finder = exec_finder;
+		if (exec_finder == null) {
+			throw new NullPointerException("\"exec_finder\" can't to be null");
 		}
 		
 		executable = exec_finder.get(command_line.getExecName());

@@ -74,4 +74,7 @@ public class FFmpeg extends FFbase {
 	
 	// TODO check output file(s) if exists (only if file is expected) and not empty after exec
 	// TODO what is ffmetadata in ffmpeg's formats ?
+	
+	// TODO get is avaliable codec/format/filter
+	
 }

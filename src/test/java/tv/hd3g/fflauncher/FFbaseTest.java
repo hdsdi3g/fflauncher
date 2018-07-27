@@ -48,14 +48,14 @@ public class FFbaseTest extends TestCase {
 		
 		FFbaseImpl b = new FFbaseImpl(new ExecutableFinder(), new CommandLineProcessor().createEmptyCommandLine("ffmpeg"));
 		
-		assertNotNull(b.about.getVersion());
-		assertFalse(b.about.getCodecs().isEmpty());
-		assertFalse(b.about.getFormats().isEmpty());
-		assertFalse(b.about.getDevices().isEmpty());
-		assertFalse(b.about.getBitStreamFilters().isEmpty());
-		assertNotNull(b.about.getProtocols());
-		assertFalse(b.about.getFilters().isEmpty());
-		assertFalse(b.about.getPixelFormats().isEmpty());
+		assertNotNull(b.getAbout().getVersion());
+		assertFalse(b.getAbout().getCodecs().isEmpty());
+		assertFalse(b.getAbout().getFormats().isEmpty());
+		assertFalse(b.getAbout().getDevices().isEmpty());
+		assertFalse(b.getAbout().getBitStreamFilters().isEmpty());
+		assertNotNull(b.getAbout().getProtocols());
+		assertFalse(b.getAbout().getFilters().isEmpty());
+		assertFalse(b.getAbout().getPixelFormats().isEmpty());
 	}
 	
 	/**
@@ -151,7 +151,7 @@ public class FFbaseTest extends TestCase {
 	}
 	
 	public void testBSFS() {
-		Set<String> filters = FFbase.parseBSFS(readLinesFromResource("test-bsfs.txt").stream());
+		Set<String> filters = FFAbout.parseBSFS(readLinesFromResource("test-bsfs.txt").stream());
 		
 		assertTrue(filters.contains("noise"));
 		assertEquals(17, filters.size());
@@ -213,7 +213,7 @@ public class FFbaseTest extends TestCase {
 	}
 	
 	public void testHwaccels() {
-		Set<String> list = FFbase.parseBSFS(readLinesFromResource("test-hwaccels.txt").stream());
+		Set<String> list = FFAbout.parseBSFS(readLinesFromResource("test-hwaccels.txt").stream());
 		assertEquals(6, list.size());
 		
 		assertTrue(list.contains("cuvid"));
