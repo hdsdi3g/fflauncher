@@ -227,9 +227,9 @@ public class ParametersUtility {
 		
 		parameters.addAll(Arrays.stream(params).filter(p -> {
 			return p != null;
-		}).collect(Collectors.toList()));
+		}).collect(Collectors.toUnmodifiableList()));
 		
-		log.trace("Add parameters: {}", () -> Arrays.stream(params).collect(Collectors.toList()));
+		log.trace("Add parameters: {}", () -> Arrays.stream(params).collect(Collectors.toUnmodifiableList()));
 		
 		return this;
 	}
@@ -244,7 +244,7 @@ public class ParametersUtility {
 		
 		parameters.addAll(params.stream().filter(p -> {
 			return p != null;
-		}).collect(Collectors.toList()));
+		}).collect(Collectors.toUnmodifiableList()));
 		
 		log.trace("Add parameters: {}", () -> params);
 		
@@ -261,7 +261,7 @@ public class ParametersUtility {
 		
 		parameters.addAll(filterAnTransformParameter.apply(params).map(arg -> {
 			return arg.toString();
-		}).collect(Collectors.toList()));
+		}).collect(Collectors.toUnmodifiableList()));
 		
 		log.trace("Add parameters: " + params);
 		
@@ -276,7 +276,7 @@ public class ParametersUtility {
 			throw new NullPointerException("\"params\" can't to be null");
 		}
 		
-		List<String> new_list = Stream.concat(params.stream().filter(p -> p != null), parameters.stream()).collect(Collectors.toList());
+		List<String> new_list = Stream.concat(params.stream().filter(p -> p != null), parameters.stream()).collect(Collectors.toUnmodifiableList());
 		parameters.clear();
 		parameters.addAll(new_list);
 		
@@ -295,7 +295,7 @@ public class ParametersUtility {
 		
 		prependParameters(Arrays.stream(params).filter(p -> {
 			return p != null;
-		}).collect(Collectors.toList()));
+		}).collect(Collectors.toUnmodifiableList()));
 		
 		return this;
 	}
@@ -310,7 +310,7 @@ public class ParametersUtility {
 		
 		prependParameters(filterAnTransformParameter.apply(params).map(arg -> {
 			return arg.toString();
-		}).collect(Collectors.toList()));
+		}).collect(Collectors.toUnmodifiableList()));
 		
 		return this;
 	}

@@ -19,10 +19,14 @@ package tv.hd3g.fflauncher;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,6 +60,7 @@ public class ConversionTool {
 	protected final CommandLine command_line;
 	protected final ArrayList<ParameterReference> input_sources;
 	protected final ArrayList<ParameterReference> output_expected_destinations;
+	private File working_directory;
 	
 	/**
 	 * Set values for variables like <%myvar%> in the command line, do NOT set input/output references if they was set with addInputSource/addOutputDestination.
@@ -193,7 +198,7 @@ public class ConversionTool {
 	 */
 	public ConversionTool addInputSource(String source, String var_name_in_command_line, String... parameters_before_input_source) {
 		if (parameters_before_input_source != null) {
-			return addInputSource(source, var_name_in_command_line, Arrays.stream(parameters_before_input_source).filter(p -> p != null).collect(Collectors.toList()), Collections.emptyList());
+			return addInputSource(source, var_name_in_command_line, Arrays.stream(parameters_before_input_source).filter(p -> p != null).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
 		}
 		return addInputSource(source, var_name_in_command_line, Collections.emptyList(), Collections.emptyList());
 	}
@@ -223,7 +228,7 @@ public class ConversionTool {
 	 */
 	public ConversionTool addOutputDestination(String destination, String var_name_in_command_line, String... parameters_before_output_destination) {
 		if (parameters_before_output_destination != null) {
-			return addOutputDestination(destination, var_name_in_command_line, Arrays.stream(parameters_before_output_destination).filter(p -> p != null).collect(Collectors.toList()), Collections.emptyList());
+			return addOutputDestination(destination, var_name_in_command_line, Arrays.stream(parameters_before_output_destination).filter(p -> p != null).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
 		}
 		return addOutputDestination(destination, var_name_in_command_line, Collections.emptyList(), Collections.emptyList());
 	}
@@ -268,7 +273,28 @@ public class ConversionTool {
 		return command_line.process(all_vars_to_inject, remove_params_if_no_var_to_inject);
 	}
 	
-	private ExecProcessText createExec(boolean short_command_limited_execution_time, File working_directory) throws IOException {
+	/**
+	 * @return Can be null.
+	 */
+	public File getWorkingDirectory() {
+		return working_directory;
+	}
+	
+	public ConversionTool setWorkingDirectory(File working_directory) throws IOException {
+		if (working_directory == null) {
+			throw new NullPointerException("\"working_directory\" can't to be null");
+		} else if (working_directory.exists() == false) {
+			throw new FileNotFoundException("\"" + working_directory.getPath() + "\" in filesytem");
+		} else if (working_directory.canRead() == false) {
+			throw new IOException("Can't read working_directory \"" + working_directory.getPath() + "\"");
+		} else if (working_directory.isDirectory() == false) {
+			throw new FileNotFoundException("\"" + working_directory.getPath() + "\" is not a directory");
+		}
+		this.working_directory = working_directory;
+		return this;
+	}
+	
+	private ExecProcessText createExec(boolean short_command_limited_execution_time) throws IOException {
 		ExecProcessText exec_process = new ExecProcessText(executable);
 		
 		if (short_command_limited_execution_time) {
@@ -287,28 +313,13 @@ public class ConversionTool {
 	
 	/**
 	 * Time controlled by setMaxExecutionTimeForShortCommands()
-	 * @param working_directory can be null
-	 */
-	public ExecProcessText createExecWithLimitedExecutionTime(File working_directory) throws IOException {
-		return createExec(true, working_directory);
-	}
-	
-	/**
-	 * Time controlled by setMaxExecutionTimeForShortCommands()
 	 */
 	public ExecProcessText createExecWithLimitedExecutionTime() throws IOException {
-		return createExec(true, null);
+		return createExec(true);
 	}
 	
 	public ExecProcessText createExec() throws IOException {
-		return createExec(false, null);
-	}
-	
-	/**
-	 * @param working_directory can be null
-	 */
-	public ExecProcessText createExec(File working_directory) throws IOException {
-		return createExec(false, working_directory);
+		return createExec(false);
 	}
 	
 	private static final Function<ParameterReference, String> getRessourceFromParameterReference = param_ref -> param_ref.ressource;
@@ -331,18 +342,115 @@ public class ConversionTool {
 	 * @return never null, can be empty
 	 */
 	public List<String> getDeclaredSources() {
-		return input_sources.stream().map(getRessourceFromParameterReference).collect(Collectors.toList());
+		return input_sources.stream().map(getRessourceFromParameterReference).collect(Collectors.toUnmodifiableList());
 	}
 	
 	/**
 	 * @return never null, can be empty
 	 */
 	public List<String> getDeclaredDestinations() {
-		return output_expected_destinations.stream().map(getRessourceFromParameterReference).collect(Collectors.toList());
+		return output_expected_destinations.stream().map(getRessourceFromParameterReference).collect(Collectors.toUnmodifiableList());
 	}
 	
 	public CommandLine getCommandLine() {
 		return command_line;
+	}
+	
+	/**
+	 * Define cmd var name like <%OUT_AUTOMATIC_n%> with "n" the # of setted destination.
+	 * Add -i parameter
+	 */
+	public ConversionTool addSimpleOutputDestination(String destination_name) {
+		if (destination_name == null) {
+			throw new NullPointerException("\"destination_name\" can't to be null");
+		}
+		
+		/*Stream<String> s_source_options = Stream.empty();
+		if (source_options != null) {
+			s_source_options = Arrays.stream(source_options);
+		}*/
+		
+		String varname = command_line.addVariable("OUT_AUTOMATIC_" + output_expected_destinations.size());
+		addOutputDestination(destination_name, varname);
+		return this;
+	}
+	
+	/**
+	 * Don't need to be executed before, only checks.
+	 */
+	public List<File> getOutputFiles(boolean must_exists, boolean must_be_a_regular_file, boolean not_empty) {
+		return output_expected_destinations.stream().map(dest -> dest.ressource).map(ressource -> {
+			try {
+				URL url = new URL(ressource);
+				if (url.getProtocol().equals("file")) {
+					return new File(url.getPath());
+				}
+			} catch (MalformedURLException e) {
+			}
+			return new File(ressource);
+		}).map(file -> {
+			if (file.exists() == false & getWorkingDirectory() != null) {
+				return new File(getWorkingDirectory().getAbsolutePath() + File.separator + file.getPath());
+			}
+			return file;
+		}).distinct().filter(file -> {
+			if (must_exists & file.exists() == false) {
+				return false;
+			} else if (must_be_a_regular_file & file.isFile() == false) {
+				return false;
+			} else if (not_empty & file.exists() & file.isFile() & file.length() == 0) {
+				return false;
+			}
+			return true;
+		}).collect(Collectors.toUnmodifiableList());
+	}
+	
+	/**
+	 * Don't need to be executed before, only checks.
+	 * @param remove_all if false, remove only empty files.
+	 */
+	public ConversionTool cleanUpOutputFiles(boolean remove_all, boolean clean_output_directories) {
+		getOutputFiles(true, false, false).stream().filter(file -> {
+			if (file.isFile()) {
+				if (remove_all == false) {
+					/**
+					 * Remove only empty files
+					 */
+					if (file.length() > 0) {
+						return false;
+					}
+				}
+				return true;
+			}
+			/**
+			 * It's a dir, remove dirs ?
+			 */
+			return clean_output_directories;
+		}).filter(file -> {
+			if (file.isFile()) {
+				log.debug("Delete file \"" + file + "\"");
+				if (file.delete() == false) {// XXX
+					throw new RuntimeException("Can't delete file \"" + file + "\"");
+				}
+				return false;
+			}
+			return true;
+		}).map(dir -> dir.toPath()).flatMap(dir_path -> {
+			try {
+				return Files.walk(dir_path).sorted(Comparator.reverseOrder()).map(path -> path.toFile());
+			} catch (IOException e) {
+				log.error("Can't access to " + dir_path, e);
+				return null;
+			}
+		}).filter(file -> file != null).forEach(file -> {
+			log.info("Delete \"" + file + "\"");// XXX
+			/*if (file.delete() == false) {//XXX
+				throw new RuntimeException("Can't delete \"" + file + "\"");
+			}*/
+			throw new RuntimeException("Disabled by security, check first"); // XXX
+		});
+		
+		return this;
 	}
 	
 }

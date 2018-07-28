@@ -127,7 +127,7 @@ class FFbase extends ConversionTool {
 		}
 		
 		String varname = command_line.addVariable("IN_AUTOMATIC_" + input_sources.size());
-		addInputSource(source_name, varname, Stream.concat(s_source_options, Stream.of("-i")).collect(Collectors.toList()), Collections.emptyList());
+		addInputSource(source_name, varname, Stream.concat(s_source_options, Stream.of("-i")).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
 		
 		return this;
 	}

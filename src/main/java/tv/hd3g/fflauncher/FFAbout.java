@@ -66,7 +66,7 @@ public class FFAbout {
 			if (version == null) {
 				try {
 					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-loglevel quiet -version").run().checkExecution();
-					version = new FFVersion(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toList()));
+					version = new FFVersion(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 				} catch (IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
@@ -83,7 +83,7 @@ public class FFAbout {
 			if (codecs == null) {
 				try {
 					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-codecs").run().checkExecution();
-					codecs = FFCodec.parse(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
+					codecs = FFCodec.parse(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 				} catch (IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
@@ -100,7 +100,7 @@ public class FFAbout {
 			if (formats == null) {
 				try {
 					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-formats").run().checkExecution();
-					formats = FFFormat.parseFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
+					formats = FFFormat.parseFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 				} catch (IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
@@ -117,7 +117,7 @@ public class FFAbout {
 			if (devices == null) {
 				try {
 					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-devices").run().checkExecution();
-					devices = FFDevice.parseDevices(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
+					devices = FFDevice.parseDevices(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 				} catch (IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
@@ -157,7 +157,7 @@ public class FFAbout {
 			if (protocols == null) {
 				try {
 					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-protocols").run().checkExecution();
-					protocols = new FFProtocols(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toList()));
+					protocols = new FFProtocols(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 				} catch (IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
@@ -175,7 +175,7 @@ public class FFAbout {
 			if (filters == null) {
 				try {
 					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-filters").run().checkExecution();
-					filters = FFFilter.parseFilters(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
+					filters = FFFilter.parseFilters(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 				} catch (IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
@@ -192,7 +192,7 @@ public class FFAbout {
 			if (pixels_formats == null) {
 				try {
 					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-pix_fmts").run().checkExecution();
-					pixels_formats = FFPixelFormat.parsePixelsFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toList()));
+					pixels_formats = FFPixelFormat.parsePixelsFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 				} catch (IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}

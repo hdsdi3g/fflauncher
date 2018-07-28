@@ -108,7 +108,7 @@ public class FFbaseTest extends TestCase {
 		
 		List<FFCodec> test1 = list.stream().filter(c -> {
 			return c.type == CodecType.AUDIO & c.encoding_supported & c.decoding_supported & c.lossy_compression & c.tag.equals("adpcm_g722");
-		}).collect(Collectors.toList());
+		}).collect(Collectors.toUnmodifiableList());
 		
 		assertEquals(1, test1.size());
 		assertTrue(test1.get(0).long_name.equals("G.722 ADPCM (decoders: g722 ) (encoders: g722 )"));
@@ -129,7 +129,7 @@ public class FFbaseTest extends TestCase {
 		
 		List<FFFormat> test1 = list.stream().filter(f -> {
 			return f.muxing == false & f.demuxing == true & f.tag.equals("bfi");
-		}).collect(Collectors.toList());
+		}).collect(Collectors.toUnmodifiableList());
 		
 		assertEquals(1, test1.size());
 		assertTrue(test1.get(0).long_name.equals("Brute Force & Ignorance"));

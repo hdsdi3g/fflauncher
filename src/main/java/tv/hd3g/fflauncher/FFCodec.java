@@ -29,7 +29,7 @@ public class FFCodec {
 			return line.startsWith("-------") == false;
 		}).filter(line -> {
 			return line.indexOf("=") == -1;
-		}).map(line -> new FFCodec(line)).collect(Collectors.toList());
+		}).map(line -> new FFCodec(line)).collect(Collectors.toUnmodifiableList());
 	}
 	
 	public enum CodecType {

@@ -24,7 +24,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.ffmpeg.ffprobe.FfprobeType;
 import org.xml.sax.SAXException;
 
 import tv.hd3g.execprocess.CommandLineProcessor;
@@ -32,6 +31,7 @@ import tv.hd3g.execprocess.ExecProcessText;
 import tv.hd3g.execprocess.ExecutableFinder;
 import tv.hd3g.fflauncher.FFprobe;
 import tv.hd3g.fflauncher.FFprobe.FFPrintFormat;
+import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 
 public class ProbeMedia extends Recipe {
 	private static Logger log = LogManager.getLogger();
@@ -46,8 +46,9 @@ public class ProbeMedia extends Recipe {
 	
 	/**
 	 * Get streams, format and chapters.
+	 * @see FFprobe to get cool FfprobeType parsers
 	 */
-	CompletableFuture<FfprobeType> doAnalysing(String source) throws IOException {
+	CompletableFuture<FFprobeJAXB> doAnalysing(String source) throws IOException {
 		FFprobe ffprobe = new FFprobe(getExecFinder(), new CommandLineProcessor().createEmptyCommandLine(getExecName()));
 		
 		ffprobe.setPrintFormat(FFPrintFormat.xml).setShowStreams().setShowFormat().setShowChapters().isHidebanner();
@@ -58,7 +59,7 @@ public class ProbeMedia extends Recipe {
 		
 		return exec.start(getExecutionExecutor()).waitForEnd().thenApplyAsync(result -> {
 			try {
-				return FFprobe.fromXML(result.checkExecution().getStdout(false, System.lineSeparator()));
+				return new FFprobeJAXB(result.checkExecution().getStdout(false, System.lineSeparator()), warn -> log.warn(warn));
 			} catch (JAXBException | ParserConfigurationException | SAXException | IOException e) {
 				throw new RuntimeException("Can't analyst " + source, e);
 			}

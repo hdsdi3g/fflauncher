@@ -51,7 +51,7 @@ public class ExecutableFinder {
 			 */
 			String path_ext = System.getenv("PATHEXT");
 			if (path_ext.indexOf(";") > 0) {
-				WINDOWS_EXEC_EXTENSIONS = Collections.unmodifiableList(Arrays.stream(path_ext.split(";")).map(ext -> ext.toLowerCase().substring(1)).collect(Collectors.toList()));
+				WINDOWS_EXEC_EXTENSIONS = Collections.unmodifiableList(Arrays.stream(path_ext.split(";")).map(ext -> ext.toLowerCase().substring(1)).collect(Collectors.toUnmodifiableList()));
 			} else {
 				log.warn("Invalid PATHEXT env.: " + path_ext);
 				WINDOWS_EXEC_EXTENSIONS = Collections.unmodifiableList(Arrays.asList("exe", "com", "cmd", "bat"));
@@ -88,14 +88,14 @@ public class ExecutableFinder {
 		
 		paths.addAll(Arrays.stream(System.getProperty("java.class.path").split(File.pathSeparator)).map(p -> {
 			return new File(p);
-		}).filter(isValidDirectory).collect(Collectors.toList()));
+		}).filter(isValidDirectory).collect(Collectors.toUnmodifiableList()));
 		
-		paths.addAll(Arrays.stream(System.getenv("PATH").split(File.pathSeparator)).map(p -> new File(p)).filter(isValidDirectory).collect(Collectors.toList()));
+		paths.addAll(Arrays.stream(System.getenv("PATH").split(File.pathSeparator)).map(p -> new File(p)).filter(isValidDirectory).collect(Collectors.toUnmodifiableList()));
 		
 		/**
 		 * Remove duplicate entries
 		 */
-		List<File> new_list = paths.stream().distinct().collect(Collectors.toList());
+		List<File> new_list = paths.stream().distinct().collect(Collectors.toUnmodifiableList());
 		paths.clear();
 		paths.addAll(new_list);
 		
@@ -189,7 +189,7 @@ public class ExecutableFinder {
 			return file.getParentFile();
 		}), paths.stream()).map(dir -> {
 			return new File(dir + File.separator + name).getAbsoluteFile();
-		}).distinct().collect(Collectors.toList());
+		}).distinct().collect(Collectors.toUnmodifiableList());
 		
 		if (is_windows_style_path == false) {
 			/**

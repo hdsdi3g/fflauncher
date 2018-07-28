@@ -16,9 +16,7 @@
 */
 package tv.hd3g.fflauncher;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.LinkedHashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,7 +34,7 @@ public class FFmpeg extends FFbase {
 	
 	/**
 	 * Define cmd var name like <%OUT_AUTOMATIC_n%> with "n" the # of setted destination.
-	 * Add -i parameter
+	 * Add "-f container destination"
 	 */
 	public FFbase addSimpleOutputDestination(String destination_name, String destination_container) {
 		if (destination_name == null) {
@@ -64,37 +62,6 @@ public class FFmpeg extends FFbase {
 		return this;
 	}
 	
-	/**
-	 * Define cmd var name like <%OUT_AUTOMATIC_n%> with "n" the # of setted destination.
-	 * Add -i parameter
-	 */
-	public FFmpeg addSimpleOutputDestination(String destination_name) {
-		if (destination_name == null) {
-			throw new NullPointerException("\"destination_name\" can't to be null");
-		}
-		
-		/*Stream<String> s_source_options = Stream.empty();
-		if (source_options != null) {
-			s_source_options = Arrays.stream(source_options);
-		}*/
-		
-		String varname = command_line.addVariable("OUT_AUTOMATIC_" + output_expected_destinations.size());
-		addOutputDestination(destination_name, varname);
-		return this;
-	}
-	
-	/**
-	 * Don't need to be executed before, only checks.
-	 */
-	public LinkedHashMap<File, Boolean> checkOutputfilesPresence() {
-		output_expected_destinations.stream().filter(dest -> {
-			return false;// XXX is file ?
-		});
-		
-		return null; // XXX
-	}
-	
-	// TODO check output file(s) if exists (only if file is expected) and not empty after exec
-	// TODO what is ffmetadata in ffmpeg's formats ?
+	// TODO2 what is ffmetadata in ffmpeg's formats ?
 	
 }

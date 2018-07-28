@@ -32,7 +32,7 @@ public class FFFilter {
 			return line.startsWith("---") == false;
 		}).filter(line -> {
 			return line.indexOf("=") == -1;
-		}).map(line -> new FFFilter(line)).collect(Collectors.toList());
+		}).map(line -> new FFFilter(line)).collect(Collectors.toUnmodifiableList());
 	}
 	
 	/**
@@ -65,7 +65,7 @@ public class FFFilter {
 	
 	FFFilter(String line) {
 		
-		List<String> line_blocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(lb -> lb.trim()).collect(Collectors.toList());
+		List<String> line_blocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(lb -> lb.trim()).collect(Collectors.toUnmodifiableList());
 		
 		if (line_blocs.size() < 4) {
 			throw new RuntimeException("Can't parse line: \"" + line + "\"");

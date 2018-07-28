@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import junit.framework.TestCase;
+import tv.hd3g.fflauncher.FFmpeg;
 
 public class GenerateVideoFileTest extends TestCase {
 	
@@ -30,9 +31,11 @@ public class GenerateVideoFileTest extends TestCase {
 		
 		File test_file = File.createTempFile("smptebars", ".mkv");
 		
-		gvf.generateBarsAnd1k(test_file.getPath(), 5, new Point(1280, 720)).get();
+		FFmpeg ffmpeg = gvf.generateBarsAnd1k(test_file.getPath(), 5, new Point(1280, 720)).get();
 		
 		assertTrue(test_file.exists());
-		// assertTrue(test_file.delete());
+		
+		ffmpeg.cleanUpOutputFiles(true, true);
+		assertFalse(test_file.exists());
 	}
 }

@@ -33,7 +33,7 @@ public class FFFormat {
 			return line.toLowerCase().startsWith(".E = Muxing supported".toLowerCase()) == false;
 		}).filter(line -> {
 			return line.startsWith("--") == false;
-		}).map(line -> new FFFormat(line)).collect(Collectors.toList());
+		}).map(line -> new FFFormat(line)).collect(Collectors.toUnmodifiableList());
 	}
 	
 	public final boolean demuxing;
@@ -56,7 +56,7 @@ public class FFFormat {
 	
 	FFFormat(String line) {
 		
-		List<String> line_blocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(lb -> lb.trim()).collect(Collectors.toList());
+		List<String> line_blocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(lb -> lb.trim()).collect(Collectors.toUnmodifiableList());
 		
 		if (line_blocs.size() < 3) {
 			throw new RuntimeException("Can't parse line: \"" + line + "\"");

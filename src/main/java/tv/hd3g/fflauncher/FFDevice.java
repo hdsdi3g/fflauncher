@@ -30,7 +30,7 @@ public class FFDevice extends FFFormat {
 			return line.toLowerCase().startsWith(".E = Muxing supported".toLowerCase()) == false;
 		}).filter(line -> {
 			return line.startsWith("--") == false;
-		}).map(line -> new FFDevice(line)).collect(Collectors.toList());
+		}).map(line -> new FFDevice(line)).collect(Collectors.toUnmodifiableList());
 	}
 	
 	FFDevice(String line) {

@@ -16,60 +16,20 @@
 */
 package tv.hd3g.fflauncher;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import org.w3c.dom.Document;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.ValidationEventHandler;
-import javax.xml.bind.ValidationEventLocator;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.ffmpeg.ffprobe.FfprobeType;
-import org.xml.sax.SAXException;
 
 import tv.hd3g.execprocess.CommandLineProcessor.CommandLine;
 import tv.hd3g.execprocess.ExecutableFinder;
 
 public class FFprobe extends FFbase {
+	
 	private static Logger log = LogManager.getLogger();
 	
 	public FFprobe(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
 		super(exec_finder, command_line);
-	}
-	
-	/**
-	 * @see https://github.com/hdsdi3g/ffprobe-jaxb
-	 */
-	public static FfprobeType fromXML(String xml_content) throws JAXBException, ParserConfigurationException, SAXException, IOException {
-		JAXBContext jc = JAXBContext.newInstance(FfprobeType.class.getPackageName());
-		
-		Unmarshaller unmarshaller = jc.createUnmarshaller();
-		// prepare an error catcher if trouble are catched during import.
-		unmarshaller.setEventHandler((ValidationEventHandler) e -> {
-			ValidationEventLocator localtor = e.getLocator();
-			log.warn("XML validation: " + e.getMessage() + " [s" + e.getSeverity() + "] at line " + localtor.getLineNumber() + ", column " + localtor.getColumnNumber() + " offset " + localtor.getOffset() + " node: " + localtor.getNode() + ", object " + localtor.getObject());
-			return true;
-		});
-		
-		DocumentBuilderFactory xmlDocumentBuilderFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder xmlDocumentBuilder = xmlDocumentBuilderFactory.newDocumentBuilder();
-		xmlDocumentBuilder.setErrorHandler(null);
-		
-		Document document = xmlDocumentBuilder.parse(new ByteArrayInputStream(xml_content.getBytes(StandardCharsets.UTF_8)));
-		
-		JAXBElement<FfprobeType> result = unmarshaller.unmarshal(document, FfprobeType.class);
-		return result.getValue();
 	}
 	
 	/**

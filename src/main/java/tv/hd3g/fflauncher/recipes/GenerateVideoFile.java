@@ -40,7 +40,7 @@ public class GenerateVideoFile extends Recipe {
 		super(exec_finder, exec_name);
 	}
 	
-	public CompletableFuture<Void> generateBarsAnd1k(String destination, int duration_in_sec, Point resolution) throws IOException {
+	public CompletableFuture<FFmpeg> generateBarsAnd1k(String destination, int duration_in_sec, Point resolution) throws IOException {
 		FFmpeg ffmpeg = new FFmpeg(getExecFinder(), new CommandLineProcessor().createEmptyCommandLine(getExecName()));
 		
 		if (ffmpeg.getAbout().isFromFormatIsAvaliable("lavfi") == false) {
@@ -72,7 +72,7 @@ public class GenerateVideoFile extends Recipe {
 		
 		return exec.start(getExecutionExecutor()).waitForEnd().thenAcceptAsync(result -> {
 			result.checkExecution();
-		}, getPostProcessExecutor());
+		}, getPostProcessExecutor()).thenApplyAsync(_void -> ffmpeg, getPostProcessExecutor());
 	}
 	
 	protected String getDefaultExecName() {

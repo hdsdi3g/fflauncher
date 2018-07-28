@@ -43,9 +43,9 @@
 	<dependency>
 	  <groupId>org.ffmpeg</groupId>
 	  <artifactId>ffprobe-jaxb</artifactId>
-	  <version>4.0.2</version>
+	  <version>4.0.2-1</version>
 	</dependency>
-	
+
   </dependencies>
 
   <organization>

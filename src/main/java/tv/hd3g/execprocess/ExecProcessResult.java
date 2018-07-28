@@ -240,7 +240,7 @@ class ExecProcessResult {
 				log.info("Force to close process " + processHandleToString(process_handle, false));
 			}
 			return process_handle.destroyForcibly() == false;
-		}).collect(Collectors.toList());
+		}).collect(Collectors.toUnmodifiableList());
 		
 		if (process.isAlive()) {
 			log.info("Close manually process " + processHandleToString(process.toHandle(), true));

@@ -175,11 +175,11 @@ public class CommandLineProcessor {
 					String current_var_name = extractVarNameFromTaggedParameter(arg);
 					if (current_var_name.equals(var_name)) {
 						is_done.set(true);
-						return Stream.concat(list.stream(), Stream.concat(Stream.concat(add_before.stream(), Stream.of(arg)), add_after.stream())).collect(Collectors.toList());
+						return Stream.concat(list.stream(), Stream.concat(Stream.concat(add_before.stream(), Stream.of(arg)), add_after.stream())).collect(Collectors.toUnmodifiableList());
 					}
 				}
 				
-				return Stream.concat(list.stream(), Stream.of(arg)).collect(Collectors.toList());
+				return Stream.concat(list.stream(), Stream.of(arg)).collect(Collectors.toUnmodifiableList());
 			}, LIST_COMBINER);
 			
 			parameters.clear();
@@ -206,18 +206,18 @@ public class CommandLineProcessor {
 					if (isTaggedParameter(arg)) {
 						String var_name = extractVarNameFromTaggedParameter(arg);
 						if (vars_to_inject.containsKey(var_name)) {
-							return Stream.concat(list.stream(), Stream.of(vars_to_inject.get(var_name))).collect(Collectors.toList());
+							return Stream.concat(list.stream(), Stream.of(vars_to_inject.get(var_name))).collect(Collectors.toUnmodifiableList());
 						} else {
 							if (list.isEmpty()) {
 								return list;
 							} else if (isArgIsAParametersKey(list.get(list.size() - 1))) {
-								return list.stream().limit(list.size() - 1).collect(Collectors.toList());
+								return list.stream().limit(list.size() - 1).collect(Collectors.toUnmodifiableList());
 							} else {
 								return list;
 							}
 						}
 					} else {
-						return Stream.concat(list.stream(), Stream.of(arg)).collect(Collectors.toList());
+						return Stream.concat(list.stream(), Stream.of(arg)).collect(Collectors.toUnmodifiableList());
 					}
 				}, LIST_COMBINER));
 			} else {
@@ -228,7 +228,7 @@ public class CommandLineProcessor {
 					} else {
 						return arg;
 					}
-				}).filter(arg -> arg != null).collect(Collectors.toList()));
+				}).filter(arg -> arg != null).collect(Collectors.toUnmodifiableList()));
 			}
 			
 			transfertThisConfigurationTo(new_instance);
@@ -254,6 +254,6 @@ public class CommandLineProcessor {
 		
 	}
 	
-	private static final BinaryOperator<List<String>> LIST_COMBINER = (list1, list2) -> Stream.concat(list1.stream(), list2.stream()).collect(Collectors.toList());
+	private static final BinaryOperator<List<String>> LIST_COMBINER = (list1, list2) -> Stream.concat(list1.stream(), list2.stream()).collect(Collectors.toUnmodifiableList());
 	
 }
