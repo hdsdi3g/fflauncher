@@ -78,15 +78,15 @@ public class CommandLineProcessor {
 		return new CommandLine(full_command_line_with_vars);
 	}
 	
-	/**
+	/*
 	 * @param params_with_vars must NOT containt an executable reference
 	 */
-	public CommandLine createCommandLine(String exec_name, String params_with_vars) {
+	/*public CommandLine createCommandLine(String exec_name, String params_with_vars) {
 		if (params_with_vars == null) {
 			throw new NullPointerException("\"full_command_line_with_vars\" can't to be null");
 		}
 		return new CommandLine(exec_name + " " + params_with_vars);
-	}
+	}*/
 	
 	public CommandLine createEmptyCommandLine(String exec_name) {
 		return new CommandLine(exec_name);
@@ -121,7 +121,7 @@ public class CommandLineProcessor {
 		return param.substring(start_var_tag.length(), param.length() - end_var_tag.length());
 	}
 	
-	public class CommandLine extends ParametersUtility {
+	public class CommandLine extends ParametersUtility implements Cloneable {
 		
 		private final String exec_name;
 		
@@ -136,6 +136,18 @@ public class CommandLineProcessor {
 			parameters.remove(0);
 		}
 		
+		/**
+		 * Usable only for clone
+		 */
+		private CommandLine(CommandLine referer) {
+			exec_name = referer.exec_name;
+			importParametersFrom(referer);
+		}
+		
+		public CommandLine clone() {
+			return new CommandLine(this);
+		}
+		
 		public String getExecName() {
 			return exec_name;
 		}
@@ -148,18 +160,18 @@ public class CommandLineProcessor {
 			return var_name;
 		}
 		
-		/**
+		/*
 		 * @return var_name
 		 */
-		public String prependVariable(String var_name) {
+		/*public String prependVariable(String var_name) {
 			prependParameters(start_var_tag + var_name + end_var_tag);
 			return var_name;
-		}
+		}*/
 		
 		/**
 		 * @return true if the update is done
 		 */
-		public boolean injectParamsAroundVariable(String var_name, Collection<String> add_before, Collection<String> add_after) { // TODO tests !
+		public boolean injectParamsAroundVariable(String var_name, Collection<String> add_before, Collection<String> add_after) {
 			if (var_name == null) {
 				throw new NullPointerException("\"var_name\" can't to be null");
 			} else if (add_before == null) {

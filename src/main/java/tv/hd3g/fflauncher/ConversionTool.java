@@ -20,8 +20,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,7 +55,7 @@ public class ConversionTool {
 	private static Logger log = LogManager.getLogger();
 	
 	protected final File executable;
-	protected long max_exec_time_ms;
+	protected long max_exec_time_ms = 5000;
 	protected ScheduledExecutorService max_exec_time_scheduler;
 	private Consumer<ExecProcessText> exec_process_catcher;
 	
@@ -92,8 +94,6 @@ public class ConversionTool {
 		}
 		log.debug("Use executable {}", executable.getPath());
 		
-		max_exec_time_ms = 5000;
-		
 		AtomicLong counter = new AtomicLong();
 		
 		max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1, r -> {
@@ -113,14 +113,14 @@ public class ConversionTool {
 	/**
 	 * @return false by default
 	 */
-	public boolean isRemove_params_if_no_var_to_inject() {
+	public boolean isRemoveParamsIfNoVarToInject() {
 		return remove_params_if_no_var_to_inject;
 	}
 	
 	/**
 	 * @param remove_params_if_no_var_to_inject false by default
 	 */
-	public ConversionTool setRemove_params_if_no_var_to_inject(boolean remove_params_if_no_var_to_inject) {
+	public ConversionTool setRemoveParamsIfNoVarToInject(boolean remove_params_if_no_var_to_inject) {
 		this.remove_params_if_no_var_to_inject = remove_params_if_no_var_to_inject;
 		return this;
 	}
@@ -137,6 +137,14 @@ public class ConversionTool {
 	public ConversionTool setMaxExecTimeScheduler(ScheduledThreadPoolExecutor max_exec_time_scheduler) {
 		this.max_exec_time_scheduler = max_exec_time_scheduler;
 		return this;
+	}
+	
+	public long getMaxExecTime(TimeUnit unit) {
+		return unit.convert(max_exec_time_ms, TimeUnit.MILLISECONDS);
+	}
+	
+	public ScheduledExecutorService getMaxExecTimeScheduler() {
+		return max_exec_time_scheduler;
 	}
 	
 	/**
@@ -252,17 +260,19 @@ public class ConversionTool {
 		log.warn("Missing I/O variable \"" + var_name + "\" in command line \"" + command_line.toString() + "\". Ressource \"" + ressource + "\" will be ignored");
 	}
 	
-	public ProcessedCommandLine createProcessedCommandLine() {// TODO tests !
+	public ProcessedCommandLine createProcessedCommandLine() {
 		final HashMap<String, String> all_vars_to_inject = new HashMap<>(parameters_variables);
+		
+		CommandLine newer_command_line = command_line.clone();
 		
 		Stream.concat(input_sources.stream(), output_expected_destinations.stream()).forEach(param_ref -> {
 			String var_name = param_ref.var_name_in_command_line;
 			
-			boolean done = command_line.injectParamsAroundVariable(var_name, param_ref.parameters_before_ref.getParameters(), param_ref.parameters_after_ref.getParameters());
+			boolean done = newer_command_line.injectParamsAroundVariable(var_name, param_ref.parameters_before_ref.getParameters(), param_ref.parameters_after_ref.getParameters());
 			
 			if (done) {
 				if (all_vars_to_inject.containsKey(var_name)) {
-					throw new RuntimeException("Variable collision: \"" + var_name + "\" was already set to \"" + all_vars_to_inject.get(var_name) + "\" in " + command_line);
+					throw new RuntimeException("Variable collision: \"" + var_name + "\" was already set to \"" + all_vars_to_inject.get(var_name) + "\" in " + newer_command_line);
 				}
 				all_vars_to_inject.put(var_name, param_ref.ressource);
 			} else {
@@ -270,7 +280,7 @@ public class ConversionTool {
 			}
 		});
 		
-		return command_line.process(all_vars_to_inject, remove_params_if_no_var_to_inject);
+		return newer_command_line.process(all_vars_to_inject, remove_params_if_no_var_to_inject);
 	}
 	
 	/**
@@ -352,6 +362,9 @@ public class ConversionTool {
 		return output_expected_destinations.stream().map(getRessourceFromParameterReference).collect(Collectors.toUnmodifiableList());
 	}
 	
+	/**
+	 * @return current command_line, with raw variables.
+	 */
 	public CommandLine getCommandLine() {
 		return command_line;
 	}
@@ -379,15 +392,23 @@ public class ConversionTool {
 	 * Don't need to be executed before, only checks.
 	 */
 	public List<File> getOutputFiles(boolean must_exists, boolean must_be_a_regular_file, boolean not_empty) {
-		return output_expected_destinations.stream().map(dest -> dest.ressource).map(ressource -> {
+		return output_expected_destinations.stream().map(dest -> dest.ressource).flatMap(ressource -> {
 			try {
 				URL url = new URL(ressource);
 				if (url.getProtocol().equals("file")) {
-					return new File(url.getPath());
+					return Stream.of(Paths.get(url.toURI()).toFile());
 				}
 			} catch (MalformedURLException e) {
+				/**
+				 * Not an URL, maybe a file
+				 */
+				return Stream.of(new File(ressource));
+			} catch (URISyntaxException e) {
+				/**
+				 * It's an URL, but not a file
+				 */
 			}
-			return new File(ressource);
+			return Stream.empty();
 		}).map(file -> {
 			if (file.exists() == false & getWorkingDirectory() != null) {
 				return new File(getWorkingDirectory().getAbsolutePath() + File.separator + file.getPath());
@@ -406,7 +427,7 @@ public class ConversionTool {
 	}
 	
 	/**
-	 * Don't need to be executed before, only checks.
+	 * Don't need to be executed before.
 	 * @param remove_all if false, remove only empty files.
 	 */
 	public ConversionTool cleanUpOutputFiles(boolean remove_all, boolean clean_output_directories) {
@@ -428,8 +449,8 @@ public class ConversionTool {
 			return clean_output_directories;
 		}).filter(file -> {
 			if (file.isFile()) {
-				log.debug("Delete file \"" + file + "\"");
-				if (file.delete() == false) {// XXX
+				log.info("Delete file \"" + file + "\"");
+				if (file.delete() == false) {
 					throw new RuntimeException("Can't delete file \"" + file + "\"");
 				}
 				return false;
@@ -440,14 +461,13 @@ public class ConversionTool {
 				return Files.walk(dir_path).sorted(Comparator.reverseOrder()).map(path -> path.toFile());
 			} catch (IOException e) {
 				log.error("Can't access to " + dir_path, e);
-				return null;
+				return Stream.empty();
 			}
-		}).filter(file -> file != null).forEach(file -> {
-			log.info("Delete \"" + file + "\"");// XXX
-			/*if (file.delete() == false) {//XXX
+		}).forEach(file -> {
+			log.info("Delete \"" + file + "\"");
+			if (file.delete() == false) {
 				throw new RuntimeException("Can't delete \"" + file + "\"");
-			}*/
-			throw new RuntimeException("Disabled by security, check first"); // XXX
+			}
 		});
 		
 		return this;

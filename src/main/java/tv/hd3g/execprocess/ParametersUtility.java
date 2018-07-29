@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
  * Manipulate command line parameters: add, parse, get, list...
  * Don't manage executable name here.
  */
-public class ParametersUtility {
+public class ParametersUtility implements Cloneable {
 	
 	private static final Character QUOTE = '"';
 	private static final Character SPACE = ' ';
@@ -93,6 +93,12 @@ public class ParametersUtility {
 		parameters.clear();
 		parameters.addAll(previous_instance.parameters);
 		return this;
+	}
+	
+	public ParametersUtility clone() {
+		ParametersUtility new_instance = new ParametersUtility();
+		new_instance.importParametersFrom(this);
+		return new_instance;
 	}
 	
 	private Function<String, Stream<Arg>> filterAnTransformParameter = p -> {

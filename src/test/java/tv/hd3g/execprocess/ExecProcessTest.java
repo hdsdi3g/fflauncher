@@ -505,4 +505,5 @@ public class ExecProcessTest extends TestCase {
 		assertEquals(ept.environment.get("PATH"), new_pb.environment().get("PATH"));
 	}
 	
+	// TODO test ExecProcessResult.checkExecution
 }

@@ -83,4 +83,19 @@ public class CommandLineProcessorTest extends TestCase {
 		assertTrue(Arrays.equals(Arrays.asList("-a", "1", "-b", "2").toArray(), ep2.getParameters().toArray()));
 	}
 	
+	public void testInjectParamsAroundVariable() throws IOException {
+		CommandLine cl = new CommandLineProcessor().createCommandLine("exec -before <%myvar%> -after");
+		cl.injectParamsAroundVariable("myvar", Arrays.asList("-addedbefore", "1"), Arrays.asList("-addedafter", "2"));
+		assertEquals("exec -before -addedbefore 1 <%myvar%> -addedafter 2 -after", cl.toString());
+		
+		cl = new CommandLineProcessor().createCommandLine("exec -before <%myvar%> <%myvar%> -after");
+		cl.injectParamsAroundVariable("myvar", Arrays.asList("-addedbefore", "1"), Arrays.asList("-addedafter", "2"));
+		assertEquals("exec -before -addedbefore 1 <%myvar%> -addedafter 2 -addedbefore 1 <%myvar%> -addedafter 2 -after", cl.toString());
+		
+		cl = new CommandLineProcessor().createCommandLine("exec -before <%myvar1%> <%myvar2%> -after");
+		cl.injectParamsAroundVariable("myvar1", Arrays.asList("-addedbefore", "1"), Arrays.asList("-addedafter", "2"));
+		cl.injectParamsAroundVariable("myvar2", Arrays.asList("-addedbefore", "3"), Arrays.asList("-addedafter", "4"));
+		assertEquals("exec -before -addedbefore 1 <%myvar1%> -addedafter 2 -addedbefore 3 <%myvar2%> -addedafter 4 -after", cl.toString());
+	}
+	
 }

@@ -65,6 +65,8 @@ public class FFbaseTest extends TestCase {
 		assertFalse(b.getAbout().isToFormatIsAvaliable("nonono"));
 	}
 	
+	// TODO test isDecoderIsAvaliable
+	
 	/**
 	 * @return unmodifiableList
 	 */
@@ -231,4 +233,9 @@ public class FFbaseTest extends TestCase {
 		assertTrue(list.contains("qsv"));
 	}
 	
+	// TODO test addLogLevel, isLogLevelSet, setHidebanner, isOverwriteOutputFiles, setNeverOverwriteOutputFiles, isNeverOverwriteOutputFiles
+	// TODO test ffcodec,fffilter, .toString
+	// TODO test ffmpeg.addSimpleOutputDestination
+	// TODO test ffprobe.setPretty/isPretty, hasPrintFormat, isShowFormat, set/isShowData, set/isShowError, set/isShowFrames, set/isShowLog, set/isShowPackets, set/isShowPrograms, isShowStreams,isShowChapters
+	// TODO test Recipe.Recipe(ExecutableFinder exec_finder, String exec_name),setExecutionExecutor, setPostProcessExecutor
 }

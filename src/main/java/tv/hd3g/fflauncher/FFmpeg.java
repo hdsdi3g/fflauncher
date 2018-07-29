@@ -36,7 +36,7 @@ public class FFmpeg extends FFbase {
 	 * Define cmd var name like <%OUT_AUTOMATIC_n%> with "n" the # of setted destination.
 	 * Add "-f container destination"
 	 */
-	public FFbase addSimpleOutputDestination(String destination_name, String destination_container) {
+	public FFmpeg addSimpleOutputDestination(String destination_name, String destination_container) {
 		if (destination_name == null) {
 			throw new NullPointerException("\"destination_name\" can't to be null");
 		} else if (destination_container == null) {

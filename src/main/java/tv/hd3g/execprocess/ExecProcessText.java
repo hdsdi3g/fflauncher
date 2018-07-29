@@ -19,7 +19,6 @@ package tv.hd3g.execprocess;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -141,11 +140,7 @@ public class ExecProcessText extends ExecProcess {
 	 * Blocking, in this current Thread.
 	 */
 	public ExecProcessTextResult run() {
-		try {
-			return start(r -> r.run()).waitForEnd().get();
-		} catch (InterruptedException | ExecutionException e) {
-			throw new RuntimeException("Can't execute \"" + toString() + "\"", e);
-		}
+		return (ExecProcessTextResult) super.run();
 	}
 	
 	public ExecProcessText setEnvironmentVar(String key, String value) {

@@ -49,9 +49,6 @@ public class ProbeMediaTest extends TestCase {
 		assertEquals(432, result.getVideoStreams().findFirst().get().getHeight().intValue());
 		
 		// System.out.println(new Gson().toJson(result));
-		
-		// TODO do tests
-		
 	}
 	
 }

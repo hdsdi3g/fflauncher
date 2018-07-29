@@ -41,4 +41,5 @@ public class ExecutableFinderTest extends TestCase {
 		}
 	}
 	
+	// TODO test registerExecutable(String name, File full_path)
 }
