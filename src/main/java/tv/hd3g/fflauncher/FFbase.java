@@ -19,6 +19,7 @@ package tv.hd3g.fflauncher;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -121,13 +122,26 @@ class FFbase extends ConversionTool {
 			throw new NullPointerException("\"source_name\" can't to be null");
 		}
 		
-		Stream<String> s_source_options = Stream.empty();
-		if (source_options != null) {
-			s_source_options = Arrays.stream(source_options);
+		if (source_options == null) {
+			return addSimpleInputSource(source_name, Collections.emptyList());
+		} else {
+			return addSimpleInputSource(source_name, Arrays.stream(source_options).collect(Collectors.toUnmodifiableList()));
+		}
+	}
+	
+	/**
+	 * Define cmd var name like <%IN_AUTOMATIC_n%> with "n" the # of setted sources.
+	 * Add -i parameter
+	 */
+	public FFbase addSimpleInputSource(String source_name, List<String> source_options) {
+		if (source_name == null) {
+			throw new NullPointerException("\"source_name\" can't to be null");
+		} else if (source_options == null) {
+			throw new NullPointerException("\"source_options\" can't to be null");
 		}
 		
 		String varname = command_line.addVariable("IN_AUTOMATIC_" + input_sources.size());
-		addInputSource(source_name, varname, Stream.concat(s_source_options, Stream.of("-i")).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
+		addInputSource(source_name, varname, Stream.concat(source_options.stream(), Stream.of("-i")).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
 		
 		return this;
 	}
