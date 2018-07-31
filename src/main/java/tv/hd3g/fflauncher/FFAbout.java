@@ -39,7 +39,8 @@ import tv.hd3g.execprocess.ExecutableFinder;
  */
 public class FFAbout {
 	
-	private static Logger log = LogManager.getLogger();
+	private static final Logger log = LogManager.getLogger();
+	
 	private final FFbase referer;
 	
 	FFAbout(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
@@ -310,6 +311,61 @@ public class FFAbout {
 		return getFilters().stream().anyMatch(filter -> {
 			return filter.tag.equals(filter_name.toLowerCase());
 		});
+	}
+	
+	/**
+	 * @param engine_name like libx264rgb or libxvid
+	 *        ALL CODECS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
+	 */
+	public boolean isCoderEngineIsAvaliable(String engine_name) {
+		return getCodecs().stream().anyMatch(codec -> {
+			return codec.encoding_supported == true & codec.encoders.contains(engine_name);
+		});
+	}
+	
+	/**
+	 * @param engine_name like h264_cuvid or libopenjpeg
+	 *        ALL CODECS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
+	 */
+	public boolean isDecoderEngineIsAvaliable(String engine_name) {
+		return getCodecs().stream().anyMatch(codec -> {
+			return codec.decoding_supported == true & codec.decoders.contains(engine_name);
+		});
+	}
+	
+	/**
+	 * ALL FUNCTIONS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
+	 * @return true if configured and up for cuda, cuvid and nvenc
+	 */
+	public boolean isNVToolkitIsAvaliable() {
+		if (getAvailableHWAccelerationMethods().contains("cuda") == false) {
+			log.debug("(NVIDIA) Cuda is not available in hardware acceleration methods");
+			return false;
+		} else if (getAvailableHWAccelerationMethods().contains("cuvid") == false) {
+			log.debug("(NVIDIA) Cuvid is not available in hardware acceleration methods");
+			return false;
+		}
+		List<String> all_nv_related_codecs = getCodecs().stream().filter(c -> c.decoders.isEmpty() == false | c.encoders.isEmpty() == false).flatMap(c -> {
+			return Stream.concat(c.decoders.stream(), c.encoders.stream());
+		}).distinct().filter(c -> c.contains("nvenc") | c.contains("cuvid")).collect(Collectors.toList());
+		
+		if (all_nv_related_codecs.stream().noneMatch(c -> c.contains("nvenc"))) {
+			log.debug("(NVIDIA) nvenc is not available in codec list");
+			return false;
+		} else if (all_nv_related_codecs.stream().noneMatch(c -> c.contains("cuvid"))) {
+			log.debug("(NVIDIA) cuvid is not available in codec list");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * ALL FUNCTIONS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
+	 * @return true if configured with NVIDIA Performance Primitives via libnpp
+	 */
+	public boolean isHardwareNVScalerFilterIsAvaliable() {
+		return getVersion().configuration.contains("libnpp");
 	}
 	
 }

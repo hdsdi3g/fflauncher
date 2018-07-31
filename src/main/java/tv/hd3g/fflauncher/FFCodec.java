@@ -17,7 +17,9 @@
 package tv.hd3g.fflauncher;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class FFCodec {
@@ -42,6 +44,9 @@ public class FFCodec {
 	public final boolean intra_frame_only;
 	public final boolean lossy_compression;
 	public final boolean lossless_compression;
+	
+	public final Set<String> encoders;
+	public final Set<String> decoders;
 	
 	/**
 	 * Like "dpx"
@@ -90,7 +95,48 @@ public class FFCodec {
 		}
 		
 		tag = line_blocs[1].trim();
-		long_name = Arrays.stream(line_blocs).filter(lb -> lb.trim().equals("") == false).skip(2).collect(Collectors.joining(" "));
+		
+		/**
+		 * Like "Dirac (decoders: dirac libschroedinger ) (encoders: vc2 libschroedinger )"
+		 */
+		String raw_long_name = Arrays.stream(line_blocs).filter(lb -> lb.trim().equals("") == false).skip(2).collect(Collectors.joining(" "));
+		
+		int decoders_tag_pos = raw_long_name.indexOf("(decoders:");
+		int encoders_tag_pos = raw_long_name.indexOf("(encoders:");
+		
+		if (decoders_tag_pos > -1 | encoders_tag_pos > -1) {
+			if (decoders_tag_pos > -1) {
+				int decoders_tag_end_pos = raw_long_name.indexOf(")", decoders_tag_pos);
+				if (decoders_tag_end_pos == -1) {
+					throw new IndexOutOfBoundsException("Can't found \")\" in \"" + raw_long_name + "\"");
+				}
+				decoders = Collections.unmodifiableSet(Arrays.stream(raw_long_name.substring(decoders_tag_pos + "(decoders:".length(), decoders_tag_end_pos).trim().split(" ")).distinct().collect(Collectors.toSet()));
+			} else {
+				decoders = Collections.emptySet();
+			}
+			
+			if (encoders_tag_pos > -1) {
+				int encoders_tag_end_pos = raw_long_name.indexOf(")", encoders_tag_pos);
+				if (encoders_tag_end_pos == -1) {
+					throw new IndexOutOfBoundsException("Can't found \")\" in \"" + raw_long_name + "\"");
+				}
+				encoders = Collections.unmodifiableSet(Arrays.stream(raw_long_name.substring(encoders_tag_pos + "(decoders:".length(), encoders_tag_end_pos).trim().split(" ")).distinct().collect(Collectors.toSet()));
+			} else {
+				encoders = Collections.emptySet();
+			}
+			
+			if (decoders_tag_pos > -1 & encoders_tag_pos > -1) {
+				long_name = raw_long_name.substring(0, Math.min(decoders_tag_pos - 1, encoders_tag_pos - 1));
+			} else if (decoders_tag_pos > -1) {
+				long_name = raw_long_name.substring(0, decoders_tag_pos - 1);
+			} else {
+				long_name = raw_long_name.substring(0, encoders_tag_pos - 1);
+			}
+		} else {
+			encoders = Collections.emptySet();
+			decoders = Collections.emptySet();
+			long_name = raw_long_name;
+		}
 	}
 	
 	public String toString() {

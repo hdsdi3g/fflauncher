@@ -72,7 +72,7 @@ public class FFmpeg extends FFbase {
 	 * @param device_id_to_use -1 for default, 0 for first graphic card...
 	 * @param source_codec, decode from codec, like h264_cuvid, mjpeg_cuvid... ALL CODECS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT.
 	 */
-	public FFmpeg addSimpleSourceHardwareNVDecoded(String source, int device_id_to_use, String source_cuvid_codec, Collection<String> additional_params) {
+	public FFmpeg addSimpleSourceHardwareNVDecoded(String source, int device_id_to_use, String source_cuvid_codec_engine, Collection<String> additional_params) {
 		/**
 		 * [-hwaccel_device 0] -hwaccel cuvid -c:v source_cuvid_codec [-vsync 0] -i source
 		 */
@@ -86,7 +86,7 @@ public class FFmpeg extends FFbase {
 		source_options.add("-vsync");
 		source_options.add("0");
 		source_options.add("-c:v");
-		source_options.add(source_cuvid_codec);
+		source_options.add(source_cuvid_codec_engine);
 		
 		log.debug("Add source: " + source_options.stream().collect(Collectors.joining(" ")) + " -i " + source);
 		addSimpleInputSource(source, source_options);
@@ -165,10 +165,6 @@ public class FFmpeg extends FFbase {
 	}
 	
 	// TODO2 ffmetadata import/export: ffmpeg -i INPUT -f ffmetadata FFMETADATAFILE / ffmpeg -i INPUT -i FFMETADATAFILE -map_metadata 1 -codec copy OUTPUT
-	
-	// TODO get via ffprobe coders/decoders name for codecs: h264 <-> (decoders: h264 h264_qsv h264_cuvid ) (encoders: libx264 libx264rgb h264_amf h264_nvenc h264_qsv nvenc nvenc_h264 )
-	// TODO ffprobe check --enable-cuda --enable-cuvid --enable-nvenc + HWaccell: cuda cuvid
-	// TODO check --enable-libnpp
 	
 	/*
 	   -preset slow -b:v 5M -maxrate 10M -bufsize:v 10M -bf 2 -ref 1 -g 150 -i_qfactor 1.1 -b_qfactor 1.25 -qmin 1 -qmax 50

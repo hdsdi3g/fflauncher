@@ -36,16 +36,15 @@ import tv.hd3g.fflauncher.FFFilter.ConnectorType;
 
 public class FFbaseTest extends TestCase {
 	
-	public void testBase() throws Exception {
+	private static class FFbaseImpl extends FFbase {
 		
-		class FFbaseImpl extends FFbase {
-			
-			public FFbaseImpl(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
-				super(exec_finder, command_line);
-			}
-			
+		public FFbaseImpl(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
+			super(exec_finder, command_line);
 		}
 		
+	}
+	
+	public void testBase() throws Exception {
 		FFbaseImpl b = new FFbaseImpl(new ExecutableFinder(), new CommandLineProcessor().createEmptyCommandLine("ffmpeg"));
 		
 		assertNotNull(b.getAbout().getVersion());
@@ -59,13 +58,25 @@ public class FFbaseTest extends TestCase {
 		
 		assertTrue(b.getAbout().isCoderIsAvaliable("ffv1"));
 		assertFalse(b.getAbout().isCoderIsAvaliable("nonono"));
+		assertTrue(b.getAbout().isDecoderIsAvaliable("rl2"));
+		assertFalse(b.getAbout().isDecoderIsAvaliable("nonono"));
 		assertTrue(b.getAbout().isFilterIsAvaliable("color"));
 		assertFalse(b.getAbout().isFilterIsAvaliable("nonono"));
 		assertTrue(b.getAbout().isToFormatIsAvaliable("wav"));
 		assertFalse(b.getAbout().isToFormatIsAvaliable("nonono"));
+		
 	}
 	
-	// TODO test isDecoderIsAvaliable
+	public void testNVPresence() throws Exception {
+		FFbaseImpl b = new FFbaseImpl(new ExecutableFinder(), new CommandLineProcessor().createEmptyCommandLine("ffmpeg"));
+		
+		if (System.getProperty("ffmpeg.test.nvidia.presence", "").equals("1")) {
+			assertTrue("Can't found NV lib like cuda, cuvid and nvenc", b.getAbout().isNVToolkitIsAvaliable());
+		}
+		if (System.getProperty("ffmpeg.test.libnpp.presence", "").equals("1")) {
+			assertTrue("Can't found libnpp", b.getAbout().isHardwareNVScalerFilterIsAvaliable());
+		}
+	}
 	
 	/**
 	 * @return unmodifiableList
@@ -113,7 +124,7 @@ public class FFbaseTest extends TestCase {
 		}).collect(Collectors.toUnmodifiableList());
 		
 		assertEquals(1, test1.size());
-		assertTrue(test1.get(0).long_name.equals("G.722 ADPCM (decoders: g722 ) (encoders: g722 )"));
+		assertTrue(test1.get(0).long_name.equals("G.722 ADPCM"));
 		
 		assertEquals(7, list.stream().filter(c -> {
 			return c.type == CodecType.DATA;
@@ -122,6 +133,20 @@ public class FFbaseTest extends TestCase {
 		assertEquals(10, list.stream().filter(c -> {
 			return c.encoding_supported == false & c.decoding_supported == false & c.lossless_compression == false && c.lossy_compression == false;
 		}).count());
+		
+		FFCodec t = list.stream().filter(c -> {
+			return c.tag.equals("dirac");
+		}).findFirst().get();
+		
+		assertTrue(t.long_name.equals("Dirac"));
+		assertTrue(t.decoders.contains("dirac"));
+		assertTrue(t.encoders.contains("vc2"));
+		
+		assertTrue(t.encoders.contains("libschroedinger"));
+		assertTrue(t.decoders.contains("libschroedinger"));
+		
+		assertEquals(2, t.encoders.size());
+		assertEquals(2, t.decoders.size());
 	}
 	
 	public void testFormats() {
