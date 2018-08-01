@@ -60,7 +60,7 @@ class FFbase extends ConversionTool {
 	/**
 	 * Add like -loglevel repeat+level+verbose
 	 */
-	public FFbase addLogLevel(FFLogLevel level, boolean repeat, boolean display_level) {
+	public FFbase setLogLevel(FFLogLevel level, boolean repeat, boolean display_level) {
 		command_line.ifHasNotParameter(() -> {
 			StringBuilder sb = new StringBuilder();
 			if (repeat) {

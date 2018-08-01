@@ -39,6 +39,7 @@ import java.util.stream.StreamSupport;
 import junit.framework.TestCase;
 import tv.hd3g.execprocess.processdemo.Test1;
 import tv.hd3g.execprocess.processdemo.Test10;
+import tv.hd3g.execprocess.processdemo.Test11;
 import tv.hd3g.execprocess.processdemo.Test2;
 import tv.hd3g.execprocess.processdemo.Test3;
 import tv.hd3g.execprocess.processdemo.Test4;
@@ -70,7 +71,6 @@ public class ExecProcessTest extends TestCase {
 	public void testSimpleExec() throws InterruptedException, ExecutionException {
 		ExecProcessText ept = createExec(Test1.class);
 		ExecProcessTextResult result = ept.start(executor).waitForEnd().get();
-		
 		assertEquals(Test1.expected, result.getStdouterr(true, ""));
 		assertEquals(0, (int) result.getExitCode().get());
 		assertEquals(EndStatus.CORRECTLY_DONE, result.getEndStatus().get());
@@ -505,5 +505,38 @@ public class ExecProcessTest extends TestCase {
 		assertEquals(ept.environment.get("PATH"), new_pb.environment().get("PATH"));
 	}
 	
-	// TODO test ExecProcessResult.checkExecution
+	public void testCheckExecution() throws InterruptedException, ExecutionException, IOException {
+		ExecProcessText ept1 = new ExecProcessText("java", executable_finder).addParameters("-cp", System.getProperty("java.class.path")).addParameters(Test11.class.getName());
+		ept1.addParameters("0");
+		ExecProcessTextResult result1 = ept1.start(executor).waitForEnd().get();
+		result1.checkExecution();
+		
+		ExecProcess ept2 = new ExecProcess("java", executable_finder).addParameters("-cp", System.getProperty("java.class.path")).addParameters(Test11.class.getName());
+		ept2.addParameters("0");
+		ExecProcessResult result2 = ept2.start(executor).waitForEnd().get();
+		result2.checkExecution();
+		
+		try {
+			ept1 = new ExecProcessText("java", executable_finder).addParameters("-cp", System.getProperty("java.class.path")).addParameters(Test11.class.getName());
+			ept1.addParameters("1");
+			result1 = ept1.start(executor).waitForEnd().get();
+			result1.checkExecution();
+			
+			fail("Missing exception");
+		} catch (Exception e) {
+			assertEquals(1, result1.getExitCode().get().intValue());
+		}
+		
+		try {
+			ept2 = new ExecProcess("java", executable_finder).addParameters("-cp", System.getProperty("java.class.path")).addParameters(Test11.class.getName());
+			ept2.addParameters("1");
+			result2 = ept2.start(executor).waitForEnd().get();
+			result2.checkExecution();
+			fail("Missing exception");
+		} catch (Exception e) {
+			assertEquals(1, result1.getExitCode().get().intValue());
+		}
+		
+	}
+	
 }

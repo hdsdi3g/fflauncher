@@ -42,7 +42,7 @@ public class FFFormat {
 	/**
 	 * Like "asf"
 	 */
-	public final String tag;
+	public final String name;
 	
 	/**
 	 * Like "mov, mp4, m4a, 3gp, 3g2, mj2"
@@ -66,11 +66,11 @@ public class FFFormat {
 		muxing = line_blocs.get(0).trim().contains("E");
 		
 		if (line_blocs.get(1).contains(",")) {
-			tag = Arrays.stream(line_blocs.get(1).trim().split(",")).findFirst().get();
+			name = Arrays.stream(line_blocs.get(1).trim().split(",")).findFirst().get();
 			alternate_tags = Collections.unmodifiableSet(Arrays.stream(line_blocs.get(1).trim().split(",")).collect(Collectors.toSet()));
 		} else {
-			tag = line_blocs.get(1);
-			alternate_tags = Collections.singleton(tag);
+			name = line_blocs.get(1);
+			alternate_tags = Collections.singleton(name);
 		}
 		
 		long_name = line_blocs.stream().filter(lb -> lb.trim().equals("") == false).skip(2).collect(Collectors.joining(" "));
@@ -81,10 +81,10 @@ public class FFFormat {
 		
 		sb.append(long_name);
 		sb.append(" [");
-		sb.append(tag);
+		sb.append(name);
 		if (alternate_tags.size() > 1) {
 			sb.append(", ");
-			sb.append(alternate_tags.stream().filter(t -> t.equals(tag) == false).collect(Collectors.joining(", ")));
+			sb.append(alternate_tags.stream().filter(t -> t.equals(name) == false).collect(Collectors.joining(", ")));
 		}
 		sb.append("] ");
 		

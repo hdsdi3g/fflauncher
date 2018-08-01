@@ -21,13 +21,17 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ffmpeg.ffprobe.StreamType;
 
 import tv.hd3g.execprocess.CommandLineProcessor.CommandLine;
 import tv.hd3g.execprocess.ExecutableFinder;
+import tv.hd3g.fflauncher.snippets.FFVideoTranscoding;
+import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 
 public class FFmpeg extends FFbase {
 	
@@ -87,6 +91,7 @@ public class FFmpeg extends FFbase {
 		source_options.add("0");
 		source_options.add("-c:v");
 		source_options.add(source_cuvid_codec_engine);
+		source_options.addAll(additional_params);
 		
 		log.debug("Add source: " + source_options.stream().collect(Collectors.joining(" ")) + " -i " + source);
 		addSimpleInputSource(source, source_options);
@@ -164,13 +169,99 @@ public class FFmpeg extends FFbase {
 		return this;
 	}
 	
-	// TODO2 ffmetadata import/export: ffmpeg -i INPUT -f ffmetadata FFMETADATAFILE / ffmpeg -i INPUT -i FFMETADATAFILE -map_metadata 1 -codec copy OUTPUT
+	public static Optional<StreamType> getFirstVideoStream(FFprobeJAXB analysing_result) {
+		Optional<StreamType> o_video_stream = analysing_result.getVideoStreams().findFirst();
+		
+		if (o_video_stream.isPresent()) {
+			if (o_video_stream.get().getDisposition().getAttachedPic() == 0) {
+				return o_video_stream;
+			}
+		}
+		return Optional.empty();
+	}
+	
+	/**
+	 * "Patch" ffmpeg command line for hardware decoding. Only first video stream will be decoded.
+	 * If hardware decoding is not possible, set do default decoding mode.
+	 */
+	public FFmpeg addVideoDecoding(String source, FFprobeJAXB analysing_result, FFAbout about) {
+		Optional<StreamType> o_video_stream = getFirstVideoStream(analysing_result);
+		
+		if (o_video_stream.isPresent() == false) {
+			log.trace("Can't found \"valid\" video stream on \"{}\"", source);
+			addSimpleInputSource(source);
+			return this;
+		}
+		
+		StreamType video_stream = o_video_stream.get();
+		
+		FFCodec codec = about.getCodecs().stream().filter(c -> {
+			return c.decoding_supported & c.name.equals(video_stream.getCodecName());
+		}).findFirst().orElseThrow(() -> new MediaException("Can't found a valid decoder codec for " + video_stream.getCodecName() + " in \"" + source + "\""));
+		
+		if (about.isNVToolkitIsAvaliable()) {
+			Optional<String> o_decoder = codec.decoders.stream().filter(decoder -> decoder.endsWith("_cuvid")).findFirst();
+			
+			if (o_decoder.isPresent()) {
+				return addSimpleSourceHardwareNVDecoded(source, -1, o_decoder.get(), null);
+			}
+		}
+		
+		log.trace("Can't found a valid hardware decoder on \"{}\" ({}), back to defaut usage", source, video_stream.getCodecLongName());
+		addSimpleInputSource(source);
+		return this;
+	}
+	
+	/**
+	 * Set codec name, and if it possible, use hardware encoding.
+	 * @param dest_codec_name
+	 * @param output_video_stream_index (-1 by default), X -> -c:v:X
+	 */
+	public FFmpeg addVideoEncoding(String dest_codec_name, int output_video_stream_index, FFAbout about) {
+		String coder = dest_codec_name;
+		
+		if (dest_codec_name.equals("copy") == false) {
+			FFCodec codec = about.getCodecs().stream().filter(c -> {
+				return c.encoding_supported & c.name.equals(dest_codec_name);
+			}).findFirst().orElseThrow(() -> new MediaException("Can't found a valid codec for " + dest_codec_name));
+			
+			if (about.isNVToolkitIsAvaliable()) {
+				coder = codec.encoders.stream().filter(encoder -> {
+					return encoder.endsWith("_nvenc") | encoder.startsWith("_nvenc") | encoder.equals("nvenc");
+				}).findFirst().orElse(dest_codec_name);
+			}
+		}
+		
+		if (output_video_stream_index > -1) {
+			command_line.addParameters("-c:v:" + output_video_stream_index, coder);
+		} else {
+			command_line.addParameters("-c:v", coder);
+		}
+		
+		return this;
+	}
+	
+	/*public FFmpeg prepareResize(String source, Point new_size, FFprobeJAXB analysing_result) {
+		// TODO2 ffmpeg.addHardwareNVScalerFilter(new_size, pixel_format, interp_algo)
+		// about.isHardwareNVScalerFilterIsAvaliable()
+		return this;
+	}*/
+	
+	// TODO2 ffmpeg.addHardwareNVMultipleScalerFilterComplex(configuration, device_id_to_use)
+	
+	/**
+	 * Don't forget to call commit() after set.
+	 */
+	public FFVideoTranscoding prepareVideoTranscoding() {
+		return new FFVideoTranscoding(this);
+	}
 	
 	/*
-	   -preset slow -b:v 5M -maxrate 10M -bufsize:v 10M -bf 2 -ref 1 -g 150 -i_qfactor 1.1 -b_qfactor 1.25 -qmin 1 -qmax 50
-	   
 	    https://developer.nvidia.com/ffmpeg
 	    https://developer.nvidia.com/video-encode-decode-gpu-support-matrix
 	    https://trac.ffmpeg.org/wiki/HWAccelIntro#NVENC
 	 * */
+	
+	// TODO2 ffmetadata import/export: ffmpeg -i INPUT -f ffmetadata FFMETADATAFILE / ffmpeg -i INPUT -i FFMETADATAFILE -map_metadata 1 -codec copy OUTPUT
+	
 }

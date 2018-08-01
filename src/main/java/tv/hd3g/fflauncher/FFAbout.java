@@ -285,25 +285,25 @@ public class FFAbout {
 	
 	public boolean isCoderIsAvaliable(String codec_name) {
 		return getCodecs().stream().anyMatch(codec -> {
-			return codec.tag.equals(codec_name.toLowerCase()) & codec.encoding_supported == true;
+			return codec.name.equals(codec_name.toLowerCase()) & codec.encoding_supported == true;
 		});
 	}
 	
 	public boolean isDecoderIsAvaliable(String codec_name) {
 		return getCodecs().stream().anyMatch(codec -> {
-			return codec.tag.equals(codec_name.toLowerCase()) & codec.decoding_supported == true;
+			return codec.name.equals(codec_name.toLowerCase()) & codec.decoding_supported == true;
 		});
 	}
 	
 	public boolean isFromFormatIsAvaliable(String demuxer_name) {
 		return getFormats().stream().anyMatch(format -> {
-			return format.tag.equals(demuxer_name.toLowerCase()) & format.demuxing == true;
+			return format.name.equals(demuxer_name.toLowerCase()) & format.demuxing == true;
 		});
 	}
 	
 	public boolean isToFormatIsAvaliable(String muxer_name) {
 		return getFormats().stream().anyMatch(format -> {
-			return format.tag.equals(muxer_name.toLowerCase()) & format.muxing == true;
+			return format.name.equals(muxer_name.toLowerCase()) & format.muxing == true;
 		});
 	}
 	

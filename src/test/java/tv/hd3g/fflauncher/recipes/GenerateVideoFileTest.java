@@ -38,4 +38,5 @@ public class GenerateVideoFileTest extends TestCase {
 		ffmpeg.cleanUpOutputFiles(true, true);
 		assertFalse(test_file.exists());
 	}
+	
 }

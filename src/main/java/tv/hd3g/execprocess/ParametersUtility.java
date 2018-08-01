@@ -95,6 +95,13 @@ public class ParametersUtility implements Cloneable {
 		return this;
 	}
 	
+	/**
+	 * Don't touch to actual parameters, and clone from source.
+	 */
+	public void addAllFrom(ParametersUtility source) {
+		parameters.addAll(source.parameters);
+	}
+	
 	public ParametersUtility clone() {
 		ParametersUtility new_instance = new ParametersUtility();
 		new_instance.importParametersFrom(this);

@@ -443,7 +443,7 @@ class ExecProcessResult {
 	public ExecProcessResult checkExecution() {
 		try {
 			if (isCorrectlyDone().get() == false) {
-				throw new RuntimeException("Can't execute correcly " + getCommandline() + ", " + getEndStatus() + " [" + getExitCode() + "]");
+				throw new RuntimeException("Can't execute correcly " + getCommandline() + ", " + getEndStatus().get() + " [" + getExitCode().get() + "]");
 			}
 		} catch (InterruptedException | ExecutionException e) {
 			throw new RuntimeException("Can't start process " + getCommandline());

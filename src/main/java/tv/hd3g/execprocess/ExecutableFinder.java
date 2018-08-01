@@ -39,10 +39,22 @@ import org.apache.logging.log4j.Logger;
 public class ExecutableFinder {
 	private static final Logger log = LogManager.getLogger();
 	
+	private static Predicate<File> isValidDirectory = f -> {
+		return f.exists() && f.isDirectory() && f.canRead();
+	};
+	
 	/**
 	 * unmodifiableList
 	 */
 	public static final List<String> WINDOWS_EXEC_EXTENSIONS;
+	
+	/**
+	 * unmodifiableList
+	 * Specified by -Dexecfinder.searchdir=path1;path2... or path1:path2... on *Nix systems.
+	 */
+	public static final List<File> GLOBAL_DECLARED_DIRS;
+	
+	// public static final Map<String, File> GLOBAL_DECLARED_EXECUTABLES;
 	
 	static {
 		if (System.getenv().containsKey("PATHEXT")) {
@@ -59,6 +71,23 @@ public class ExecutableFinder {
 		} else {
 			WINDOWS_EXEC_EXTENSIONS = Collections.unmodifiableList(Arrays.asList("exe", "com", "cmd", "bat"));
 		}
+		
+		if (System.getProperty("execfinder.searchdir", "").equals("") == false) {
+			GLOBAL_DECLARED_DIRS = Collections.unmodifiableList(Arrays.stream(System.getProperty("execfinder.searchdir").split(File.pathSeparator)).map(File::new).filter(isValidDirectory).map(File::getAbsoluteFile).collect(Collectors.toList()));
+			
+			log.debug("Specific executable path declared via system property: " + GLOBAL_DECLARED_DIRS.stream().map(File::getPath).collect(Collectors.joining(", ")));
+		} else {
+			GLOBAL_DECLARED_DIRS = Collections.emptyList();
+		}
+		
+		/*if (System.getProperty("execfinder.exec", "").equals("") == false) {
+			// GLOBAL_DECLARED_EXECUTABLES = Collections.unmodifiableList(Arrays.stream(System.getProperty("execfinder.searchdir").split(File.pathSeparator)).map(File::new).filter(isValidDirectory).map(File::getAbsoluteFile).collect(Collectors.toList()));
+			
+			// log.debug("Specific executable path declared via system property: " + GLOBAL_DECLARED_DIRS.stream().map(File::getPath).collect(Collectors.joining(", ")));
+		} else {
+			GLOBAL_DECLARED_EXECUTABLES = Collections.emptyMap();
+		}*/
+		
 	}
 	
 	/**
@@ -68,18 +97,14 @@ public class ExecutableFinder {
 	private final LinkedHashMap<String, File> declared_in_configuration;
 	private final boolean is_windows_style_path;
 	
-	private static Predicate<File> isValidDirectory = f -> {
-		return f.exists() && f.isDirectory() && f.canRead();
-	};
-	
 	public ExecutableFinder() {
 		declared_in_configuration = new LinkedHashMap<>();
 		is_windows_style_path = File.separator.equals("\\");// System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
 		
 		/**
-		 * Add only valid dirs
+		 * Adds only valid dirs
 		 */
-		paths = new LinkedList<>();
+		paths = new LinkedList<>(GLOBAL_DECLARED_DIRS);
 		
 		addLocalPath("/bin");
 		addLocalPath("/App/bin");

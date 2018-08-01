@@ -64,7 +64,6 @@ public class FFbaseTest extends TestCase {
 		assertFalse(b.getAbout().isFilterIsAvaliable("nonono"));
 		assertTrue(b.getAbout().isToFormatIsAvaliable("wav"));
 		assertFalse(b.getAbout().isToFormatIsAvaliable("nonono"));
-		
 	}
 	
 	public void testNVPresence() throws Exception {
@@ -120,11 +119,12 @@ public class FFbaseTest extends TestCase {
 		List<FFCodec> list = FFCodec.parse(readLinesFromResource("test-codecs.txt"));
 		
 		List<FFCodec> test1 = list.stream().filter(c -> {
-			return c.type == CodecType.AUDIO & c.encoding_supported & c.decoding_supported & c.lossy_compression & c.tag.equals("adpcm_g722");
+			return c.type == CodecType.AUDIO & c.encoding_supported & c.decoding_supported & c.lossy_compression & c.name.equals("adpcm_g722");
 		}).collect(Collectors.toUnmodifiableList());
 		
 		assertEquals(1, test1.size());
 		assertTrue(test1.get(0).long_name.equals("G.722 ADPCM"));
+		assertTrue(test1.get(0).toString().startsWith(test1.get(0).long_name));
 		
 		assertEquals(7, list.stream().filter(c -> {
 			return c.type == CodecType.DATA;
@@ -135,7 +135,7 @@ public class FFbaseTest extends TestCase {
 		}).count());
 		
 		FFCodec t = list.stream().filter(c -> {
-			return c.tag.equals("dirac");
+			return c.name.equals("dirac");
 		}).findFirst().get();
 		
 		assertTrue(t.long_name.equals("Dirac"));
@@ -155,14 +155,14 @@ public class FFbaseTest extends TestCase {
 		assertEquals(326, list.size());
 		
 		List<FFFormat> test1 = list.stream().filter(f -> {
-			return f.muxing == false & f.demuxing == true & f.tag.equals("bfi");
+			return f.muxing == false & f.demuxing == true & f.name.equals("bfi");
 		}).collect(Collectors.toUnmodifiableList());
 		
 		assertEquals(1, test1.size());
 		assertTrue(test1.get(0).long_name.equals("Brute Force & Ignorance"));
 		
 		assertEquals(2, list.stream().filter(f -> {
-			return f.tag.equals("hls");
+			return f.name.equals("hls");
 		}).count());
 		
 		assertEquals(2, list.stream().filter(f -> {
@@ -230,6 +230,8 @@ public class FFbaseTest extends TestCase {
 			return f.long_name.equals("Scale the input video size and/or convert the image format to the given reference.");
 		}).count());
 		
+		assertTrue(list.get(0).toString().startsWith(list.get(0).long_name));
+		
 	}
 	
 	public void testPixelFormats() {
@@ -258,9 +260,40 @@ public class FFbaseTest extends TestCase {
 		assertTrue(list.contains("qsv"));
 	}
 	
-	// TODO test addLogLevel, isLogLevelSet, setHidebanner, isOverwriteOutputFiles, setNeverOverwriteOutputFiles, isNeverOverwriteOutputFiles
-	// TODO test ffcodec,fffilter, .toString
-	// TODO test ffmpeg.addSimpleOutputDestination
-	// TODO test ffprobe.setPretty/isPretty, hasPrintFormat, isShowFormat, set/isShowData, set/isShowError, set/isShowFrames, set/isShowLog, set/isShowPackets, set/isShowPrograms, isShowStreams,isShowChapters
-	// TODO test Recipe.Recipe(ExecutableFinder exec_finder, String exec_name),setExecutionExecutor, setPostProcessExecutor
+	public void testParams() throws FileNotFoundException {
+		FFbaseImpl b = new FFbaseImpl(new ExecutableFinder(), new CommandLineProcessor().createEmptyCommandLine("ffmpeg"));
+		assertFalse(b.isLogLevelSet());
+		
+		int skip_base_cmdline = b.command_line.toString().length();
+		
+		b.setLogLevel(FFLogLevel.fatal, true, true);
+		assertEquals("-loglevel repeat+level+fatal", b.command_line.toString().substring(skip_base_cmdline));
+		
+		b.setLogLevel(FFLogLevel.debug, false, false);
+		assertEquals("-loglevel repeat+level+fatal", b.command_line.toString().substring(skip_base_cmdline));
+		
+		assertTrue(b.isLogLevelSet());
+		
+		b.command_line.clear();
+		
+		assertFalse(b.isHidebanner());
+		b.setHidebanner();
+		assertEquals("-hide_banner", b.command_line.toString().substring(skip_base_cmdline));
+		assertTrue(b.isHidebanner());
+		
+		b.command_line.clear();
+		
+		assertFalse(b.isOverwriteOutputFiles());
+		b.setOverwriteOutputFiles();
+		assertEquals("-y", b.command_line.toString().substring(skip_base_cmdline));
+		assertTrue(b.isOverwriteOutputFiles());
+		
+		b.command_line.clear();
+		
+		assertFalse(b.isNeverOverwriteOutputFiles());
+		b.setNeverOverwriteOutputFiles();
+		assertEquals("-n", b.command_line.toString().substring(skip_base_cmdline));
+		assertTrue(b.isNeverOverwriteOutputFiles());
+	}
+	
 }

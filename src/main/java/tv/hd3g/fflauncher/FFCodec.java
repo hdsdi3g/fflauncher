@@ -51,7 +51,7 @@ public class FFCodec {
 	/**
 	 * Like "dpx"
 	 */
-	public final String tag;
+	public final String name;
 	
 	/**
 	 * Like "DPX (Digital Picture Exchange) image"
@@ -94,7 +94,7 @@ public class FFCodec {
 			throw new RuntimeException("Can't parse line: \"" + line + "\" (invalid ends for codec type)");
 		}
 		
-		tag = line_blocs[1].trim();
+		name = line_blocs[1].trim();
 		
 		/**
 		 * Like "Dirac (decoders: dirac libschroedinger ) (encoders: vc2 libschroedinger )"
@@ -144,7 +144,7 @@ public class FFCodec {
 		
 		sb.append(long_name);
 		sb.append(" [");
-		sb.append(tag);
+		sb.append(name);
 		sb.append("] ");
 		
 		sb.append(type.toString().toLowerCase());

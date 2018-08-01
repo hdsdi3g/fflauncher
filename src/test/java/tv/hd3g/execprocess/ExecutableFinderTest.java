@@ -41,5 +41,18 @@ public class ExecutableFinderTest extends TestCase {
 		}
 	}
 	
-	// TODO test registerExecutable(String name, File full_path)
+	public void testRegisterExecutable() throws IOException {
+		ExecutableFinder ef = new ExecutableFinder();
+		
+		File element = ef.get("test-exec");
+		
+		ef = new ExecutableFinder();
+		ef.registerExecutable("other-test", element);
+		
+		assertEquals(element.getPath(), ef.get("other-test").getPath());
+		
+		ef.get("java");
+		ef.registerExecutable("java", element);
+		assertEquals(element.getPath(), ef.get("java").getPath());
+	}
 }

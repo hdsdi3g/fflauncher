@@ -314,7 +314,7 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	public ExecProcessTextResult checkExecution() {
 		try {
 			if (isCorrectlyDone().get() == false) {
-				throw new RuntimeException("Can't execute correcly \"" + getCommandline() + "\", " + getEndStatus() + " [" + getExitCode() + "] \"" + getStderr(false, System.lineSeparator()) + "\"");
+				throw new RuntimeException("Can't execute correcly \"" + getCommandline() + "\", " + getEndStatus().get() + " [" + getExitCode().get() + "] \"" + getStderr(false, System.lineSeparator()) + "\"");
 			}
 		} catch (InterruptedException | ExecutionException e) {
 			throw new RuntimeException("Can't start process " + getCommandline());
