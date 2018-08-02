@@ -41,7 +41,7 @@ public class ExecProcess extends ParametersUtility {
 	
 	protected final File executable;
 	protected final LinkedHashMap<String, String> environment;
-	protected final ArrayList<EndExecutionCallback> end_exec_callback_list;
+	protected final ArrayList<EndExecutionCallback<?>> end_exec_callback_list;
 	
 	protected boolean exec_code_must_be_zero;
 	protected File working_directory;
@@ -127,6 +127,10 @@ public class ExecProcess extends ParametersUtility {
 		return working_directory;
 	}
 	
+	public File getExecutable() {
+		return executable;
+	}
+	
 	public ExecProcess setWorkingDirectory(File working_directory) throws IOException {
 		if (working_directory == null) {
 			throw new NullPointerException("\"working_directory\" can't to be null");
@@ -169,8 +173,8 @@ public class ExecProcess extends ParametersUtility {
 		return exec_code_must_be_zero;
 	}
 	
-	public ExecProcess addEndExecutionCallback(Consumer<ExecProcessResult> onEnd, Executor executor) {
-		end_exec_callback_list.add(new EndExecutionCallback(onEnd, executor));
+	public <T extends ExecProcessResult> ExecProcess addEndExecutionCallback(Consumer<T> onEnd, Executor executor) {
+		end_exec_callback_list.add(new EndExecutionCallback<>(onEnd, executor));
 		return this;
 	}
 	

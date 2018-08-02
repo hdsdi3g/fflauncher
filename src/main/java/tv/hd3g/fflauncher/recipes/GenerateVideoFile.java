@@ -48,6 +48,7 @@ public class GenerateVideoFile extends Recipe {
 		}
 		
 		ffmpeg.setOverwriteOutputFiles();
+		ffmpeg.setOnErrorDeleteOutFiles(Runnable::run);
 		
 		CommandLine cmd = ffmpeg.getCommandLine();
 		cmd.addBulkParameters("-f lavfi -i smptehdbars=duration=" + duration_in_sec + ":size=" + resolution.x + "x" + resolution.y + ":rate=25");

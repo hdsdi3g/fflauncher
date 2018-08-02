@@ -19,12 +19,12 @@ package tv.hd3g.execprocess;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
-public class EndExecutionCallback {
+class EndExecutionCallback<T extends ExecProcessResult> {
 	
-	private final Consumer<ExecProcessResult> onEnd;
+	private final Consumer<T> onEnd;
 	protected final Executor executor;
 	
-	public EndExecutionCallback(Consumer<ExecProcessResult> onEnd, Executor executor) {
+	EndExecutionCallback(Consumer<T> onEnd, Executor executor) {
 		this.onEnd = onEnd;
 		if (onEnd == null) {
 			throw new NullPointerException("\"onEnd\" can't to be null");
@@ -38,9 +38,10 @@ public class EndExecutionCallback {
 	/**
 	 * Async
 	 */
-	public void onEnd(ExecProcessResult source) {
+	@SuppressWarnings("unchecked")
+	void onEnd(ExecProcessResult source) {
 		executor.execute(() -> {
-			onEnd.accept(source);
+			onEnd.accept((T) source);
 		});
 	}
 	

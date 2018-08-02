@@ -71,6 +71,8 @@ public class FFmpegTest extends TestCase {
 		
 		FFmpeg ffmpeg = create();
 		ffmpeg.setOverwriteOutputFiles();
+		ffmpeg.setOnErrorDeleteOutFiles(Runnable::run);
+		
 		FFAbout about = ffmpeg.getAbout();
 		
 		// this is buggy... assertTrue("NV Toolkit is not avaliable: " + ffmpeg.getAbout().getAvailableHWAccelerationMethods(), ffmpeg.getAbout().isNVToolkitIsAvaliable());
@@ -96,6 +98,7 @@ public class FFmpegTest extends TestCase {
 		
 		ffmpeg = create();
 		ffmpeg.setOverwriteOutputFiles();
+		ffmpeg.setOnErrorDeleteOutFiles(Runnable::run);
 		
 		ffmpeg.addHardwareVideoDecoding(test_file.getPath(), new ProbeMedia().doAnalysing(test_file.getPath()).get(), FFHardwareCodec.NV, about);
 		ffmpeg.addHardwareVideoEncoding("h264", -1, FFHardwareCodec.NV, ffmpeg.getAbout()).addCRF(40);
@@ -124,6 +127,7 @@ public class FFmpegTest extends TestCase {
 		
 		FFmpeg ffmpeg = create();
 		ffmpeg.setOverwriteOutputFiles();
+		ffmpeg.setOnErrorDeleteOutFiles(Runnable::run);
 		
 		CommandLine cmd = ffmpeg.getCommandLine();
 		cmd.addBulkParameters("-f lavfi -i smptehdbars=duration=" + 5 + ":size=1280x720:rate=25");

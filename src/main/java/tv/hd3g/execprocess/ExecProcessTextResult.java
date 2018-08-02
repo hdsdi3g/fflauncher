@@ -56,7 +56,7 @@ public class ExecProcessTextResult extends ExecProcessResult {
 	 */
 	private List<StdOutErrCallback> stdouterr_callback_list;
 	
-	ExecProcessTextResult(File executable, List<String> params, Map<String, String> environment, List<EndExecutionCallback> observers, boolean exec_code_must_be_zero, File working_directory, ScheduledExecutorService max_exec_time_scheduler, long max_exec_time, Consumer<ProcessBuilder> alter_process_builder, Executor executor) {
+	ExecProcessTextResult(File executable, List<String> params, Map<String, String> environment, List<EndExecutionCallback<?>> observers, boolean exec_code_must_be_zero, File working_directory, ScheduledExecutorService max_exec_time_scheduler, long max_exec_time, Consumer<ProcessBuilder> alter_process_builder, Executor executor) {
 		super(executable, params, environment, observers, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder, executor);
 		lines = new LinkedBlockingQueue<>();
 	}

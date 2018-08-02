@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -338,11 +339,24 @@ public class ConversionTool {
 		applyExecProcessCatcher(exec_process);
 		
 		if (on_error_delete_out_files_executor != null) {
-			/*exec_process.addEndExecutionCallback(r -> {
-				// XXX
+			exec_process.addEndExecutionCallback(r -> {
+				/**
+				 * If fail transcoding or shutdown hook, delete out files (optional)
+				 */
+				try {
+					if (r.isCorrectlyDone().get()) {
+						return;
+					}
+				} catch (InterruptedException e) {
+					/**
+					 * Never start, never create files..
+					 */
+					return;
+				} catch (ExecutionException e) {
+				}
+				log.warn("Error during execution of \"" + exec_process.getExecutable().getName() + "\", remove output files");
+				cleanUpOutputFiles(true, true);
 			}, on_error_delete_out_files_executor);
-			*/
-			// TODO if fail transcoding/shutdown hook, delete out files (optional)
 		}
 		
 		return exec_process;

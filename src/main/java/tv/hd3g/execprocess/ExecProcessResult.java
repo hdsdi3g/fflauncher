@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-class ExecProcessResult {
+public class ExecProcessResult {
 	private static final Logger log = LogManager.getLogger();
 	
 	private final File executable;
@@ -56,7 +56,7 @@ class ExecProcessResult {
 	/**
 	 * unmodifiableList
 	 */
-	private final List<EndExecutionCallback> end_exec_callback_list;
+	private final List<EndExecutionCallback<?>> end_exec_callback_list;
 	
 	private final boolean exec_code_must_be_zero;
 	private final File working_directory;
@@ -81,7 +81,7 @@ class ExecProcessResult {
 	private CompletableFuture<StdInInjection> cf_std_in_injection;
 	private final Thread shutdown_hook;
 	
-	ExecProcessResult(File executable, List<String> params, Map<String, String> environment, List<EndExecutionCallback> end_exec_callback_list, boolean exec_code_must_be_zero, File working_directory, ScheduledExecutorService max_exec_time_scheduler, long max_exec_time, Consumer<ProcessBuilder> alter_process_builder, Executor executor) {
+	ExecProcessResult(File executable, List<String> params, Map<String, String> environment, List<EndExecutionCallback<?>> end_exec_callback_list, boolean exec_code_must_be_zero, File working_directory, ScheduledExecutorService max_exec_time_scheduler, long max_exec_time, Consumer<ProcessBuilder> alter_process_builder, Executor executor) {
 		this.executable = executable;
 		this.executor = executor;
 		

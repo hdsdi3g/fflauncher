@@ -171,7 +171,7 @@ public class ExecProcessText extends ExecProcess {
 		return this;
 	}
 	
-	public ExecProcessText addEndExecutionCallback(Consumer<ExecProcessResult> onEnd, Executor executor) {
+	public <T extends ExecProcessResult> ExecProcessText addEndExecutionCallback(Consumer<T> onEnd, Executor executor) {
 		super.addEndExecutionCallback(onEnd, executor);
 		return this;
 	}

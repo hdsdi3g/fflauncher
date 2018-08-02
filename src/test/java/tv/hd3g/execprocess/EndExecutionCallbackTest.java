@@ -47,7 +47,33 @@ public class EndExecutionCallbackTest extends TestCase {
 			t2_pass.incrementAndGet();
 		};
 		
-		EndExecutionCallback eec = new EndExecutionCallback(onEnd, executor);
+		EndExecutionCallback<ExecProcessResult> eec = new EndExecutionCallback<>(onEnd, executor);
+		eec.onEnd(ref);
+		
+		assertEquals(1, t1_pass.get());
+		assertEquals(1, t2_pass.get());
+	}
+	
+	public void test2() {
+		
+		ExecProcessTextResult ref = new ExecProcessTextResult(new File(""), new ArrayList<>(), new HashMap<>(), new ArrayList<>(), false, null, null, 0, null, ForkJoinPool.commonPool());
+		
+		AtomicInteger t1_pass = new AtomicInteger(0);
+		Consumer<ExecProcessTextResult> onEnd = t -> {
+			if (ref == t) {
+				t1_pass.incrementAndGet();
+			} else {
+				throw new RuntimeException("Invalid ref");
+			}
+		};
+		
+		AtomicInteger t2_pass = new AtomicInteger(0);
+		Executor executor = command -> {
+			command.run();
+			t2_pass.incrementAndGet();
+		};
+		
+		EndExecutionCallback<ExecProcessTextResult> eec = new EndExecutionCallback<>(onEnd, executor);
 		eec.onEnd(ref);
 		
 		assertEquals(1, t1_pass.get());
