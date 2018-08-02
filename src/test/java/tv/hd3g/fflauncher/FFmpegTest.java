@@ -53,9 +53,9 @@ public class FFmpegTest extends TestCase {
 		int header = ffmpeg.getCommandLine().toString().length();
 		
 		ffmpeg.addPreset(Preset.placebo).addTune(Tune.ssim).addBitrate(123, FFUnit.giga, 1);
-		ffmpeg.addBitrateControl(10, 20, 30, FFUnit.mega).addCrf(40).addCodecName("NoPe", 2);
+		ffmpeg.addBitrateControl(10, 20, 30, FFUnit.mega).addCRF(40).addVideoCodecName("NoPe", 2);
 		ffmpeg.addGOPControl(50, 60, 70).addIBQfactor(1.5f, 2.5f).addQMinMax(80, 90);
-		ffmpeg.addBitrate(100, FFUnit.mega, -1).addCodecName("NoPe2", -1);
+		ffmpeg.addBitrate(100, FFUnit.mega, -1).addVideoCodecName("NoPe2", -1);
 		
 		assertEquals("-preset placebo -tune ssim -b:v:1 123G -minrate 10M -maxrate 20M -bufsize 30M -crf 40 -c:v:2 NoPe -bf 50 -g 60 -ref 70 -i_qfactor 1.5 -b_qfactor 2.5 -qmin 80 -qmax 90 -b:v 100M -c:v NoPe2", ffmpeg.getCommandLine().toString().substring(header));
 	}

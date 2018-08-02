@@ -302,9 +302,9 @@ public class FFmpeg extends FFbase {
 	}
 	
 	/**
-	 * Exclude all manual bitrate settings.
+	 * Constant bitrate factor, 0=lossless.
 	 */
-	public FFmpeg addCrf(int crf) {
+	public FFmpeg addCRF(int crf) {
 		command_line.addParameters("-crf", String.valueOf(crf));
 		return this;
 	}
@@ -314,7 +314,7 @@ public class FFmpeg extends FFbase {
 	 * @see FFmpeg.addVideoEncoding for hardware use
 	 * @param output_video_stream_index -1 by default
 	 */
-	public FFmpeg addCodecName(String codec_name, int output_video_stream_index) {
+	public FFmpeg addVideoCodecName(String codec_name, int output_video_stream_index) {
 		if (output_video_stream_index > -1) {
 			command_line.addParameters("-c:v:" + output_video_stream_index, codec_name);
 		} else {
