@@ -54,18 +54,18 @@ public class GenerateVideoFile extends Recipe {
 		cmd.addBulkParameters("-f lavfi -i sine=frequency=1000:sample_rate=48000:duration=" + duration_in_sec);
 		
 		if (ffmpeg.getAbout().isCoderIsAvaliable("h264")) {
-			cmd.addBulkParameters("-codec:v h264");
+			cmd.addBulkParameters("-codec:v h264");// XXX use the valid API for that
 		} else {
-			cmd.addBulkParameters("-codec:v ffv1");
+			cmd.addBulkParameters("-codec:v ffv1");// XXX use the valid API for that
 		}
 		
 		if (ffmpeg.getAbout().isCoderIsAvaliable("aac")) {
-			cmd.addBulkParameters("-codec:a aac");
+			cmd.addBulkParameters("-codec:a aac");// XXX use the valid API for that
 		} else {
-			cmd.addBulkParameters("-codec:a opus");
+			cmd.addBulkParameters("-codec:a opus");// XXX use the valid API for that
 		}
 		
-		ffmpeg.addFastStartMovMp4File().addSimpleOutputDestination(destination);
+		ffmpeg/*.addFastStartMovMp4File()*/.addSimpleOutputDestination(destination);
 		
 		ExecProcessText exec = ffmpeg.createExec();
 		log.info("Generate test file to \"" + destination + "\"");

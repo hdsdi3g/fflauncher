@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -30,7 +31,6 @@ import org.ffmpeg.ffprobe.StreamType;
 
 import tv.hd3g.execprocess.CommandLineProcessor.CommandLine;
 import tv.hd3g.execprocess.ExecutableFinder;
-import tv.hd3g.fflauncher.snippets.FFVideoTranscoding;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 
 public class FFmpeg extends FFbase {
@@ -61,6 +61,20 @@ public class FFmpeg extends FFbase {
 		addOutputDestination(destination_name, varname, "-f", destination_container);
 		return this;
 	}
+	
+	public final Predicate<String> filterOutErrorLines = _l -> {
+		String l = _l.trim();
+		if (l.startsWith("[")) {
+			return true;
+		}
+		if (l.startsWith("ffmpeg version") | l.startsWith("built with") | l.startsWith("configuration:") | l.startsWith("Press [q]")) {
+			return false;
+		}
+		if (l.startsWith("libavutil") | l.startsWith("libavcodec") | l.startsWith("libavformat") | l.startsWith("libavdevice") | l.startsWith("libavfilter") | l.startsWith("libswscale") | l.startsWith("libswresample") | l.startsWith("libpostproc")) {
+			return false;
+		}
+		return true;
+	};
 	
 	/**
 	 * Add "-movflags faststart"
@@ -241,6 +255,116 @@ public class FFmpeg extends FFbase {
 		return this;
 	}
 	
+	public enum Preset {
+		ultrafast, superfast, veryfast, faster, fast, medium, slow, slower, veryslow, placebo
+	}
+	
+	public enum Tune {
+		film, animation, grain, stillimage, psnr, ssim, fastdecode, zerolatency
+	}
+	
+	public FFmpeg addPreset(Preset preset) {
+		command_line.addParameters("-preset", preset.name());
+		return this;
+	}
+	
+	public FFmpeg addTune(Tune tune) {
+		command_line.addParameters("-tune", tune.name());
+		return this;
+	}
+	
+	/**
+	 * @param output_video_stream_index -1 by default
+	 */
+	public FFmpeg addBitrate(int bitrate, FFUnit bitrate_unit, int output_video_stream_index) {
+		if (output_video_stream_index > -1) {
+			command_line.addParameters("-b:v:" + output_video_stream_index, bitrate + bitrate_unit.toString());
+		} else {
+			command_line.addParameters("-b:v", bitrate + bitrate_unit.toString());
+		}
+		return this;
+	}
+	
+	/**
+	 * @param min_rate/max_rate/bufsize, set -1 for default.
+	 */
+	public FFmpeg addBitrateControl(int min_rate, int max_rate, int bufsize, FFUnit bitrate_unit) {
+		if (min_rate > 0) {
+			command_line.addParameters("-minrate", min_rate + bitrate_unit.toString());
+		}
+		if (max_rate > 0) {
+			command_line.addParameters("-maxrate", max_rate + bitrate_unit.toString());
+		}
+		if (bufsize > 0) {
+			command_line.addParameters("-bufsize", bufsize + bitrate_unit.toString());
+		}
+		return this;
+	}
+	
+	/**
+	 * Exclude all manual bitrate settings.
+	 */
+	public FFmpeg addCrf(int crf) {
+		command_line.addParameters("-crf", String.valueOf(crf));
+		return this;
+	}
+	
+	/**
+	 * No checks will be done.
+	 * @see FFmpeg.addVideoEncoding for hardware use
+	 * @param output_video_stream_index -1 by default
+	 */
+	public FFmpeg addCodecName(String codec_name, int output_video_stream_index) {
+		if (output_video_stream_index > -1) {
+			command_line.addParameters("-c:v:" + output_video_stream_index, codec_name);
+		} else {
+			command_line.addParameters("-c:v", codec_name);
+		}
+		return this;
+	}
+	
+	/**
+	 * @param min_rate/max_rate/bufsize, set -1 for default.
+	 */
+	public FFmpeg addGOPControl(int b_frames, int gop_size, int ref_frames) {
+		if (b_frames > 0) {
+			command_line.addParameters("-bf", String.valueOf(b_frames));
+		}
+		if (gop_size > 0) {
+			command_line.addParameters("-g", String.valueOf(gop_size));
+		}
+		if (ref_frames > 0) {
+			command_line.addParameters("-ref", String.valueOf(ref_frames));
+		}
+		return this;
+	}
+	
+	/**
+	 * @param i_qfactor/b_qfactor set 0 for default
+	 */
+	public FFmpeg addIBQfactor(float i_qfactor, float b_qfactor) {
+		if (i_qfactor > 0f) {
+			command_line.addParameters("-i_qfactor", String.valueOf(i_qfactor));
+		}
+		if (b_qfactor > 0f) {
+			command_line.addParameters("-b_qfactor", String.valueOf(b_qfactor));
+		}
+		return this;
+	}
+	
+	/**
+	 * @param qmin/qmax set 0 for default
+	 */
+	public FFmpeg addQMinMax(int qmin, int qmax) {
+		if (qmin > 0) {
+			command_line.addParameters("-qmin", String.valueOf(qmin));
+		}
+		if (qmax > 0) {
+			command_line.addParameters("-qmax", String.valueOf(qmax));
+		}
+		return this;
+	}
+	
 	/*public FFmpeg prepareResize(String source, Point new_size, FFprobeJAXB analysing_result) {
 		// TODO2 ffmpeg.addHardwareNVScalerFilter(new_size, pixel_format, interp_algo)
 		// about.isHardwareNVScalerFilterIsAvaliable()
@@ -248,13 +372,6 @@ public class FFmpeg extends FFbase {
 	}*/
 	
 	// TODO2 ffmpeg.addHardwareNVMultipleScalerFilterComplex(configuration, device_id_to_use)
-	
-	/**
-	 * Don't forget to call commit() after set.
-	 */
-	public FFVideoTranscoding prepareVideoTranscoding() {
-		return new FFVideoTranscoding(this);
-	}
 	
 	/*
 	    https://developer.nvidia.com/ffmpeg

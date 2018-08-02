@@ -207,7 +207,7 @@ public class ExecProcessTextResult extends ExecProcessResult {
 						}
 						if (out != null) {
 							try {
-								getStdInInjection(r -> r.run()).println(out);
+								getStdInInjection(Runnable::run).println(out);
 							} catch (IOException e) {
 								log.error("Can't send some text to process", e);
 							}

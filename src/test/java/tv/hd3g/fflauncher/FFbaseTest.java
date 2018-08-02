@@ -69,10 +69,10 @@ public class FFbaseTest extends TestCase {
 	public void testNVPresence() throws Exception {
 		FFbaseImpl b = new FFbaseImpl(new ExecutableFinder(), new CommandLineProcessor().createEmptyCommandLine("ffmpeg"));
 		
-		if (System.getProperty("ffmpeg.test.nvidia.presence", "").equals("1")) {
+		if (System.getProperty("ffmpeg.test.nvidia", "").equals("1")) {
 			assertTrue("Can't found NV lib like cuda, cuvid and nvenc", b.getAbout().isNVToolkitIsAvaliable());
 		}
-		if (System.getProperty("ffmpeg.test.libnpp.presence", "").equals("1")) {
+		if (System.getProperty("ffmpeg.test.libnpp", "").equals("1")) {
 			assertTrue("Can't found libnpp", b.getAbout().isHardwareNVScalerFilterIsAvaliable());
 		}
 	}

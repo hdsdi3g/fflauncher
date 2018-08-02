@@ -16,7 +16,7 @@
 */
 package tv.hd3g.fflauncher;
 
-public enum FFDecimalPrefixUnit {
+public enum FFUnit {
 	
 	kilo {
 		public String toString() {
@@ -34,7 +34,7 @@ public enum FFDecimalPrefixUnit {
 		}
 	};
 	
-	public static FFDecimalPrefixUnit fromString(String u) {
+	public static FFUnit fromString(String u) {
 		switch (u.toLowerCase()) {
 		case "k":
 			return kilo;

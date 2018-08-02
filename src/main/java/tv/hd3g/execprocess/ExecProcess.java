@@ -196,7 +196,7 @@ public class ExecProcess extends ParametersUtility {
 	 */
 	public ExecProcessResult run() {
 		try {
-			return start(r -> r.run()).waitForEnd().get();
+			return start(Runnable::run).waitForEnd().get();
 		} catch (InterruptedException | ExecutionException e) {
 			throw new RuntimeException("Can't execute \"" + toString() + "\"", e);
 		}

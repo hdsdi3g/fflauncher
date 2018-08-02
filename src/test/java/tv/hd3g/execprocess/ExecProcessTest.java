@@ -170,7 +170,7 @@ public class ExecProcessTest extends TestCase {
 				catch_stdout.add(line);
 			}
 			catch_source.add(source);
-		}, r -> r.run());
+		}, Runnable::run);
 		
 		ExecProcessTextResult result = ept.start(executor).waitForEnd().get();
 		
@@ -211,7 +211,7 @@ public class ExecProcessTest extends TestCase {
 			} else {
 				catch_stdout.add(line);
 			}
-		}, r -> r.run());
+		}, Runnable::run);
 		
 		ExecProcessTextResult result = ept.start(executor).waitForEnd().get();
 		
@@ -283,7 +283,7 @@ public class ExecProcessTest extends TestCase {
 		
 		max_exec_time_scheduler.schedule(() -> {
 			try {
-				result.kill(r -> r.run()).get();
+				result.kill(Runnable::run).get();
 			} catch (InterruptedException | ExecutionException e) {
 				throw new RuntimeException("Can't kill", e);
 			}
@@ -312,7 +312,7 @@ public class ExecProcessTest extends TestCase {
 		
 		max_exec_time_scheduler.schedule(() -> {
 			try {
-				result.kill(r -> r.run()).get();
+				result.kill(Runnable::run).get();
 			} catch (InterruptedException | ExecutionException e) {
 				throw new RuntimeException("Can't kill", e);
 			}
@@ -459,20 +459,23 @@ public class ExecProcessTest extends TestCase {
 	
 	public void testExecutor() throws InterruptedException, ExecutionException, TimeoutException {
 		ExecProcessText ept = createExec(Test1.class);
-		assertTrue(ept.start(r -> r.run()).waitForEnd().get().isCorrectlyDone().get());
+		assertTrue(ept.start(Runnable::run).waitForEnd().get().isCorrectlyDone().get());
+		assertTrue(ept.run().isCorrectlyDone().get());
 	}
 	
 	public void testToString() throws IOException {
 		ExecProcessText ept = createExec(Test1.class);
 		
 		assertNotNull(ept.toString());
-		assertNotNull(ept.start(r -> r.run()).toString());
+		assertNotNull(ept.run().toString());
+		assertNotNull(ept.start(Runnable::run).toString());
 		
 		ExecProcess ep = new ExecProcess(ept.executable);
 		ep.importParametersFrom(ept);
 		
 		assertNotNull(ep.toString());
-		assertNotNull(ep.start(r -> r.run()).toString());
+		assertNotNull(ep.run().toString());
+		assertNotNull(ep.start(Runnable::run).toString());
 		assertNotNull(ep.start(executor).toString());
 	}
 	
