@@ -48,7 +48,7 @@ public class ProbeMedia extends Recipe {
 	 * Get streams, format and chapters.
 	 * @see FFprobe to get cool FfprobeType parsers
 	 */
-	CompletableFuture<FFprobeJAXB> doAnalysing(String source) throws IOException {
+	public CompletableFuture<FFprobeJAXB> doAnalysing(String source) throws IOException {
 		FFprobe ffprobe = new FFprobe(getExecFinder(), new CommandLineProcessor().createEmptyCommandLine(getExecName()));
 		
 		ffprobe.setPrintFormat(FFPrintFormat.xml).setShowStreams().setShowFormat().setShowChapters().isHidebanner();

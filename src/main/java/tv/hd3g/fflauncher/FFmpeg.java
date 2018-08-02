@@ -19,7 +19,6 @@ package tv.hd3g.fflauncher;
 import java.awt.Point;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -36,6 +35,7 @@ import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 public class FFmpeg extends FFbase {
 	
 	private static final Logger log = LogManager.getLogger();
+	private int device_id_to_use = -1;
 	
 	public FFmpeg(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
 		super(exec_finder, command_line);
@@ -87,33 +87,6 @@ public class FFmpeg extends FFbase {
 	
 	/**
 	 * Not checks will be done
-	 * @param device_id_to_use -1 for default, 0 for first graphic card...
-	 * @param source_codec, decode from codec, like h264_cuvid, mjpeg_cuvid... ALL CODECS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT.
-	 */
-	public FFmpeg addSimpleSourceHardwareNVDecoded(String source, int device_id_to_use, String source_cuvid_codec_engine, Collection<String> additional_params) {
-		/**
-		 * [-hwaccel_device 0] -hwaccel cuvid -c:v source_cuvid_codec [-vsync 0] -i source
-		 */
-		ArrayList<String> source_options = new ArrayList<>();
-		if (device_id_to_use > -1) {
-			source_options.add("-hwaccel_device");
-			source_options.add(Integer.toString(device_id_to_use));
-		}
-		source_options.add("-hwaccel");
-		source_options.add("cuvid");
-		source_options.add("-vsync");
-		source_options.add("0");
-		source_options.add("-c:v");
-		source_options.add(source_cuvid_codec_engine);
-		source_options.addAll(additional_params);
-		
-		log.debug("Add source: " + source_options.stream().collect(Collectors.joining(" ")) + " -i " + source);
-		addSimpleInputSource(source, source_options);
-		return this;
-	}
-	
-	/**
-	 * Not checks will be done
 	 * NVIDIA Performance Primitives via libnpp.
 	 * Via -vf ffmpeg's option.
 	 * @param new_size like 1280x720 or -1x720
@@ -145,7 +118,7 @@ public class FFmpeg extends FFbase {
 	 * @param configuration resolution -> filter out name ; resolution can be litteral like hd1080 or cif and filter out name can be "out0", usable after with "-map [out0] -vcodec xxx out.ext"
 	 * @param device_id_to_use -1 for default, 0 for first graphic card...
 	 */
-	public FFmpeg addHardwareNVMultipleScalerFilterComplex(LinkedHashMap<String, String> configuration, int device_id_to_use) {
+	public FFmpeg addHardwareNVMultipleScalerFilterComplex(LinkedHashMap<String, String> configuration) {
 		if (configuration == null) {
 			throw new NullPointerException("\"configuration\" can't to be null");
 		}
@@ -194,17 +167,41 @@ public class FFmpeg extends FFbase {
 		return Optional.empty();
 	}
 	
+	public enum FFHardwareCodec {
+		/**
+		 * cuvid and nvenc
+		 * ALL CODECS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT.
+		 */
+		NV;
+	}
+	
+	/**
+	 * Used with hardware transcoding.
+	 * @param device_id_to_use -1 by default
+	 */
+	public FFmpeg setDeviceIdToUse(int device_id_to_use) {
+		this.device_id_to_use = device_id_to_use;
+		return this;
+	}
+	
+	/**
+	 * @return -1 by default
+	 */
+	public int getDevice_id_to_use() {
+		return device_id_to_use;
+	}
+	
 	/**
 	 * "Patch" ffmpeg command line for hardware decoding. Only first video stream will be decoded.
-	 * If hardware decoding is not possible, set do default decoding mode.
+	 * Hardware decoding often works in tandem with hardware coding.
+	 * @param device_id_to_use -1 for default, 0 for first graphic card...
+	 * @throws MediaException if hardware decoding is not possible.
 	 */
-	public FFmpeg addVideoDecoding(String source, FFprobeJAXB analysing_result, FFAbout about) {
+	public FFmpeg addHardwareVideoDecoding(String source, FFprobeJAXB analysing_result, FFHardwareCodec hardware_codec, FFAbout about) throws MediaException {
 		Optional<StreamType> o_video_stream = getFirstVideoStream(analysing_result);
 		
 		if (o_video_stream.isPresent() == false) {
-			log.trace("Can't found \"valid\" video stream on \"{}\"", source);
-			addSimpleInputSource(source);
-			return this;
+			throw new MediaException("Can't found \"valid\" video stream on \"" + source + "\"");
 		}
 		
 		StreamType video_stream = o_video_stream.get();
@@ -213,17 +210,32 @@ public class FFmpeg extends FFbase {
 			return c.decoding_supported & c.name.equals(video_stream.getCodecName());
 		}).findFirst().orElseThrow(() -> new MediaException("Can't found a valid decoder codec for " + video_stream.getCodecName() + " in \"" + source + "\""));
 		
-		if (about.isNVToolkitIsAvaliable()) {
-			Optional<String> o_decoder = codec.decoders.stream().filter(decoder -> decoder.endsWith("_cuvid")).findFirst();
+		if (hardware_codec == FFHardwareCodec.NV & about.isNVToolkitIsAvaliable()) {
+			Optional<String> o_source_cuvid_codec_engine = codec.decoders.stream().filter(decoder -> decoder.endsWith("_cuvid")).findFirst();
 			
-			if (o_decoder.isPresent()) {
-				return addSimpleSourceHardwareNVDecoded(source, -1, o_decoder.get(), null);
+			if (o_source_cuvid_codec_engine.isPresent()) {
+				/**
+				 * [-hwaccel_device 0] -hwaccel cuvid -c:v source_cuvid_codec [-vsync 0] -i source
+				 */
+				ArrayList<String> source_options = new ArrayList<>();
+				if (device_id_to_use > -1) {
+					source_options.add("-hwaccel_device");
+					source_options.add(Integer.toString(device_id_to_use));
+				}
+				source_options.add("-hwaccel");
+				source_options.add("cuvid");
+				source_options.add("-vsync");
+				source_options.add("0");
+				source_options.add("-c:v");
+				source_options.add(o_source_cuvid_codec_engine.get());
+				
+				log.debug("Add hardware decoded source " + source_options.stream().collect(Collectors.joining(" ")) + " -i " + source);
+				addSimpleInputSource(source, source_options);
+				return this;
 			}
 		}
 		
-		log.trace("Can't found a valid hardware decoder on \"{}\" ({}), back to defaut usage", source, video_stream.getCodecLongName());
-		addSimpleInputSource(source);
-		return this;
+		throw new MediaException("Can't found a valid hardware decoder on \"" + source + "\" (\"" + video_stream.getCodecLongName() + "\")");
 	}
 	
 	/**
@@ -231,19 +243,24 @@ public class FFmpeg extends FFbase {
 	 * @param dest_codec_name
 	 * @param output_video_stream_index (-1 by default), X -> -c:v:X
 	 */
-	public FFmpeg addVideoEncoding(String dest_codec_name, int output_video_stream_index, FFAbout about) {
+	public FFmpeg addHardwareVideoEncoding(String dest_codec_name, int output_video_stream_index, FFHardwareCodec hardware_codec, FFAbout about) throws MediaException {
 		String coder = dest_codec_name;
 		
-		if (dest_codec_name.equals("copy") == false) {
-			FFCodec codec = about.getCodecs().stream().filter(c -> {
-				return c.encoding_supported & c.name.equals(dest_codec_name);
-			}).findFirst().orElseThrow(() -> new MediaException("Can't found a valid codec for " + dest_codec_name));
+		if (dest_codec_name.equals("copy")) {
+			new MediaException("\"copy\" codec can't be handled by hardware !");
+		}
+		
+		FFCodec codec = about.getCodecs().stream().filter(c -> {
+			return c.encoding_supported & c.name.equals(dest_codec_name);
+		}).findFirst().orElseThrow(() -> new MediaException("Can't found a valid codec for " + dest_codec_name));
+		
+		if (hardware_codec == FFHardwareCodec.NV & about.isNVToolkitIsAvaliable()) {
+			coder = codec.encoders.stream().filter(encoder -> {
+				return encoder.endsWith("_nvenc") | encoder.startsWith("nvenc_") | encoder.equals("nvenc");
+			}).findFirst().orElseThrow(() -> new MediaException("Can't found a valid hardware " + hardware_codec + " codec for " + dest_codec_name));
 			
-			if (about.isNVToolkitIsAvaliable()) {
-				coder = codec.encoders.stream().filter(encoder -> {
-					return encoder.endsWith("_nvenc") | encoder.startsWith("_nvenc") | encoder.equals("nvenc");
-				}).findFirst().orElse(dest_codec_name);
-			}
+		} else {
+			throw new MediaException("Can't found a valid hardware coder to \"" + dest_codec_name + "\"");
 		}
 		
 		if (output_video_stream_index > -1) {

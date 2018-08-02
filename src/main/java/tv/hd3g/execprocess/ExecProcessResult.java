@@ -76,9 +76,9 @@ class ExecProcessResult {
 	
 	private volatile boolean process_was_killed;
 	private volatile boolean process_was_stopped_because_too_long_time;
-	private CompletableFuture<Process> startup_process_exec;
+	private CompletableFuture<Process> cf_startup_process_exec;
 	
-	private CompletableFuture<StdInInjection> std_in_injection;
+	private CompletableFuture<StdInInjection> cf_std_in_injection;
 	private final Thread shutdown_hook;
 	
 	ExecProcessResult(File executable, List<String> params, Map<String, String> environment, List<EndExecutionCallback> end_exec_callback_list, boolean exec_code_must_be_zero, File working_directory, ScheduledExecutorService max_exec_time_scheduler, long max_exec_time, Consumer<ProcessBuilder> alter_process_builder, Executor executor) {
@@ -102,18 +102,18 @@ class ExecProcessResult {
 		
 		this.alter_process_builder = alter_process_builder;
 		
-		startup_process_exec = CompletableFuture.failedFuture(new NullPointerException("Process is not yet pending to start..."));
+		cf_startup_process_exec = CompletableFuture.failedFuture(new NullPointerException("Process is not yet pending to start..."));
 		
 		shutdown_hook = new Thread(() -> {
-			if (startup_process_exec.isDone()) {
+			if (cf_startup_process_exec.isDone()) {
 				try {
 					log.warn("Try to kill " + toString());
-					killProcessTree(startup_process_exec.get());
+					killProcessTree(cf_startup_process_exec.get());
 				} catch (InterruptedException | ExecutionException e) {
 				}
 			} else {
 				log.warn("Cancel " + toString());
-				startup_process_exec.cancel(true);
+				cf_startup_process_exec.cancel(true);
 			}
 		});
 		shutdown_hook.setDaemon(false);
@@ -122,7 +122,7 @@ class ExecProcessResult {
 	}
 	
 	synchronized ExecProcessResult start() {
-		startup_process_exec = CompletableFuture.supplyAsync(() -> {
+		cf_startup_process_exec = CompletableFuture.supplyAsync(() -> {
 			synchronized (this) {
 				Process process;
 				try {
@@ -196,11 +196,11 @@ class ExecProcessResult {
 	}
 	
 	public String toString() {
-		if (startup_process_exec.isCompletedExceptionally()) {
+		if (cf_startup_process_exec.isCompletedExceptionally()) {
 			return "Can't start to exec " + getCommandline();
 		}
 		
-		Process process = startup_process_exec.getNow(null);
+		Process process = cf_startup_process_exec.getNow(null);
 		
 		if (process == null) {
 			return "Ready to exec " + getCommandline();
@@ -265,7 +265,7 @@ class ExecProcessResult {
 	 * @return CF of this
 	 */
 	public CompletableFuture<? extends ExecProcessResult> waitForEnd() {
-		return startup_process_exec.thenApplyAsync(process -> {
+		return cf_startup_process_exec.thenApplyAsync(process -> {
 			try {
 				process.waitFor();
 			} catch (InterruptedException e) {
@@ -280,7 +280,7 @@ class ExecProcessResult {
 	 * @return CF of this
 	 */
 	public CompletableFuture<? extends ExecProcessResult> waitForEnd(long timeout, TimeUnit unit) {
-		return startup_process_exec.thenApplyAsync(process -> {
+		return cf_startup_process_exec.thenApplyAsync(process -> {
 			try {
 				process.waitFor(timeout, unit);
 			} catch (InterruptedException e) {
@@ -291,7 +291,7 @@ class ExecProcessResult {
 	}
 	
 	public CompletableFuture<? extends ExecProcessResult> kill(Executor executor) {
-		return startup_process_exec.thenApplyAsync(process -> {
+		return cf_startup_process_exec.thenApplyAsync(process -> {
 			process_was_killed = true;
 			return process;
 		}, executor).thenApplyAsync(process -> {
@@ -302,13 +302,13 @@ class ExecProcessResult {
 	}
 	
 	public CompletableFuture<Boolean> isRunning() {
-		return startup_process_exec.thenApplyAsync(process -> {
+		return cf_startup_process_exec.thenApplyAsync(process -> {
 			return process.isAlive();
 		}, executor);
 	}
 	
 	public CompletableFuture<Boolean> isCorrectlyDone() {
-		return startup_process_exec.thenApplyAsync(process -> {
+		return cf_startup_process_exec.thenApplyAsync(process -> {
 			if (process.isAlive()) {
 				return false;
 			} else if (exec_code_must_be_zero) {
@@ -328,11 +328,11 @@ class ExecProcessResult {
 	}
 	
 	public CompletableFuture<Process> getProcess() {
-		return startup_process_exec;
+		return cf_startup_process_exec;
 	}
 	
 	public CompletableFuture<EndStatus> getEndStatus() {
-		return startup_process_exec.thenApplyAsync(process -> {
+		return cf_startup_process_exec.thenApplyAsync(process -> {
 			if (process.isAlive()) {
 				return EndStatus.NOT_YET_DONE;
 			} else if (process_was_killed) {
@@ -347,13 +347,13 @@ class ExecProcessResult {
 	}
 	
 	public CompletableFuture<Integer> getExitCode() {
-		return startup_process_exec.thenApplyAsync(process -> {
+		return cf_startup_process_exec.thenApplyAsync(process -> {
 			return process.exitValue();
 		}, executor);
 	}
 	
 	public CompletableFuture<Long> getStartDate() {
-		return startup_process_exec.thenApplyAsync(process -> {
+		return cf_startup_process_exec.thenApplyAsync(process -> {
 			return process.info().startInstant().orElse(Instant.EPOCH).toEpochMilli();
 		}, executor);
 	}
@@ -368,7 +368,7 @@ class ExecProcessResult {
 	}
 	
 	public CompletableFuture<Long> getCPUDuration(TimeUnit unit) {
-		return startup_process_exec.thenApplyAsync(process -> {
+		return cf_startup_process_exec.thenApplyAsync(process -> {
 			return unit.convert(process.info().totalCpuDuration().orElse(Duration.ZERO).toMillis(), TimeUnit.MILLISECONDS);
 		}, executor);
 	}
@@ -377,13 +377,13 @@ class ExecProcessResult {
 	 * on Windows, return like "HOST_or_DOMAIN"\"username"
 	 */
 	public CompletableFuture<Optional<String>> getUserExec() {
-		return startup_process_exec.thenApplyAsync(process -> {
+		return cf_startup_process_exec.thenApplyAsync(process -> {
 			return process.info().user();
 		}, executor);
 	}
 	
 	public CompletableFuture<Long> getPID() {
-		return startup_process_exec.thenApplyAsync(process -> {
+		return cf_startup_process_exec.thenApplyAsync(process -> {
 			try {
 				return process.pid();
 			} catch (UnsupportedOperationException e) {
@@ -422,16 +422,16 @@ class ExecProcessResult {
 	 * Blocking during the process really starts
 	 */
 	public StdInInjection getStdInInjection(Executor executor) {
-		if (std_in_injection == null) {
+		if (cf_std_in_injection == null) {
 			synchronized (this) {
-				std_in_injection = startup_process_exec.thenApplyAsync(process -> {
+				cf_std_in_injection = cf_startup_process_exec.thenApplyAsync(process -> {
 					return new StdInInjection(process.getOutputStream());
 				}, executor);
 			}
 		}
 		
 		try {
-			return std_in_injection.get();
+			return cf_std_in_injection.get();
 		} catch (InterruptedException | ExecutionException e) {
 			throw new RuntimeException("Can't get std_in_injection", e);
 		}

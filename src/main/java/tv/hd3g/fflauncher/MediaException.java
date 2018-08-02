@@ -16,7 +16,7 @@
 */
 package tv.hd3g.fflauncher;
 
-public class MediaException extends RuntimeException {
+public class MediaException extends Exception {
 	
 	public MediaException(String message) {
 		super(message);

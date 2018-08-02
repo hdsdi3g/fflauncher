@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -304,6 +305,24 @@ public class ConversionTool {
 		return this;
 	}
 	
+	private Executor on_error_delete_out_files_executor;
+	
+	public Executor getOnErrorDeleteOutFilesExecutor() {
+		return on_error_delete_out_files_executor;
+	}
+	
+	public boolean isOnErrorDeleteOutFilesExecutor() {
+		return on_error_delete_out_files_executor != null;
+	}
+	
+	public ConversionTool setOnErrorDeleteOutFiles(Executor executor) {
+		if (executor == null) {
+			throw new NullPointerException("\"executor\" can't to be null");
+		}
+		on_error_delete_out_files_executor = executor;
+		return this;
+	}
+	
 	private ExecProcessText createExec(boolean short_command_limited_execution_time) throws IOException {
 		ExecProcessText exec_process = new ExecProcessText(executable);
 		
@@ -317,6 +336,14 @@ public class ConversionTool {
 		
 		exec_process.importParametersFrom(createProcessedCommandLine());
 		applyExecProcessCatcher(exec_process);
+		
+		if (on_error_delete_out_files_executor != null) {
+			/*exec_process.addEndExecutionCallback(r -> {
+				// XXX
+			}, on_error_delete_out_files_executor);
+			*/
+			// TODO if fail transcoding/shutdown hook, delete out files (optional)
+		}
 		
 		return exec_process;
 	}
