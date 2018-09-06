@@ -101,7 +101,7 @@
 	<repositories>
 	  <repository>
 	    <id>hd3gtv</id>
-	    <url>https://hd3g.tv/maven</url>
+	    <url>https://maven.hd3g.tv/</url>
 	    <releases>
 	      <enabled>true</enabled>
 	    </releases>
