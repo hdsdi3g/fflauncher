@@ -28,7 +28,7 @@ import tv.hd3g.execprocess.CommandLineProcessor.CommandLine;
 import tv.hd3g.execprocess.ExecProcessText;
 import tv.hd3g.execprocess.ExecutableFinder;
 
-class FFbase extends ConversionTool {
+public class FFbase extends ConversionTool {
 	
 	private FFAbout about;
 	

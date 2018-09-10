@@ -382,6 +382,37 @@ public class FFmpeg extends FFbase {
 		return this;
 	}
 	
+	/**
+	 * No checks will be done.
+	 * @param output_audio_stream_index -1 by default
+	 */
+	public FFmpeg addAudioCodecName(String codec_name, int output_audio_stream_index) {
+		if (output_audio_stream_index > -1) {
+			command_line.addParameters("-c:a:" + output_audio_stream_index, codec_name);
+		} else {
+			command_line.addParameters("-c:a", codec_name);
+		}
+		return this;
+	}
+	
+	/**
+	 * No checks will be done.
+	 * like -vsync value
+	 */
+	public FFmpeg addVsync(int value) {
+		command_line.addParameters("-vsync", String.valueOf(value));
+		return this;
+	}
+	
+	/**
+	 * No checks will be done.
+	 * like -map source_index:stream_index_in_source ; 0 is the first.
+	 */
+	public FFmpeg addMap(int source_index, int stream_index_in_source) {
+		command_line.addParameters("-map", String.valueOf(source_index) + ":" + String.valueOf(stream_index_in_source));
+		return this;
+	}
+	
 	/*public FFmpeg prepareResize(String source, Point new_size, FFprobeJAXB analysing_result) {
 		// TODO2 ffmpeg.addHardwareNVScalerFilter(new_size, pixel_format, interp_algo)
 		// about.isHardwareNVScalerFilterIsAvaliable()

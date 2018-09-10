@@ -110,6 +110,9 @@ public class ExecProcessText extends ExecProcess {
 		return capture_streams_behavior;
 	}
 	
+	/**
+	 * @param interactive_handler, use "(source, line, is_std_err) -> {return null;}"
+	 */
 	public ExecProcessText setInteractiveHandler(InteractiveExecProcessHandler interactive_handler, Executor executor) {
 		if (interactive_handler == null) {
 			throw new NullPointerException("\"interactive_handler\" can't to be null");

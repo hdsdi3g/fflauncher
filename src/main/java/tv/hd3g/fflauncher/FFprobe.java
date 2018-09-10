@@ -18,15 +18,12 @@ package tv.hd3g.fflauncher;
 
 import java.io.FileNotFoundException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import tv.hd3g.execprocess.CommandLineProcessor.CommandLine;
 import tv.hd3g.execprocess.ExecutableFinder;
 
 public class FFprobe extends FFbase {
 	
-	private static Logger log = LogManager.getLogger();
+	// private static Logger log = LogManager.getLogger();
 	
 	public FFprobe(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
 		super(exec_finder, command_line);

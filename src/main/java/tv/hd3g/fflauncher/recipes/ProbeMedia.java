@@ -19,12 +19,8 @@ package tv.hd3g.fflauncher.recipes;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.xml.sax.SAXException;
 
 import tv.hd3g.execprocess.CommandLineProcessor;
 import tv.hd3g.execprocess.ExecProcessText;
@@ -60,7 +56,7 @@ public class ProbeMedia extends Recipe {
 		return exec.start(getExecutionExecutor()).waitForEnd().thenApplyAsync(result -> {
 			try {
 				return new FFprobeJAXB(result.checkExecution().getStdout(false, System.lineSeparator()), warn -> log.warn(warn));
-			} catch (JAXBException | ParserConfigurationException | SAXException | IOException e) {
+			} catch (IOException e) {
 				throw new RuntimeException("Can't analyst " + source, e);
 			}
 		}, getPostProcessExecutor());

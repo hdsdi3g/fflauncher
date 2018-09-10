@@ -61,9 +61,9 @@ public class GenerateVideoFile extends Recipe {
 		}
 		
 		if (ffmpeg.getAbout().isCoderIsAvaliable("aac")) {
-			cmd.addBulkParameters("-codec:a aac");// TODO create valid API for that
+			ffmpeg.addAudioCodecName("aac", -1);
 		} else {
-			cmd.addBulkParameters("-codec:a opus");// TODO create valid API for that
+			ffmpeg.addAudioCodecName("opus", -1);
 		}
 		
 		ffmpeg/*.addFastStartMovMp4File()*/.addSimpleOutputDestination(destination);
