@@ -17,17 +17,17 @@
 package tv.hd3g.fflauncher;
 
 public class MediaException extends Exception {
-	
+
 	public MediaException(String message) {
 		super(message);
 	}
-	
+
 	public MediaException(Throwable cause) {
 		super(cause);
 	}
-	
+
 	public MediaException(String message, Throwable cause) {
 		super(message, cause);
 	}
-	
+
 }

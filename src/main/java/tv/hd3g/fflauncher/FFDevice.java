@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class FFDevice extends FFFormat {
-	
+
 	static List<FFDevice> parseDevices(List<String> lines) {
 		return lines.stream().map(line -> line.trim()).filter(line -> {
 			return line.toLowerCase().startsWith("Devices:".toLowerCase()) == false;
@@ -32,9 +32,9 @@ public class FFDevice extends FFFormat {
 			return line.startsWith("--") == false;
 		}).map(line -> new FFDevice(line)).collect(Collectors.toUnmodifiableList());
 	}
-	
+
 	FFDevice(String line) {
 		super(line);
 	}
-	
+
 }

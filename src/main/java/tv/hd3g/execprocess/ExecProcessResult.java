@@ -1,6 +1,6 @@
 /*
  * This file is part of fflauncher.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -10,9 +10,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
- * 
+ *
 */
 package tv.hd3g.execprocess;
 
@@ -38,57 +38,59 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tv.hd3g.processlauncher.EndStatus;
+
 public class ExecProcessResult {
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private final File executable;
-	
+
 	/**
 	 * unmodifiableList, with executable path.
 	 */
 	private final List<String> command_line;
-	
+
 	/**
 	 * unmodifiableMap
 	 */
 	private final Map<String, String> environment;
-	
+
 	/**
 	 * unmodifiableList
 	 */
-	private final List<EndExecutionCallback<?>> end_exec_callback_list;
-	
+	private final List<DeprecatedEndExecutionCallback<?>> end_exec_callback_list;
+
 	private final boolean exec_code_must_be_zero;
 	private final File working_directory;
 	private final Executor executor;
-	
+
 	/**
 	 * Can be null
 	 */
 	private ScheduledFuture<?> max_exec_time_stopper;
 	private final long max_exec_time;
 	private final ScheduledExecutorService max_exec_time_scheduler;
-	
+
 	/**
 	 * Can be null
 	 */
-	private Consumer<ProcessBuilder> alter_process_builder;
-	
+	private final Consumer<ProcessBuilder> alter_process_builder;
+
 	private volatile boolean process_was_killed;
 	private volatile boolean process_was_stopped_because_too_long_time;
 	private CompletableFuture<Process> cf_startup_process_exec;
-	
-	private CompletableFuture<StdInInjection> cf_std_in_injection;
+
+	private CompletableFuture<DeprecatedStdInInjection> cf_std_in_injection;
 	private final Thread shutdown_hook;
-	
-	ExecProcessResult(File executable, List<String> params, Map<String, String> environment, List<EndExecutionCallback<?>> end_exec_callback_list, boolean exec_code_must_be_zero, File working_directory, ScheduledExecutorService max_exec_time_scheduler, long max_exec_time, Consumer<ProcessBuilder> alter_process_builder, Executor executor) {
+
+	ExecProcessResult(final File executable, final List<String> params, final Map<String, String> environment, final List<DeprecatedEndExecutionCallback<?>> end_exec_callback_list, final boolean exec_code_must_be_zero, final File working_directory, final ScheduledExecutorService max_exec_time_scheduler, final long max_exec_time, final Consumer<ProcessBuilder> alter_process_builder, final Executor executor) {
 		this.executable = executable;
 		this.executor = executor;
-		
-		ArrayList<String> _cmd = new ArrayList<>(1 + params.size());
+
+		final ArrayList<String> _cmd = new ArrayList<>(1 + params.size());
 		_cmd.add(executable.getPath());
 		_cmd.addAll(params);
-		
+
 		command_line = Collections.unmodifiableList(_cmd);
 		this.environment = Collections.unmodifiableMap(new HashMap<>(environment));
 		this.end_exec_callback_list = Collections.unmodifiableList(new ArrayList<>(end_exec_callback_list));
@@ -96,14 +98,14 @@ public class ExecProcessResult {
 		this.working_directory = working_directory;
 		this.max_exec_time_scheduler = max_exec_time_scheduler;
 		this.max_exec_time = max_exec_time;
-		
+
 		process_was_killed = false;
 		process_was_stopped_because_too_long_time = false;
-		
+
 		this.alter_process_builder = alter_process_builder;
-		
+
 		cf_startup_process_exec = CompletableFuture.failedFuture(new NullPointerException("Process is not yet pending to start..."));
-		
+
 		shutdown_hook = new Thread(() -> {
 			if (cf_startup_process_exec.isDone()) {
 				try {
@@ -120,17 +122,17 @@ public class ExecProcessResult {
 		shutdown_hook.setPriority(Thread.MAX_PRIORITY);
 		shutdown_hook.setName("ShutdownHook for " + executable.getName());
 	}
-	
+
 	synchronized ExecProcessResult start() {
 		cf_startup_process_exec = CompletableFuture.supplyAsync(() -> {
 			synchronized (this) {
 				Process process;
 				try {
 					process = makeProcessBuilder().start();
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					throw new RuntimeException("Can't start process " + getCommandline(), e);
 				}
-				
+
 				if (log.isTraceEnabled()) {
 					String env = "";
 					if (environment.isEmpty() == false) {
@@ -144,64 +146,65 @@ public class ExecProcessResult {
 				} else {
 					log.info("Start process #" + process.pid() + " " + getCommandline());
 				}
-				
+
 				if (max_exec_time < Long.MAX_VALUE) {
 					max_exec_time_stopper = max_exec_time_scheduler.schedule(() -> {
 						process_was_stopped_because_too_long_time = true;
 						killProcessTree(process);
 					}, max_exec_time, TimeUnit.MILLISECONDS);
-					
+
 					process.onExit().thenRunAsync(() -> {
 						max_exec_time_stopper.cancel(false);
 					}, max_exec_time_scheduler);
 				}
-				
+
 				process.onExit().thenRun(() -> {
 					Runtime.getRuntime().removeShutdownHook(shutdown_hook);
 					end_exec_callback_list.forEach(observer -> {
 						observer.onEnd(this);
 					});
 				});
-				
+
 				postStartupAction(process);
-				
+
 				Runtime.getRuntime().addShutdownHook(shutdown_hook);
-				
+
 				return process;
 			}
 		}, executor);
-		
+
 		return this;
 	}
-	
+
 	ProcessBuilder makeProcessBuilder() {
-		ProcessBuilder process_builder = new ProcessBuilder(command_line);
+		final ProcessBuilder process_builder = new ProcessBuilder(command_line);
 		process_builder.environment().putAll(environment);
-		
+
 		if (working_directory != null) {
 			process_builder.directory(working_directory);
 		}
-		
+
 		if (alter_process_builder != null) {
 			alter_process_builder.accept(process_builder);
 		}
-		
+
 		return process_builder;
 	}
-	
+
 	/**
 	 * Started in the right thread
 	 */
-	protected void postStartupAction(Process process) {
+	protected void postStartupAction(final Process process) {
 	}
-	
+
+	@Override
 	public String toString() {
 		if (cf_startup_process_exec.isCompletedExceptionally()) {
 			return "Can't start to exec " + getCommandline();
 		}
-		
-		Process process = cf_startup_process_exec.getNow(null);
-		
+
+		final Process process = cf_startup_process_exec.getNow(null);
+
 		if (process == null) {
 			return "Ready to exec " + getCommandline();
 		} else if (process.isAlive()) {
@@ -210,21 +213,21 @@ public class ExecProcessResult {
 			return "Exec " + getEndStatus() + " " + getCommandline();
 		}
 	}
-	
-	private static String processHandleToString(ProcessHandle process_handle, boolean verbose) {
+
+	private static String processHandleToString(final ProcessHandle process_handle, final boolean verbose) {
 		if (verbose) {
 			return process_handle.info().command().orElse("<?>") + " #" + process_handle.pid() + " by " + process_handle.info().user().orElse("<?>") + " since " + process_handle.info().totalCpuDuration().orElse(Duration.ZERO).getSeconds() + " sec";
 		} else {
 			return process_handle.info().commandLine().orElse("<?>") + " #" + process_handle.pid();
 		}
 	}
-	
+
 	/**
 	 * Blocking
 	 */
-	private void killProcessTree(Process process) {
+	private void killProcessTree(final Process process) {
 		log.debug("Internal kill " + toString());
-		List<ProcessHandle> cant_kill = process.descendants().filter(process_handle -> {
+		final List<ProcessHandle> cant_kill = process.descendants().filter(process_handle -> {
 			return process_handle.isAlive();
 		}).filter(process_handle -> {
 			if (log.isDebugEnabled()) {
@@ -241,7 +244,7 @@ public class ExecProcessResult {
 			}
 			return process_handle.destroyForcibly() == false;
 		}).collect(Collectors.toUnmodifiableList());
-		
+
 		if (process.isAlive()) {
 			log.info("Close manually process " + processHandleToString(process.toHandle(), true));
 			if (process.toHandle().destroy() == false) {
@@ -251,7 +254,7 @@ public class ExecProcessResult {
 				}
 			}
 		}
-		
+
 		if (cant_kill.isEmpty() == false) {
 			cant_kill.forEach(process_handle -> {
 				log.error("Can't force close process " + processHandleToString(process_handle, true));
@@ -259,7 +262,7 @@ public class ExecProcessResult {
 			throw new RuntimeException("Can't close process " + toString() + " for PID " + cant_kill.stream().map(p -> p.pid()).map(pid -> String.valueOf(pid)).collect(Collectors.joining(", ")));
 		}
 	}
-	
+
 	/**
 	 * Async, don't checks if running is ok.
 	 * @return CF of this
@@ -268,29 +271,29 @@ public class ExecProcessResult {
 		return cf_startup_process_exec.thenApplyAsync(process -> {
 			try {
 				process.waitFor();
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				throw new RuntimeException(e);
 			}
 			return this;
 		}, executor);
 	}
-	
+
 	/**
 	 * Async, don't checks if running is ok.
 	 * @return CF of this
 	 */
-	public CompletableFuture<? extends ExecProcessResult> waitForEnd(long timeout, TimeUnit unit) {
+	public CompletableFuture<? extends ExecProcessResult> waitForEnd(final long timeout, final TimeUnit unit) {
 		return cf_startup_process_exec.thenApplyAsync(process -> {
 			try {
 				process.waitFor(timeout, unit);
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				throw new RuntimeException(e);
 			}
 			return this;
 		}, executor);
 	}
-	
-	public CompletableFuture<? extends ExecProcessResult> kill(Executor executor) {
+
+	public CompletableFuture<? extends ExecProcessResult> kill(final Executor executor) {
 		return cf_startup_process_exec.thenApplyAsync(process -> {
 			process_was_killed = true;
 			return process;
@@ -298,15 +301,15 @@ public class ExecProcessResult {
 			killProcessTree(process);
 			return this;
 		}, executor);
-		
+
 	}
-	
+
 	public CompletableFuture<Boolean> isRunning() {
 		return cf_startup_process_exec.thenApplyAsync(process -> {
 			return process.isAlive();
 		}, executor);
 	}
-	
+
 	public CompletableFuture<Boolean> isCorrectlyDone() {
 		return cf_startup_process_exec.thenApplyAsync(process -> {
 			if (process.isAlive()) {
@@ -316,21 +319,21 @@ public class ExecProcessResult {
 			}
 			return true;
 		}, executor);
-		
+
 	}
-	
+
 	public boolean isKilled() {
 		return process_was_killed;
 	}
-	
+
 	public boolean isTooLongTime() {
 		return process_was_stopped_because_too_long_time;
 	}
-	
+
 	public CompletableFuture<Process> getProcess() {
 		return cf_startup_process_exec;
 	}
-	
+
 	public CompletableFuture<EndStatus> getEndStatus() {
 		return cf_startup_process_exec.thenApplyAsync(process -> {
 			if (process.isAlive()) {
@@ -345,20 +348,20 @@ public class ExecProcessResult {
 			return EndStatus.CORRECTLY_DONE;
 		}, executor);
 	}
-	
+
 	public CompletableFuture<Integer> getExitCode() {
 		return cf_startup_process_exec.thenApplyAsync(process -> {
 			return process.exitValue();
 		}, executor);
 	}
-	
+
 	public CompletableFuture<Long> getStartDate() {
 		return cf_startup_process_exec.thenApplyAsync(process -> {
 			return process.info().startInstant().orElse(Instant.EPOCH).toEpochMilli();
 		}, executor);
 	}
-	
-	public CompletableFuture<Long> getUptime(TimeUnit unit) {
+
+	public CompletableFuture<Long> getUptime(final TimeUnit unit) {
 		return getStartDate().thenApplyAsync(start_date -> {
 			if (start_date <= 0) {
 				return -1l;
@@ -366,13 +369,13 @@ public class ExecProcessResult {
 			return unit.convert(System.currentTimeMillis() - start_date, TimeUnit.MILLISECONDS);
 		}, executor);
 	}
-	
-	public CompletableFuture<Long> getCPUDuration(TimeUnit unit) {
+
+	public CompletableFuture<Long> getCPUDuration(final TimeUnit unit) {
 		return cf_startup_process_exec.thenApplyAsync(process -> {
 			return unit.convert(process.info().totalCpuDuration().orElse(Duration.ZERO).toMillis(), TimeUnit.MILLISECONDS);
 		}, executor);
 	}
-	
+
 	/**
 	 * on Windows, return like "HOST_or_DOMAIN"\"username"
 	 */
@@ -381,62 +384,62 @@ public class ExecProcessResult {
 			return process.info().user();
 		}, executor);
 	}
-	
+
 	public CompletableFuture<Long> getPID() {
 		return cf_startup_process_exec.thenApplyAsync(process -> {
 			try {
 				return process.pid();
-			} catch (UnsupportedOperationException e) {
+			} catch (final UnsupportedOperationException e) {
 				return -1l;
 			}
 		}, executor);
 	}
-	
-	public long getMaxExecTime(TimeUnit unit) {
+
+	public long getMaxExecTime(final TimeUnit unit) {
 		if (max_exec_time_stopper != null) {
 			return unit.convert(max_exec_time, TimeUnit.MILLISECONDS);
 		}
 		return 0;
 	}
-	
+
 	public File getExecutable() {
 		return executable;
 	}
-	
+
 	/**
 	 * @return with executable
 	 */
 	public String getCommandline() {
 		return command_line.stream().collect(Collectors.joining(" "));
 	}
-	
+
 	public File getWorkingDirectory() {
 		return working_directory;
 	}
-	
+
 	public Map<String, String> getEnvironment() {
 		return environment;
 	}
-	
+
 	/**
 	 * Blocking during the process really starts
 	 */
-	public StdInInjection getStdInInjection(Executor executor) {
+	public DeprecatedStdInInjection getStdInInjection(final Executor executor) {
 		if (cf_std_in_injection == null) {
 			synchronized (this) {
 				cf_std_in_injection = cf_startup_process_exec.thenApplyAsync(process -> {
-					return new StdInInjection(process.getOutputStream());
+					return new DeprecatedStdInInjection(process.getOutputStream());
 				}, executor);
 			}
 		}
-		
+
 		try {
 			return cf_std_in_injection.get();
 		} catch (InterruptedException | ExecutionException e) {
 			throw new RuntimeException("Can't get std_in_injection", e);
 		}
 	}
-	
+
 	/**
 	 * Blocking during the process ends
 	 */
@@ -450,5 +453,5 @@ public class ExecProcessResult {
 		}
 		return this;
 	}
-	
+
 }

@@ -1,6 +1,6 @@
 /*
  * This file is part of fflauncher.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -10,9 +10,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
- * 
+ *
 */
 package tv.hd3g.execprocess;
 
@@ -37,31 +37,32 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+@Deprecated
 public class ExecProcessTextResult extends ExecProcessResult {
-	
+
 	private static Logger log = LogManager.getLogger();
-	
+
 	private boolean keep_stdout;
 	private boolean keep_stderr;
-	private InteractiveExecProcessHandler interactive_handler;
+	private DeprecatedInteractiveExecProcessHandler interactive_handler;
 	private Executor interactive_handler_executor;
 	private CaptureOutStreamsBehavior capture_streams_behavior;
-	
+
 	// private StdTextParser stdout_parser;
 	// private StdTextParser stderr_parser;
 	private final LinkedBlockingQueue<LineEntry> lines;
-	
+
 	/**
 	 * unmodifiableList
 	 */
-	private List<StdOutErrCallback> stdouterr_callback_list;
-	
-	ExecProcessTextResult(File executable, List<String> params, Map<String, String> environment, List<EndExecutionCallback<?>> observers, boolean exec_code_must_be_zero, File working_directory, ScheduledExecutorService max_exec_time_scheduler, long max_exec_time, Consumer<ProcessBuilder> alter_process_builder, Executor executor) {
+	private List<DeprecatedStdOutErrCallback> stdouterr_callback_list;
+
+	ExecProcessTextResult(final File executable, final List<String> params, final Map<String, String> environment, final List<DeprecatedEndExecutionCallback<?>> observers, final boolean exec_code_must_be_zero, final File working_directory, final ScheduledExecutorService max_exec_time_scheduler, final long max_exec_time, final Consumer<ProcessBuilder> alter_process_builder, final Executor executor) {
 		super(executable, params, environment, observers, exec_code_must_be_zero, working_directory, max_exec_time_scheduler, max_exec_time, alter_process_builder, executor);
 		lines = new LinkedBlockingQueue<>();
 	}
-	
-	ExecProcessTextResult setup(CaptureOutStreamsBehavior capture_streams_behavior, boolean keep_stdout, boolean keep_stderr, InteractiveExecProcessHandler interactive_handler, Executor interactive_handler_executor, ArrayList<StdOutErrCallback> stdouterr_callback_list) {
+
+	ExecProcessTextResult setup(final CaptureOutStreamsBehavior capture_streams_behavior, final boolean keep_stdout, final boolean keep_stderr, final DeprecatedInteractiveExecProcessHandler interactive_handler, final Executor interactive_handler_executor, final ArrayList<DeprecatedStdOutErrCallback> stdouterr_callback_list) {
 		this.capture_streams_behavior = capture_streams_behavior;
 		this.keep_stdout = keep_stdout;
 		this.keep_stderr = keep_stderr;
@@ -70,24 +71,25 @@ public class ExecProcessTextResult extends ExecProcessResult {
 		this.stdouterr_callback_list = Collections.unmodifiableList(new ArrayList<>(stdouterr_callback_list));
 		return this;
 	}
-	
+
 	/**
 	 * Async !
 	 */
+	@Override
 	ExecProcessTextResult start() {
 		super.start();
 		return this;
 	}
-	
+
 	/**
 	 * Please keep override...
 	 */
 	@Override
-	protected void postStartupAction(Process process) {
+	protected void postStartupAction(final Process process) {
 		if (process.isAlive() == false) {
 			return;
 		}
-		
+
 		if (capture_streams_behavior.canCaptureStdout()) {
 			/*stdout_parser =*/ new StdTextParser(process.getInputStream(), false, process.pid());
 		}
@@ -95,25 +97,25 @@ public class ExecProcessTextResult extends ExecProcessResult {
 			/*stderr_parser = */new StdTextParser(process.getErrorStream(), true, process.pid());
 		}
 	}
-	
+
 	private class StdTextParser extends Thread {
-		
+
 		private final InputStream is;
 		private final boolean std_err;
-		
-		public StdTextParser(InputStream is, boolean std_err, long pid) {
+
+		public StdTextParser(final InputStream is, final boolean std_err, final long pid) {
 			this.is = is;
 			this.std_err = std_err;
-			
+
 			if (std_err) {
 				setName("StdErr for " + getExecutable().getName() + "#" + pid);
 			} else {
 				setName("StdOut for " + getExecutable().getName() + "#" + pid);
 			}
-			
+
 			setPriority(MIN_PRIORITY);
 			setDaemon(false);
-			
+
 			setUncaughtExceptionHandler((t, e) -> {
 				if (std_err) {
 					log.error("Can't process stderr stream for " + getCommandline(), e);
@@ -121,10 +123,11 @@ public class ExecProcessTextResult extends ExecProcessResult {
 					log.error("Can't process stdout stream for " + getCommandline(), e);
 				}
 			});
-			
+
 			start();
 		}
-		
+
+		@Override
 		public String toString() {
 			if (std_err) {
 				return "StdErr for " + getCommandline();
@@ -132,16 +135,17 @@ public class ExecProcessTextResult extends ExecProcessResult {
 				return "StdOut for " + getCommandline();
 			}
 		}
-		
+
+		@Override
 		public void run() {
 			try {
-				BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+				final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 				try {
 					String line = "";
 					while ((line = reader.readLine()) != null) {
 						consumeStdOutErr(line, std_err);
 					}
-				} catch (IOException ioe) {
+				} catch (final IOException ioe) {
 					if (ioe.getMessage().equalsIgnoreCase("Bad file descriptor")) {
 						if (log.isTraceEnabled()) {
 							log.trace("Bad file descriptor, " + toString());
@@ -153,28 +157,28 @@ public class ExecProcessTextResult extends ExecProcessResult {
 					} else {
 						throw ioe;
 					}
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					log.error("Trouble during process " + toString(), e);
 				} finally {
 					reader.close();
 				}
-			} catch (IOException ioe) {
+			} catch (final IOException ioe) {
 				log.error("Trouble opening process streams: " + toString(), ioe);
 			}
 		}
 	}
-	
+
 	private class LineEntry {
 		final String line;
 		final boolean std_err;
-		
-		private LineEntry(String line, boolean std_err) {
+
+		private LineEntry(final String line, final boolean std_err) {
 			this.line = line;
 			this.std_err = std_err;
 		}
 	}
-	
-	private void consumeStdOutErr(String line, boolean std_err) {
+
+	private void consumeStdOutErr(final String line, final boolean std_err) {
 		if (std_err) {
 			if (keep_stderr) {
 				lines.add(new LineEntry(line, std_err));
@@ -184,7 +188,7 @@ public class ExecProcessTextResult extends ExecProcessResult {
 				lines.add(new LineEntry(line, std_err));
 			}
 		}
-		
+
 		stdouterr_callback_list.forEach(callback -> {
 			try {
 				if (std_err) {
@@ -192,23 +196,23 @@ public class ExecProcessTextResult extends ExecProcessResult {
 				} else {
 					callback.onStdout(this, line);
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				log.warn("Can't callback by " + toString(), e);
 			}
 		});
-		
+
 		if (interactive_handler_executor != null && interactive_handler != null) {
 			try {
 				interactive_handler_executor.execute(() -> {
 					try {
-						String out = interactive_handler.onText(this, line, std_err);
+						final String out = interactive_handler.onText(this, line, std_err);
 						if (getProcess().get().isAlive() == false) {
 							return;
 						}
 						if (out != null) {
 							try {
 								getStdInInjection(Runnable::run).println(out);
-							} catch (IOException e) {
+							} catch (final IOException e) {
 								log.error("Can't send some text to process", e);
 							}
 						}
@@ -216,17 +220,17 @@ public class ExecProcessTextResult extends ExecProcessResult {
 						throw new RuntimeException("Can't get process", e1);
 					}
 				});
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				log.warn("Can't callback by " + toString(), e);
 			}
 		}
-		
+
 	}
-	
+
 	/**
 	 * Only set if setKeepStdout is set (false by default), else return empty stream.
 	 */
-	public Stream<String> getStdoutLines(boolean keep_empty_lines) {
+	public Stream<String> getStdoutLines(final boolean keep_empty_lines) {
 		return lines.stream().filter(le -> {
 			if (keep_empty_lines) {
 				return true;
@@ -238,12 +242,12 @@ public class ExecProcessTextResult extends ExecProcessResult {
 			return le.line;
 		});
 	}
-	
+
 	/**
 	 * Only set if setKeepStdout is set (false by default), else return empty stream.
 	 * @param keep_empty_lines if set false, discard all empty trimed lines
 	 */
-	public Stream<String> getStderrLines(boolean keep_empty_lines) {
+	public Stream<String> getStderrLines(final boolean keep_empty_lines) {
 		return lines.stream().filter(le -> {
 			if (keep_empty_lines) {
 				return true;
@@ -255,12 +259,12 @@ public class ExecProcessTextResult extends ExecProcessResult {
 			return le.line;
 		});
 	}
-	
+
 	/**
 	 * Only set if setKeepStdout is set (false by default), else return empty stream.
 	 * @param keep_empty_lines if set false, discard all empty trimed lines
 	 */
-	public Stream<String> getStdouterrLines(boolean keep_empty_lines) {
+	public Stream<String> getStdouterrLines(final boolean keep_empty_lines) {
 		return lines.stream().filter(le -> {
 			if (keep_empty_lines) {
 				return true;
@@ -270,47 +274,49 @@ public class ExecProcessTextResult extends ExecProcessResult {
 			return le.line;
 		});
 	}
-	
+
 	/**
 	 * Only set if setKeepStdout is set (false by default), else return empty text.
 	 * @param keep_empty_lines if set false, discard all empty trimed lines
 	 * @param new_line_separator replace new line char by this
 	 *        Use System.lineSeparator() if needed
 	 */
-	public String getStdout(boolean keep_empty_lines, String new_line_separator) {
+	public String getStdout(final boolean keep_empty_lines, final String new_line_separator) {
 		return getStdoutLines(keep_empty_lines).collect(Collectors.joining(new_line_separator));
 	}
-	
+
 	/**
 	 * Only set if setKeepStdout is set (false by default), else return empty text.
 	 * @param keep_empty_lines if set false, discard all empty trimed lines
 	 * @param new_line_separator replace new line char by this
 	 *        Use System.lineSeparator() if needed
 	 */
-	public String getStderr(boolean keep_empty_lines, String new_line_separator) {
+	public String getStderr(final boolean keep_empty_lines, final String new_line_separator) {
 		return getStderrLines(keep_empty_lines).collect(Collectors.joining(new_line_separator));
 	}
-	
+
 	/**
 	 * Only set if setKeepStdout is set (false by default), else return empty text.
 	 * @param keep_empty_lines if set false, discard all empty trimed lines
 	 * @param new_line_separator replace new line char by this
 	 *        Use System.lineSeparator() if needed
 	 */
-	public String getStdouterr(boolean keep_empty_lines, String new_line_separator) {
+	public String getStdouterr(final boolean keep_empty_lines, final String new_line_separator) {
 		return getStdouterrLines(keep_empty_lines).collect(Collectors.joining(new_line_separator));
 	}
-	
+
 	/**
 	 * Blocking
 	 */
+	@Override
 	public CompletableFuture<? extends ExecProcessTextResult> waitForEnd() {
 		return super.waitForEnd().thenApply(_this -> this);
 	}
-	
+
 	/**
 	 * Blocking during the process ends
 	 */
+	@Override
 	public ExecProcessTextResult checkExecution() {
 		try {
 			if (isCorrectlyDone().get() == false) {
@@ -321,5 +327,5 @@ public class ExecProcessTextResult extends ExecProcessResult {
 		}
 		return this;
 	}
-	
+
 }

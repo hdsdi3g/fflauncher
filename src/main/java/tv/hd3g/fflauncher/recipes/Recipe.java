@@ -1,6 +1,6 @@
 /*
  * This file is part of fflauncher.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -10,9 +10,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
- * 
+ *
 */
 package tv.hd3g.fflauncher.recipes;
 
@@ -22,17 +22,17 @@ import java.util.concurrent.ForkJoinPool;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tv.hd3g.execprocess.ExecutableFinder;
+import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 
 public abstract class Recipe {
 	private static Logger log = LogManager.getLogger();
-	
-	private ExecutableFinder exec_finder;
-	private String exec_name;
+
+	private final ExecutableFinder exec_finder;
+	private final String exec_name;
 	private Executor execution_executor;
 	private Executor post_process_executor;
-	
-	public Recipe(ExecutableFinder exec_finder, String exec_name) {
+
+	public Recipe(final ExecutableFinder exec_finder, final String exec_name) {
 		this.exec_finder = exec_finder;
 		if (exec_finder == null) {
 			throw new NullPointerException("\"exec_finder\" can't to be null");
@@ -45,10 +45,10 @@ public abstract class Recipe {
 		}
 		execution_executor = ForkJoinPool.commonPool();
 		post_process_executor = ForkJoinPool.commonPool();
-		
+
 		log.debug("Init recipe " + getClass().getSimpleName() + " with " + exec_name);
 	}
-	
+
 	public Recipe() {
 		exec_finder = new ExecutableFinder();
 		exec_name = getDefaultExecName();
@@ -59,21 +59,21 @@ public abstract class Recipe {
 		}
 		execution_executor = ForkJoinPool.commonPool();
 		post_process_executor = ForkJoinPool.commonPool();
-		
+
 		log.debug("Init recipe " + getClass().getSimpleName() + " with " + exec_name + " (DefaultExecName)");
 	}
-	
+
 	protected abstract String getDefaultExecName();
-	
+
 	public ExecutableFinder getExecFinder() {
 		return exec_finder;
 	}
-	
+
 	public Executor getExecutionExecutor() {
 		return execution_executor;
 	}
-	
-	public Recipe setExecutionExecutor(Executor execution_executor) {
+
+	public Recipe setExecutionExecutor(final Executor execution_executor) {
 		if (execution_executor == null) {
 			throw new NullPointerException("\"execution_executor\" can't to be null");
 		}
@@ -81,12 +81,12 @@ public abstract class Recipe {
 		log.debug("Set executor for recipe " + getClass().getSimpleName() + ": " + execution_executor.getClass().getSimpleName());
 		return this;
 	}
-	
+
 	public Executor getPostProcessExecutor() {
 		return post_process_executor;
 	}
-	
-	public Recipe setPostProcessExecutor(Executor post_process_executor) {
+
+	public Recipe setPostProcessExecutor(final Executor post_process_executor) {
 		if (post_process_executor == null) {
 			throw new NullPointerException("\"post_process_executor\" can't to be null");
 		}
@@ -94,9 +94,9 @@ public abstract class Recipe {
 		log.debug("Set executor for recipe " + getClass().getSimpleName() + ": " + post_process_executor.getClass().getSimpleName());
 		return this;
 	}
-	
+
 	public String getExecName() {
 		return exec_name;
 	}
-	
+
 }

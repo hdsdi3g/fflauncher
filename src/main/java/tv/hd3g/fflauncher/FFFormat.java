@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class FFFormat {
-	
+
 	static List<FFFormat> parseFormats(List<String> lines) {
 		return lines.stream().map(line -> line.trim()).filter(line -> {
 			return line.toLowerCase().startsWith("File formats:".toLowerCase()) == false;
@@ -35,36 +35,36 @@ public class FFFormat {
 			return line.startsWith("--") == false;
 		}).map(line -> new FFFormat(line)).collect(Collectors.toUnmodifiableList());
 	}
-	
+
 	public final boolean demuxing;
 	public final boolean muxing;
-	
+
 	/**
 	 * Like "asf"
 	 */
 	public final String name;
-	
+
 	/**
 	 * Like "mov, mp4, m4a, 3gp, 3g2, mj2"
 	 */
 	public final Set<String> alternate_tags;
-	
+
 	/**
 	 * Like "ASF (Advanced / Active Streaming Format)"
 	 */
 	public final String long_name;
-	
+
 	FFFormat(String line) {
-		
+
 		List<String> line_blocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(lb -> lb.trim()).collect(Collectors.toUnmodifiableList());
-		
+
 		if (line_blocs.size() < 3) {
 			throw new RuntimeException("Can't parse line: \"" + line + "\"");
 		}
-		
+
 		demuxing = line_blocs.get(0).trim().contains("D");
 		muxing = line_blocs.get(0).trim().contains("E");
-		
+
 		if (line_blocs.get(1).contains(",")) {
 			name = Arrays.stream(line_blocs.get(1).trim().split(",")).findFirst().get();
 			alternate_tags = Collections.unmodifiableSet(Arrays.stream(line_blocs.get(1).trim().split(",")).collect(Collectors.toSet()));
@@ -72,13 +72,13 @@ public class FFFormat {
 			name = line_blocs.get(1);
 			alternate_tags = Collections.singleton(name);
 		}
-		
+
 		long_name = line_blocs.stream().filter(lb -> lb.trim().equals("") == false).skip(2).collect(Collectors.joining(" "));
 	}
-	
+
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		
+
 		sb.append(long_name);
 		sb.append(" [");
 		sb.append(name);
@@ -87,7 +87,7 @@ public class FFFormat {
 			sb.append(alternate_tags.stream().filter(t -> t.equals(name) == false).collect(Collectors.joining(", ")));
 		}
 		sb.append("] ");
-		
+
 		if (muxing & demuxing) {
 			sb.append("muxing and demuxing supported");
 		} else if (muxing) {
@@ -95,7 +95,7 @@ public class FFFormat {
 		} else {
 			sb.append("demuxing only supported");
 		}
-		
+
 		return sb.toString();
 	}
 }

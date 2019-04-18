@@ -21,29 +21,29 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class FFProtocols {
-	
+
 	/**
 	 * Like async, bluray, httpproxy, unix...
 	 */
 	public final Set<String> input;
-	
+
 	/**
 	 * Like gopher, md5, tee, sftp...
 	 */
 	public final Set<String> output;
-	
+
 	FFProtocols(List<String> process_result) {
 		input = process_result.stream().map(line -> line.trim()).filter(line -> {
 			return line.toLowerCase().startsWith("Input:".toLowerCase()) == false;
 		}).takeWhile(line -> {
 			return line.toLowerCase().startsWith("Output:".toLowerCase()) == false;
 		}).collect(Collectors.toSet());
-		
+
 		output = process_result.stream().map(line -> line.trim()).dropWhile(line -> {
 			return line.toLowerCase().startsWith("Output:".toLowerCase()) == false;
 		}).filter(line -> {
 			return line.toLowerCase().startsWith("Output:".toLowerCase()) == false;
 		}).collect(Collectors.toSet());
 	}
-	
+
 }

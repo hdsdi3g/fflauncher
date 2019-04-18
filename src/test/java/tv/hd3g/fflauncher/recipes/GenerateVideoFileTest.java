@@ -25,18 +25,18 @@ import junit.framework.TestCase;
 import tv.hd3g.fflauncher.FFmpeg;
 
 public class GenerateVideoFileTest extends TestCase {
-	
+
 	public void test() throws InterruptedException, ExecutionException, IOException {
 		GenerateVideoFile gvf = new GenerateVideoFile();
-		
+
 		File test_file = File.createTempFile("smptebars", ".mkv");
-		
+
 		FFmpeg ffmpeg = gvf.generateBarsAnd1k(test_file.getPath(), 5, new Point(1280, 720)).get();
-		
+
 		assertTrue(test_file.exists());
-		
+
 		ffmpeg.cleanUpOutputFiles(true, true);
 		assertFalse(test_file.exists());
 	}
-	
+
 }

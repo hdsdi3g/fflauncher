@@ -1,6 +1,6 @@
 /*
  * This file is part of fflauncher.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -10,20 +10,24 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
- * 
+ *
 */
-package tv.hd3g.execprocess.processdemo;
+package tv.hd3g.execprocess;
 
-import java.util.concurrent.Executors;
+@Deprecated
+@FunctionalInterface
+public interface DeprecatedStdOutErrObserver {
 
-import tv.hd3g.execprocess.ExecProcessTest;
+	void onText(ExecProcessTextResult source, String line, boolean is_std_err);
 
-public class Test6 {
-	
-	public static void main(String[] args) throws Exception {
-		ExecProcessTest.createExec(Test5.class).start(Executors.newSingleThreadExecutor()).waitForEnd();
+	default void onStdout(final ExecProcessTextResult source, final String line) {
+		onText(source, line, false);
 	}
-	
+
+	default void onStderr(final ExecProcessTextResult source, final String line) {
+		onText(source, line, true);
+	}
+
 }

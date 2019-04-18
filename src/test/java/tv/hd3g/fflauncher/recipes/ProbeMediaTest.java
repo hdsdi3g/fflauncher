@@ -24,31 +24,31 @@ import tv.hd3g.fflauncher.FFmpeg;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 
 public class ProbeMediaTest extends TestCase {
-	
+
 	private FFmpeg ffmpeg;
-	
+
 	protected void setUp() throws Exception {
 		GenerateVideoFile gvf = new GenerateVideoFile();
 		File test_file = File.createTempFile("smptebars", ".mkv");
 		ffmpeg = gvf.generateBarsAnd1k(test_file.getPath(), 1, new Point(768, 432)).get();
 	}
-	
+
 	protected void tearDown() throws Exception {
 		ffmpeg.cleanUpOutputFiles(true, false);
 	}
-	
+
 	public void test() throws Exception {
 		ProbeMedia probe = new ProbeMedia();
-		
+
 		File test_file = ffmpeg.getOutputFiles(true, true, true).stream().findFirst().get();
-		
+
 		FFprobeJAXB result = probe.doAnalysing(test_file.getAbsolutePath()).get();
-		
+
 		// result.getError();
 		assertEquals(1, result.getFormat().getDuration().intValue());
 		assertEquals(432, result.getVideoStreams().findFirst().get().getHeight().intValue());
-		
+
 		// System.out.println(new Gson().toJson(result));
 	}
-	
+
 }

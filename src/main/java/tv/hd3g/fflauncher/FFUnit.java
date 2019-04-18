@@ -17,7 +17,7 @@
 package tv.hd3g.fflauncher;
 
 public enum FFUnit {
-	
+
 	kilo {
 		public String toString() {
 			return "k";
@@ -33,7 +33,7 @@ public enum FFUnit {
 			return "G";
 		}
 	};
-	
+
 	public static FFUnit fromString(String u) {
 		switch (u.toLowerCase()) {
 		case "k":
@@ -45,7 +45,7 @@ public enum FFUnit {
 		default:
 			throw new IndexOutOfBoundsException("Unknow " + u);
 		}
-		
+
 	}
-	
+
 }

@@ -1,6 +1,6 @@
 /*
  * This file is part of fflauncher.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -10,9 +10,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
- * 
+ *
 */
 package tv.hd3g.fflauncher;
 
@@ -30,28 +30,28 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tv.hd3g.execprocess.CommandLineProcessor.CommandLine;
+import tv.hd3g.execprocess.DeprecatedCommandLineProcessor.DeprecatedCommandLine;
 import tv.hd3g.execprocess.ExecProcessTextResult;
-import tv.hd3g.execprocess.ExecutableFinder;
+import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 
 /**
  * Threadsafe
  */
 public class FFAbout {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private final FFbase referer;
-	
-	FFAbout(ExecutableFinder exec_finder, CommandLine command_line) throws FileNotFoundException {
+
+	FFAbout(final ExecutableFinder exec_finder, final DeprecatedCommandLine command_line) throws FileNotFoundException {
 		referer = new FFbase(exec_finder, command_line);
 	}
-	
+
 	/*
 	#-sources device     list sources of the input device
 	#-sinks device       list sinks of the output device
 	*/
-	
+
 	private FFVersion version;
 	private List<FFCodec> codecs;
 	private List<FFFormat> formats;
@@ -61,21 +61,21 @@ public class FFAbout {
 	private List<FFFilter> filters;
 	private List<FFPixelFormat> pixels_formats;
 	private Set<String> hardware_acceleration_methods;
-	
+
 	public FFVersion getVersion() {
 		synchronized (this) {
 			if (version == null) {
 				try {
-					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-loglevel quiet -version").run().checkExecution();
+					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-loglevel quiet -version").run().checkExecution();
 					version = new FFVersion(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
 			}
 		}
 		return version;
 	}
-	
+
 	/**
 	 * -codecs show available codecs
 	 */
@@ -83,16 +83,16 @@ public class FFAbout {
 		synchronized (this) {
 			if (codecs == null) {
 				try {
-					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-codecs").run().checkExecution();
+					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-codecs").run().checkExecution();
 					codecs = FFCodec.parse(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
 			}
 		}
 		return codecs;
 	}
-	
+
 	/**
 	 * -formats show available formats
 	 */
@@ -100,16 +100,16 @@ public class FFAbout {
 		synchronized (this) {
 			if (formats == null) {
 				try {
-					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-formats").run().checkExecution();
+					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-formats").run().checkExecution();
 					formats = FFFormat.parseFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
 			}
 		}
 		return formats;
 	}
-	
+
 	/**
 	 * -devices show available devices
 	 */
@@ -117,22 +117,22 @@ public class FFAbout {
 		synchronized (this) {
 			if (devices == null) {
 				try {
-					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-devices").run().checkExecution();
+					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-devices").run().checkExecution();
 					devices = FFDevice.parseDevices(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
 			}
 		}
 		return devices;
 	}
-	
-	static Set<String> parseBSFS(Stream<String> lines) {
+
+	static Set<String> parseBSFS(final Stream<String> lines) {
 		return lines.map(l -> l.trim()).filter(line -> {
 			return line.toLowerCase().startsWith("Bitstream filters:".toLowerCase()) == false;
 		}).collect(Collectors.toSet());
 	}
-	
+
 	/**
 	 * -bsfs show available bit stream filters
 	 */
@@ -140,16 +140,16 @@ public class FFAbout {
 		synchronized (this) {
 			if (bit_stream_filters == null) {
 				try {
-					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-bsfs").run().checkExecution();
+					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-bsfs").run().checkExecution();
 					bit_stream_filters = parseBSFS(result.getStdoutLines(false).map(l -> l.trim()));
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
 			}
 		}
 		return bit_stream_filters;
 	}
-	
+
 	/**
 	 * -protocols show available protocols
 	 */
@@ -157,17 +157,17 @@ public class FFAbout {
 		synchronized (this) {
 			if (protocols == null) {
 				try {
-					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-protocols").run().checkExecution();
+					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-protocols").run().checkExecution();
 					protocols = new FFProtocols(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
 			}
 		}
-		
+
 		return protocols;
 	}
-	
+
 	/**
 	 * -filters show available filters
 	 */
@@ -175,16 +175,16 @@ public class FFAbout {
 		synchronized (this) {
 			if (filters == null) {
 				try {
-					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-filters").run().checkExecution();
+					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-filters").run().checkExecution();
 					filters = FFFilter.parseFilters(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
 			}
 		}
 		return filters;
 	}
-	
+
 	/**
 	 * -pix_fmts show available pixel formats
 	 */
@@ -192,22 +192,22 @@ public class FFAbout {
 		synchronized (this) {
 			if (pixels_formats == null) {
 				try {
-					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-pix_fmts").run().checkExecution();
+					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-pix_fmts").run().checkExecution();
 					pixels_formats = FFPixelFormat.parsePixelsFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
 			}
 		}
 		return pixels_formats;
 	}
-	
-	static Set<String> parseHWAccelerationMethods(Stream<String> lines) {
+
+	static Set<String> parseHWAccelerationMethods(final Stream<String> lines) {
 		return lines.map(l -> l.trim()).filter(line -> {
 			return line.toLowerCase().startsWith("Hardware acceleration methods:".toLowerCase()) == false;
 		}).collect(Collectors.toSet());
 	}
-	
+
 	/**
 	 * -hwaccels show available HW acceleration methods
 	 */
@@ -215,28 +215,28 @@ public class FFAbout {
 		synchronized (this) {
 			if (hardware_acceleration_methods == null) {
 				try {
-					ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-hwaccels").run().checkExecution();
+					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-hwaccels").run().checkExecution();
 					hardware_acceleration_methods = parseHWAccelerationMethods(result.getStdoutLines(false).map(l -> l.trim()));
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
 				}
 			}
 		}
 		return hardware_acceleration_methods;
 	}
-	
+
 	/**
 	 * Get by ffmpeg -sample_fmts
 	 */
 	public static final Map<String, Integer> sample_formats;
-	
+
 	/**
 	 * Get by ffmpeg -layouts
 	 */
 	public static final Map<String, List<Channel>> channel_layouts;
-	
+
 	static {
-		HashMap<String, Integer> sf = new HashMap<>();
+		final HashMap<String, Integer> sf = new HashMap<>();
 		sf.put("u8", 8);
 		sf.put("s16", 16);
 		sf.put("s32", 32);
@@ -250,8 +250,8 @@ public class FFAbout {
 		sf.put("s64", 64);
 		sf.put("s64p", 64);
 		sample_formats = Collections.unmodifiableMap(sf);
-		
-		HashMap<String, List<Channel>> cl = new HashMap<>();
+
+		final HashMap<String, List<Channel>> cl = new HashMap<>();
 		cl.put("mono           ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FC)));
 		cl.put("stereo         ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR)));
 		cl.put("2.1            ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.LFE)));
@@ -282,57 +282,57 @@ public class FFAbout {
 		cl.put("downmix        ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.DL, Channel.DR)));
 		channel_layouts = Collections.unmodifiableMap(cl);
 	}
-	
-	public boolean isCoderIsAvaliable(String codec_name) {
+
+	public boolean isCoderIsAvaliable(final String codec_name) {
 		return getCodecs().stream().anyMatch(codec -> {
 			return codec.name.equals(codec_name.toLowerCase()) & codec.encoding_supported == true;
 		});
 	}
-	
-	public boolean isDecoderIsAvaliable(String codec_name) {
+
+	public boolean isDecoderIsAvaliable(final String codec_name) {
 		return getCodecs().stream().anyMatch(codec -> {
 			return codec.name.equals(codec_name.toLowerCase()) & codec.decoding_supported == true;
 		});
 	}
-	
-	public boolean isFromFormatIsAvaliable(String demuxer_name) {
+
+	public boolean isFromFormatIsAvaliable(final String demuxer_name) {
 		return getFormats().stream().anyMatch(format -> {
 			return format.name.equals(demuxer_name.toLowerCase()) & format.demuxing == true;
 		});
 	}
-	
-	public boolean isToFormatIsAvaliable(String muxer_name) {
+
+	public boolean isToFormatIsAvaliable(final String muxer_name) {
 		return getFormats().stream().anyMatch(format -> {
 			return format.name.equals(muxer_name.toLowerCase()) & format.muxing == true;
 		});
 	}
-	
-	public boolean isFilterIsAvaliable(String filter_name) {
+
+	public boolean isFilterIsAvaliable(final String filter_name) {
 		return getFilters().stream().anyMatch(filter -> {
 			return filter.tag.equals(filter_name.toLowerCase());
 		});
 	}
-	
+
 	/**
 	 * @param engine_name like libx264rgb or libxvid
 	 *        ALL CODECS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
 	 */
-	public boolean isCoderEngineIsAvaliable(String engine_name) {
+	public boolean isCoderEngineIsAvaliable(final String engine_name) {
 		return getCodecs().stream().anyMatch(codec -> {
 			return codec.encoding_supported == true & codec.encoders.contains(engine_name);
 		});
 	}
-	
+
 	/**
 	 * @param engine_name like h264_cuvid or libopenjpeg
 	 *        ALL CODECS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
 	 */
-	public boolean isDecoderEngineIsAvaliable(String engine_name) {
+	public boolean isDecoderEngineIsAvaliable(final String engine_name) {
 		return getCodecs().stream().anyMatch(codec -> {
 			return codec.decoding_supported == true & codec.decoders.contains(engine_name);
 		});
 	}
-	
+
 	/**
 	 * ALL FUNCTIONS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
 	 * @return true if configured and up for cuda, cuvid and nvenc
@@ -345,10 +345,10 @@ public class FFAbout {
 			log.debug("(NVIDIA) Cuvid is not available in hardware acceleration methods");
 			return false;
 		}
-		List<String> all_nv_related_codecs = getCodecs().stream().filter(c -> c.decoders.isEmpty() == false | c.encoders.isEmpty() == false).flatMap(c -> {
+		final List<String> all_nv_related_codecs = getCodecs().stream().filter(c -> c.decoders.isEmpty() == false | c.encoders.isEmpty() == false).flatMap(c -> {
 			return Stream.concat(c.decoders.stream(), c.encoders.stream());
 		}).distinct().filter(c -> c.contains("nvenc") | c.contains("cuvid")).collect(Collectors.toList());
-		
+
 		if (all_nv_related_codecs.stream().noneMatch(c -> c.contains("nvenc"))) {
 			log.debug("(NVIDIA) nvenc is not available in codec list");
 			return false;
@@ -356,10 +356,10 @@ public class FFAbout {
 			log.debug("(NVIDIA) cuvid is not available in codec list");
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * ALL FUNCTIONS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
 	 * @return true if configured with NVIDIA Performance Primitives via libnpp
@@ -367,5 +367,5 @@ public class FFAbout {
 	public boolean isHardwareNVScalerFilterIsAvaliable() {
 		return getVersion().configuration.contains("libnpp");
 	}
-	
+
 }

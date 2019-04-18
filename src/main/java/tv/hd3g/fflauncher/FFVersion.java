@@ -26,29 +26,29 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class FFVersion {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	/**
 	 * Like "4.0 Copyright (c) 2000-2018 the FFmpeg developers"
 	 */
 	public final String header_version;
-	
+
 	/**
 	 * Like "gcc 6.3.0 (Debian 6.3.0-18+deb9u1) 20170516" or "gcc 7.3.0 (GCC)"
 	 */
 	public final String built_with;
-	
+
 	/**
 	 * unmodifiableSet, like "yasm, gpl, version3, nonfree, libmp3lame, libbluray..."
 	 */
 	public final Set<String> configuration;
-	
+
 	/**
 	 * Like "--as=yasm --enable-gpl --enable-version3 --enable-nonfree --enable-libmp3lame" ...
 	 */
 	public final String raw_configuration;
-	
+
 	/**
 	 * Like "56. 14.100 / 56. 14.100"
 	 */
@@ -81,25 +81,25 @@ public class FFVersion {
 	 * Like "56. 14.100 / 56. 14.100"
 	 */
 	public final String libpostproc_version;
-	
+
 	FFVersion(List<String> process_result) {
 		/*this.base = base;
 		if (base == null) {
 			throw new NullPointerException("\"base\" can't to be null");
 		}*/
-		
+
 		header_version = process_result.stream().filter(l -> {
 			return l.startsWith("ffmpeg version ");
 		}).findFirst().orElse("ffmpeg version ?").substring("ffmpeg version ".length()).trim();
-		
+
 		built_with = process_result.stream().filter(l -> {
 			return l.startsWith("built with ");
 		}).findFirst().orElse("built with ?").substring("built with ".length()).trim();
-		
+
 		raw_configuration = process_result.stream().filter(l -> {
 			return l.startsWith("configuration:");
 		}).findFirst().orElse("configuration:").substring("configuration:".length()).trim();
-		
+
 		configuration = Collections.unmodifiableSet(Arrays.stream(raw_configuration.split(" ")).map(c -> {
 			if (c.startsWith("--enable-")) {
 				return c.substring("--enable-".length()).trim();
@@ -108,9 +108,9 @@ public class FFVersion {
 			}
 			return c.trim();
 		}).distinct().collect(Collectors.toSet()));
-		
+
 		log.debug(() -> "\"" + raw_configuration + "\" <-> configuration: " + configuration);
-		
+
 		libavutil_version = extractLibavVersion("libavutil", process_result);
 		libavcodec_version = extractLibavVersion("libavcodec", process_result);
 		libavformat_version = extractLibavVersion("libavformat", process_result);
@@ -120,24 +120,24 @@ public class FFVersion {
 		libswresample_version = extractLibavVersion("libswresample", process_result);
 		libpostproc_version = extractLibavVersion("libpostproc", process_result);
 	}
-	
+
 	/**
 	 * @return header_version
 	 */
 	public String toString() {
 		return header_version;
 	}
-	
+
 	private static String extractLibavVersion(String key, List<String> lines) {
-		
+
 		String line = lines.stream().filter(l -> {
 			return l.startsWith(key);
 		}).findFirst().orElse(key + "      ?.?.?");
-		
+
 		/**
 		 * libavutil 56. 14.100 / 56. 14.100
 		 */
 		return line.substring(key.length()).trim();
 	}
-	
+
 }

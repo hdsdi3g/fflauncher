@@ -170,5 +170,5 @@ public enum Channel {
 			return "low frequency 2";
 		}
 	};
-	
+
 }
