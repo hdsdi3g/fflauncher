@@ -154,11 +154,11 @@ public class FFmpegTest extends TestCase {
 		if (System.getProperty("ffmpeg.test.libnpp", "").equals("1")) {
 			return;
 		}
-		// XXX test public FFmpeg addSimpleSourceHardwareNVDecoded(String source, int device_id_to_use, String source_cuvid_codec_engine, Collection<String> additional_params) {
-		// XXX test public FFmpeg addHardwareNVScalerFilter(Point new_size, String pixel_format, String interp_algo) {
-		// XXX test public FFmpeg addHardwareNVMultipleScalerFilterComplex(LinkedHashMap<String, String> configuration, int device_id_to_use) {
+		// TODO3 test public FFmpeg addSimpleSourceHardwareNVDecoded(String source, int device_id_to_use, String source_cuvid_codec_engine, Collection<String> additional_params) {
+		// TODO3 test public FFmpeg addHardwareNVScalerFilter(Point new_size, String pixel_format, String interp_algo) {
+		// TODO3 test public FFmpeg addHardwareNVMultipleScalerFilterComplex(LinkedHashMap<String, String> configuration, int device_id_to_use) {
 	}
 
-	// XXX test maximum parallel transcoding NV
+	// TODO3 test maximum parallel transcoding NV
 
 }

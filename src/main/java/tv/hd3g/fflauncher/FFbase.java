@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 
 import tv.hd3g.execprocess.DeprecatedCommandLineProcessor;
 import tv.hd3g.execprocess.DeprecatedCommandLineProcessor.DeprecatedCommandLine;
-import tv.hd3g.execprocess.ExecProcessText;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 
 public class FFbase extends ConversionTool {
@@ -50,13 +49,11 @@ public class FFbase extends ConversionTool {
 		return about;
 	}
 
-	@Override
-	protected void applyExecProcessCatcher(final ExecProcessText exec_process) {
+	/* TODO inject this before exec:
 		if (exec_process.getEnvironmentVar("AV_LOG_FORCE_COLOR") == null) {
 			exec_process.setEnvironmentVarIfNotFound("AV_LOG_FORCE_NOCOLOR", "1");
 		}
-		super.applyExecProcessCatcher(exec_process);
-	}
+	 */
 
 	/**
 	 * Add like -loglevel repeat+level+verbose

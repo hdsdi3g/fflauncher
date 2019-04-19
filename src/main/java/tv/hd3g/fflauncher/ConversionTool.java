@@ -32,8 +32,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -47,88 +47,54 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor.DeprecatedCommandLine;
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor.DeprecatedCommandLine.ProcessedCommandLine;
-import tv.hd3g.execprocess.ExecProcessText;
-import tv.hd3g.execprocess.DeprecatedParametersUtility;
-import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
+import tv.hd3g.processlauncher.ProcesslauncherBuilder;
+import tv.hd3g.processlauncher.cmdline.CommandLine;
+import tv.hd3g.processlauncher.cmdline.Parameters;
+import tv.hd3g.processlauncher.tool.ExecutableTool;
 
-public class ConversionTool {
+public class ConversionTool implements ExecutableTool {
 	private static Logger log = LogManager.getLogger();
 
-	protected final File executable;
-	protected long max_exec_time_ms = 5000;
-	protected ScheduledExecutorService max_exec_time_scheduler;
-	private Consumer<ExecProcessText> exec_process_catcher;
-
-	protected final DeprecatedCommandLine command_line;
+	private final String execName;
 	protected final ArrayList<ParameterReference> input_sources;
 	protected final ArrayList<ParameterReference> output_expected_destinations;
-	private File working_directory;
 
 	/**
 	 * Set values for variables like <%myvar%> in the command line, do NOT set input/output references if they was set with addInputSource/addOutputDestination.
 	 */
-	public final LinkedHashMap<String, String> parameters_variables;
-	private boolean remove_params_if_no_var_to_inject;
+	public final LinkedHashMap<String, String> parameters_variables;// TODO not public
 
-	protected final ExecutableFinder exec_finder;
+	private File working_directory;
+	protected long max_exec_time_ms = 5000;
+	protected ScheduledExecutorService max_exec_time_scheduler;
+	private Consumer<ProcesslauncherBuilder> exec_process_catcher;// TODO rename, ugly
+	private boolean removeParamsIfNoVarToInject;
+	private final Parameters parameters;
 
-	public ConversionTool(final ExecutableFinder exec_finder, final DeprecatedCommandLine command_line) throws FileNotFoundException {
-		this.command_line = command_line;
-		if (command_line == null) {
-			throw new NullPointerException("\"command_line\" can't to be null");
-		}
-		this.exec_finder = exec_finder;
-		if (exec_finder == null) {
-			throw new NullPointerException("\"exec_finder\" can't to be null");
-		}
+	public ConversionTool(final String execName) throws IOException {
+		this.execName = Objects.requireNonNull(execName, "\"execName\" can't to be null");
 
-		executable = exec_finder.get(command_line.getExecName());
-		if (executable.exists() == false) {
-			throw new FileNotFoundException("Can't found " + executable);
-		} else if (executable.isFile() == false) {
-			throw new FileNotFoundException("Not a regular file: " + executable);
-		} else if (executable.canRead() == false) {
-			throw new FileNotFoundException("Can't read " + executable);
-		} else if (executable.canExecute() == false) {
-			throw new FileNotFoundException("Can't execute " + executable);
-		}
-		log.debug("Use executable {}", executable.getPath());
+		input_sources = new ArrayList<>();
+		output_expected_destinations = new ArrayList<>();
+		parameters_variables = new LinkedHashMap<>(1);
+		parameters = new Parameters();
 
 		final AtomicLong counter = new AtomicLong();
-
 		max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1, r -> {
 			final Thread t = new Thread(r);
 			t.setName("ScheduledTask #" + counter.getAndIncrement() + " for " + getClass().getSimpleName());
 			t.setDaemon(true);
 			return t;
 		}, (r, executor) -> log.error("Can't schedule task on {}", executor));
-
-		input_sources = new ArrayList<>(1);
-		output_expected_destinations = new ArrayList<>(1);
-
-		parameters_variables = new LinkedHashMap<>(1);
-		remove_params_if_no_var_to_inject = false;
 	}
 
-	/**
-	 * @return false by default
-	 */
 	public boolean isRemoveParamsIfNoVarToInject() {
-		return remove_params_if_no_var_to_inject;
+		return removeParamsIfNoVarToInject;
 	}
 
-	/**
-	 * @param remove_params_if_no_var_to_inject false by default
-	 */
 	public ConversionTool setRemoveParamsIfNoVarToInject(final boolean remove_params_if_no_var_to_inject) {
-		this.remove_params_if_no_var_to_inject = remove_params_if_no_var_to_inject;
+		removeParamsIfNoVarToInject = remove_params_if_no_var_to_inject;
 		return this;
-	}
-
-	public File getExecutable() {
-		return executable;
 	}
 
 	public ConversionTool setMaxExecutionTimeForShortCommands(final long max_exec_time, final TimeUnit unit) {
@@ -152,19 +118,16 @@ public class ConversionTool {
 	/**
 	 * Can operate on process before execution.
 	 */
-	public ConversionTool setExecProcessCatcher(final Consumer<ExecProcessText> new_instance_catcher) {
-		exec_process_catcher = new_instance_catcher;
-		if (new_instance_catcher == null) {
-			throw new NullPointerException("\"new_instance_catcher\" can't to be null");
-		}
+	public ConversionTool setExecProcessCatcher(final Consumer<ProcesslauncherBuilder> new_instance_catcher) {// TODO rename
+		exec_process_catcher = Objects.requireNonNull(new_instance_catcher, "\"new_instance_catcher\" can't to be null");
 		return this;
 	}
 
-	public Consumer<ExecProcessText> getExecProcessCatcher() {
+	public Consumer<ProcesslauncherBuilder> getExecProcessCatcher() {// TODO rename
 		return exec_process_catcher;
 	}
 
-	protected void applyExecProcessCatcher(final ExecProcessText exec_process) {
+	protected void applyExecProcessCatcher(final ProcesslauncherBuilder exec_process) {// TODO rename
 		if (exec_process_catcher != null) {
 			exec_process_catcher.accept(exec_process);
 		}
@@ -172,109 +135,110 @@ public class ConversionTool {
 
 	class ParameterReference {
 		final String ressource;
-		final String var_name_in_command_line;
-		final DeprecatedParametersUtility parameters_before_ref;
-		final DeprecatedParametersUtility parameters_after_ref;
+		final String var_name_in_parameters;
+		final Parameters parameters_before_ref;
+		final Parameters parameters_after_ref;
 
-		ParameterReference(final String reference, final String var_name_in_command_line, final Collection<String> parameters_before_ref, final Collection<String> parameters_after_ref) {
+		ParameterReference(final String reference, final String var_name_in_parameters, final Collection<String> parameters_before_ref, final Collection<String> parameters_after_ref) {
 			ressource = reference;
 			if (reference == null) {
 				throw new NullPointerException("\"source\" can't to be null");
 			}
-			this.var_name_in_command_line = var_name_in_command_line;
-			if (var_name_in_command_line == null) {
-				throw new NullPointerException("\"var_name_in_command_line\" can't to be null");
+			this.var_name_in_parameters = var_name_in_parameters;
+			if (var_name_in_parameters == null) {
+				throw new NullPointerException("\"var_name_in_parameters\" can't to be null");
 			}
 			if (parameters_before_ref == null) {
-				this.parameters_before_ref = new DeprecatedParametersUtility();
+				this.parameters_before_ref = new Parameters();
 			} else {
-				this.parameters_before_ref = new DeprecatedParametersUtility(parameters_before_ref);
+				this.parameters_before_ref = new Parameters(parameters_before_ref);
 			}
 			if (parameters_after_ref == null) {
-				this.parameters_after_ref = new DeprecatedParametersUtility();
+				this.parameters_after_ref = new Parameters();
 			} else {
-				this.parameters_after_ref = new DeprecatedParametersUtility(parameters_after_ref);
+				this.parameters_after_ref = new Parameters(parameters_after_ref);
 			}
 		}
 	}
 
 	/**
 	 * Add a parameters via an input reference, like:
-	 * [parameters_before_input_source] {var_name_in_command_line replaced by source}
-	 * For example, set source = "myfile", var_name_in_command_line = "IN", parameters_before_input_source = [-i],
-	 * For an command_line = "exec -verbose <%IN%> -send <%OUT>", you will get an updated command_line:
+	 * [parameters_before_input_source] {var_name_in_parameters replaced by source}
+	 * For example, set source = "myfile", var_name_in_parameters = "IN", parameters_before_input_source = [-i],
+	 * For an parameters = "exec -verbose <%IN%> -send <%OUT>", you will get an updated parameters:
 	 * "exec -verbose -i myfile -send <%OUT>"
 	 * @param source can be another var name (mindfuck)
 	 */
-	public ConversionTool addInputSource(final String source, final String var_name_in_command_line, final String... parameters_before_input_source) {
+	public ConversionTool addInputSource(final String source, final String var_name_in_parameters, final String... parameters_before_input_source) {
 		if (parameters_before_input_source != null) {
-			return addInputSource(source, var_name_in_command_line, Arrays.stream(parameters_before_input_source).filter(p -> p != null).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
+			return addInputSource(source, var_name_in_parameters, Arrays.stream(parameters_before_input_source).filter(p -> p != null).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
 		}
-		return addInputSource(source, var_name_in_command_line, Collections.emptyList(), Collections.emptyList());
+		return addInputSource(source, var_name_in_parameters, Collections.emptyList(), Collections.emptyList());
 	}
 
 	/**
 	 * Add a parameters via an input reference, like:
-	 * [parameters_before_input_source] {var_name_in_command_line replaced by source} [parameters_after_input_source]
-	 * For example, set source = "myfile", var_name_in_command_line = "IN", parameters_before_input_source = [-i], parameters_after_input_source = [-w],
-	 * For an command_line = "exec -verbose <%IN%> -send <%OUT>", you will get an updated command_line:
+	 * [parameters_before_input_source] {var_name_in_parameters replaced by source} [parameters_after_input_source]
+	 * For example, set source = "myfile", var_name_in_parameters = "IN", parameters_before_input_source = [-i], parameters_after_input_source = [-w],
+	 * For an parameters = "exec -verbose <%IN%> -send <%OUT>", you will get an updated parameters:
 	 * "exec -verbose -i myfile -w -send <%OUT>"
 	 * @param source can be another var name (mindfuck)
 	 * @param parameters_before_input_source can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_input_source can be null, and can be another var name (mindfuck)
 	 */
-	public ConversionTool addInputSource(final String source, final String var_name_in_command_line, final Collection<String> parameters_before_input_source, final Collection<String> parameters_after_input_source) {
-		input_sources.add(new ParameterReference(source, var_name_in_command_line, parameters_before_input_source, parameters_after_input_source));
+	public ConversionTool addInputSource(final String source, final String var_name_in_parameters, final Collection<String> parameters_before_input_source, final Collection<String> parameters_after_input_source) {
+		input_sources.add(new ParameterReference(source, var_name_in_parameters, parameters_before_input_source, parameters_after_input_source));
 		return this;
 	}
 
 	/**
 	 * Add a parameters via an output reference, like:
-	 * [parameters_before_output_destination] {var_name_in_command_line replaced by destination}
-	 * For example, set destination = "myfile", var_name_in_command_line = "OUT", parameters_before_output_destination = [-o],
-	 * For an command_line = "exec -verbose <%IN%> -send <%OUT%>", you will get an updated command_line:
+	 * [parameters_before_output_destination] {var_name_in_parameters replaced by destination}
+	 * For example, set destination = "myfile", var_name_in_parameters = "OUT", parameters_before_output_destination = [-o],
+	 * For an parameters = "exec -verbose <%IN%> -send <%OUT%>", you will get an updated parameters:
 	 * "exec -verbose <%IN%> -send -o myfile"
 	 * @param destination can be another var name (mindfuck)
 	 */
-	public ConversionTool addOutputDestination(final String destination, final String var_name_in_command_line, final String... parameters_before_output_destination) {
+	public ConversionTool addOutputDestination(final String destination, final String var_name_in_parameters, final String... parameters_before_output_destination) {
 		if (parameters_before_output_destination != null) {
-			return addOutputDestination(destination, var_name_in_command_line, Arrays.stream(parameters_before_output_destination).filter(p -> p != null).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
+			return addOutputDestination(destination, var_name_in_parameters, Arrays.stream(parameters_before_output_destination).filter(p -> p != null).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
 		}
-		return addOutputDestination(destination, var_name_in_command_line, Collections.emptyList(), Collections.emptyList());
+		return addOutputDestination(destination, var_name_in_parameters, Collections.emptyList(), Collections.emptyList());
 	}
 
 	/**
 	 * Add a parameters via an output reference, like:
-	 * [parameters_before_output_destination] {var_name_in_command_line replaced by destination} [parameters_after_output_destination]
-	 * For example, set destination = "myfile", var_name_in_command_line = "OUT", parameters_before_output_destination = [-o], parameters_after_output_destination = [-w],
-	 * For an command_line = "exec -verbose <%IN%> -send <%OUT%>", you will get an updated command_line:
+	 * [parameters_before_output_destination] {var_name_in_parameters replaced by destination} [parameters_after_output_destination]
+	 * For example, set destination = "myfile", var_name_in_parameters = "OUT", parameters_before_output_destination = [-o], parameters_after_output_destination = [-w],
+	 * For an parameters = "exec -verbose <%IN%> -send <%OUT%>", you will get an updated parameters:
 	 * "exec -verbose <%IN%> -send -o myfile -w"
 	 * @param destination can be another var name (mindfuck)
 	 * @param parameters_before_output_destination can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_output_destination can be null, and can be another var name (mindfuck)
 	 */
-	public ConversionTool addOutputDestination(final String destination, final String var_name_in_command_line, final Collection<String> parameters_before_output_destination, final Collection<String> parameters_after_output_destination) {
-		output_expected_destinations.add(new ParameterReference(destination, var_name_in_command_line, parameters_before_output_destination, parameters_after_output_destination));
+	public ConversionTool addOutputDestination(final String destination, final String var_name_in_parameters, final Collection<String> parameters_before_output_destination, final Collection<String> parameters_after_output_destination) {
+		output_expected_destinations.add(new ParameterReference(destination, var_name_in_parameters, parameters_before_output_destination, parameters_after_output_destination));
 		return this;
 	}
 
 	protected void onMissingInputOutputVar(final String var_name, final String ressource) {
-		log.warn("Missing I/O variable \"" + var_name + "\" in command line \"" + command_line.toString() + "\". Ressource \"" + ressource + "\" will be ignored");
+		log.warn("Missing I/O variable \"" + var_name + "\" in command line \"" + getCommandLineParameters() + "\". Ressource \"" + ressource + "\" will be ignored");
 	}
 
-	public ProcessedCommandLine createProcessedCommandLine() {
+	public List<String> createProcessedCommandLine() throws IOException {
 		final HashMap<String, String> all_vars_to_inject = new HashMap<>(parameters_variables);
 
-		final DeprecatedCommandLine newer_command_line = command_line.clone();
+		final Parameters newer_parameters = parameters.clone();
+		final CommandLine newerCommandLine = new CommandLine(exec.getExecutableFile(), newer_parameters);// FIXME nope cmd line !!
 
 		Stream.concat(input_sources.stream(), output_expected_destinations.stream()).forEach(param_ref -> {
-			final String var_name = param_ref.var_name_in_command_line;
+			final String var_name = param_ref.var_name_in_parameters;
 
-			final boolean done = newer_command_line.injectParamsAroundVariable(var_name, param_ref.parameters_before_ref.getParameters(), param_ref.parameters_after_ref.getParameters());
+			final boolean done = newerCommandLine.injectParamsAroundVariable(var_name, param_ref.parameters_before_ref.getParameters(), param_ref.parameters_after_ref.getParameters());
 
 			if (done) {
 				if (all_vars_to_inject.containsKey(var_name)) {
-					throw new RuntimeException("Variable collision: \"" + var_name + "\" was already set to \"" + all_vars_to_inject.get(var_name) + "\" in " + newer_command_line);
+					throw new RuntimeException("Variable collision: \"" + var_name + "\" was already set to \"" + all_vars_to_inject.get(var_name) + "\" in " + newer_parameters);
 				}
 				all_vars_to_inject.put(var_name, param_ref.ressource);
 			} else {
@@ -282,7 +246,7 @@ public class ConversionTool {
 			}
 		});
 
-		return newer_command_line.process(all_vars_to_inject, remove_params_if_no_var_to_inject);
+		return newerCommandLine.getParametersInjectVars(all_vars_to_inject, exec.isRemoveParamsIfNoVarToInject());
 	}
 
 	/**
@@ -324,8 +288,8 @@ public class ConversionTool {
 		return this;
 	}
 
-	private ExecProcessText createExec(final boolean short_command_limited_execution_time) throws IOException {
-		final ExecProcessText exec_process = new ExecProcessText(executable);
+	/*private ProcesslauncherBuilder createExec(final boolean short_command_limited_execution_time) throws IOException {
+		final ProcesslauncherBuilder processlauncherBuilder = new ProcesslauncherBuilder(commandLine.getExecutable(), createProcessedCommandLine().stream().skip(1).collect(Collectors.toUnmodifiableList()));// TODO ugly as fuck
 
 		if (short_command_limited_execution_time) {
 			exec_process.setMaxExecutionTime(max_exec_time_ms, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
@@ -335,22 +299,21 @@ public class ConversionTool {
 			exec_process.setWorkingDirectory(working_directory);
 		}
 
-		exec_process.importParametersFrom(createProcessedCommandLine());
-		applyExecProcessCatcher(exec_process);
+		// TODO restore this applyExecProcessCatcher(exec_process);
 
 		if (on_error_delete_out_files_executor != null) {
 			exec_process.addEndExecutionCallback(r -> {
-				/**
+				**
 				 * If fail transcoding or shutdown hook, delete out files (optional)
-				 */
+				 *
 				try {
 					if (r.isCorrectlyDone().get()) {
 						return;
 					}
 				} catch (final InterruptedException e) {
-					/**
+					**
 					 * Never start, never create files..
-					 */
+					 *
 					return;
 				} catch (final ExecutionException e) {
 				}
@@ -359,19 +322,19 @@ public class ConversionTool {
 			}, on_error_delete_out_files_executor);
 		}
 
-		return exec_process;
-	}
+		return processlauncherBuilder;
+	}*/
 
 	/**
 	 * Time controlled by setMaxExecutionTimeForShortCommands()
 	 */
-	public ExecProcessText createExecWithLimitedExecutionTime() throws IOException {
+	/*public Processlauncher createExecWithLimitedExecutionTime() throws IOException {// TODO rename
 		return createExec(true);
-	}
+	}*/
 
-	public ExecProcessText createExec() throws IOException {
+	/*public Processlauncher createExec() throws IOException {// TODO rename
 		return createExec(false);
-	}
+	}*/
 
 	private static final Function<ParameterReference, String> getRessourceFromParameterReference = param_ref -> param_ref.ressource;
 
@@ -379,14 +342,14 @@ public class ConversionTool {
 	 * @return never null
 	 */
 	public Optional<String> getDeclaredSourceByVarName(final String var_name) {
-		return input_sources.stream().filter(param_ref -> param_ref.var_name_in_command_line.equals(var_name)).map(getRessourceFromParameterReference).findFirst();
+		return input_sources.stream().filter(param_ref -> param_ref.var_name_in_parameters.equals(var_name)).map(getRessourceFromParameterReference).findFirst();
 	}
 
 	/**
 	 * @return never null
 	 */
 	public Optional<String> getDeclaredDestinationByVarName(final String var_name) {
-		return output_expected_destinations.stream().filter(param_ref -> param_ref.var_name_in_command_line.equals(var_name)).map(getRessourceFromParameterReference).findFirst();
+		return output_expected_destinations.stream().filter(param_ref -> param_ref.var_name_in_parameters.equals(var_name)).map(getRessourceFromParameterReference).findFirst();
 	}
 
 	/**
@@ -403,11 +366,8 @@ public class ConversionTool {
 		return output_expected_destinations.stream().map(getRessourceFromParameterReference).collect(Collectors.toUnmodifiableList());
 	}
 
-	/**
-	 * @return current command_line, with raw variables.
-	 */
-	public DeprecatedCommandLine getCommandLine() {
-		return command_line;
+	public Parameters getParameters() {
+		return parameters;
 	}
 
 	/**
@@ -419,12 +379,7 @@ public class ConversionTool {
 			throw new NullPointerException("\"destination_name\" can't to be null");
 		}
 
-		/*Stream<String> s_source_options = Stream.empty();
-		if (source_options != null) {
-			s_source_options = Arrays.stream(source_options);
-		}*/
-
-		final String varname = command_line.addVariable("OUT_AUTOMATIC_" + output_expected_destinations.size());
+		final String varname = parameters.addVariable("OUT_AUTOMATIC_" + output_expected_destinations.size());
 		addOutputDestination(destination_name, varname);
 		return this;
 	}
@@ -512,6 +467,16 @@ public class ConversionTool {
 		});
 
 		return this;
+	}
+
+	@Override
+	public List<String> getCommandLineParameters() {
+		return createProcessedCommandLine();
+	}
+
+	@Override
+	public String getExecutableName() {
+		return execName;
 	}
 
 }
