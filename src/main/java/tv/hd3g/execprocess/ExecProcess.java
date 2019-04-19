@@ -81,7 +81,7 @@ public class ExecProcess extends DeprecatedParametersUtility {
 	 */
 	public ExecProcess(final ProcessedCommandLine cmd_line, final ExecutableFinder exec_finder) throws IOException {
 		this(cmd_line.getExecName(), exec_finder);
-		parameters.addAll(cmd_line.getParameters());
+		parameters.addAll(cmd_line.getReadyToRunParameters());
 	}
 
 	private void setup(final String path) throws IOException {
@@ -217,7 +217,7 @@ public class ExecProcess extends DeprecatedParametersUtility {
 
 	@Override
 	public String toString() {
-		return executable.getName() + " " + getParameters().stream().collect(Collectors.joining(" "));
+		return executable.getName() + " " + getReadyToRunParameters().stream().collect(Collectors.joining(" "));
 	}
 
 	@Override

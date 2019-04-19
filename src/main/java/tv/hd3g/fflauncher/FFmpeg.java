@@ -17,7 +17,7 @@
 package tv.hd3g.fflauncher;
 
 import java.awt.Point;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Optional;
@@ -28,17 +28,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ffmpeg.ffprobe.StreamType;
 
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor.DeprecatedCommandLine;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
-import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
+import tv.hd3g.processlauncher.cmdline.Parameters;
 
 public class FFmpeg extends FFbase {
 
 	private static final Logger log = LogManager.getLogger();
 	private int device_id_to_use = -1;
 
-	public FFmpeg(final ExecutableFinder exec_finder, final DeprecatedCommandLine command_line) throws FileNotFoundException {
-		super(exec_finder, command_line);
+	public FFmpeg(final String execName, final Parameters parameters) throws IOException {
+		super(execName, parameters);
 	}
 
 	/**
@@ -57,7 +56,7 @@ public class FFmpeg extends FFbase {
 			s_source_options = Arrays.stream(source_options);
 		}*/
 
-		final String varname = command_line.addVariable("OUT_AUTOMATIC_" + output_expected_destinations.size());
+		final String varname = getInternalParameters().addVariable("OUT_AUTOMATIC_" + output_expected_destinations.size());
 		addOutputDestination(destination_name, varname, "-f", destination_container);
 		return this;
 	}
@@ -81,7 +80,7 @@ public class FFmpeg extends FFbase {
 	 * Please, put it a the end of command line, before output stream.
 	 */
 	public FFmpeg addFastStartMovMp4File() {
-		command_line.addBulkParameters("-movflags faststart");
+		getInternalParameters().addBulkParameters("-movflags faststart");
 		return this;
 	}
 
@@ -107,7 +106,7 @@ public class FFmpeg extends FFbase {
 		}
 
 		log.debug("Add vf: " + scale.toString());
-		command_line.addParameters("-vf", scale.toString());
+		getInternalParameters().addParameters("-vf", scale.toString());
 
 		return this;
 	}
@@ -152,7 +151,7 @@ public class FFmpeg extends FFbase {
 		nvresize.append("readback=0" + configuration.keySet().stream().map(resolution -> configuration.get(resolution)).collect(Collectors.joining("", "[", "]")));
 
 		log.debug("Add filter_complex: " + nvresize.toString());
-		command_line.addParameters("-filter_complex", nvresize.toString());
+		getInternalParameters().addParameters("-filter_complex", nvresize.toString());
 		return this;
 	}
 
@@ -264,9 +263,9 @@ public class FFmpeg extends FFbase {
 		}
 
 		if (output_video_stream_index > -1) {
-			command_line.addParameters("-c:v:" + output_video_stream_index, coder);
+			getInternalParameters().addParameters("-c:v:" + output_video_stream_index, coder);
 		} else {
-			command_line.addParameters("-c:v", coder);
+			getInternalParameters().addParameters("-c:v", coder);
 		}
 
 		return this;
@@ -281,12 +280,12 @@ public class FFmpeg extends FFbase {
 	}
 
 	public FFmpeg addPreset(final Preset preset) {
-		command_line.addParameters("-preset", preset.name());
+		getInternalParameters().addParameters("-preset", preset.name());
 		return this;
 	}
 
 	public FFmpeg addTune(final Tune tune) {
-		command_line.addParameters("-tune", tune.name());
+		getInternalParameters().addParameters("-tune", tune.name());
 		return this;
 	}
 
@@ -295,9 +294,9 @@ public class FFmpeg extends FFbase {
 	 */
 	public FFmpeg addBitrate(final int bitrate, final FFUnit bitrate_unit, final int output_video_stream_index) {
 		if (output_video_stream_index > -1) {
-			command_line.addParameters("-b:v:" + output_video_stream_index, bitrate + bitrate_unit.toString());
+			getInternalParameters().addParameters("-b:v:" + output_video_stream_index, bitrate + bitrate_unit.toString());
 		} else {
-			command_line.addParameters("-b:v", bitrate + bitrate_unit.toString());
+			getInternalParameters().addParameters("-b:v", bitrate + bitrate_unit.toString());
 		}
 		return this;
 	}
@@ -307,13 +306,13 @@ public class FFmpeg extends FFbase {
 	 */
 	public FFmpeg addBitrateControl(final int min_rate, final int max_rate, final int bufsize, final FFUnit bitrate_unit) {
 		if (min_rate > 0) {
-			command_line.addParameters("-minrate", min_rate + bitrate_unit.toString());
+			getInternalParameters().addParameters("-minrate", min_rate + bitrate_unit.toString());
 		}
 		if (max_rate > 0) {
-			command_line.addParameters("-maxrate", max_rate + bitrate_unit.toString());
+			getInternalParameters().addParameters("-maxrate", max_rate + bitrate_unit.toString());
 		}
 		if (bufsize > 0) {
-			command_line.addParameters("-bufsize", bufsize + bitrate_unit.toString());
+			getInternalParameters().addParameters("-bufsize", bufsize + bitrate_unit.toString());
 		}
 		return this;
 	}
@@ -322,7 +321,7 @@ public class FFmpeg extends FFbase {
 	 * Constant bitrate factor, 0=lossless.
 	 */
 	public FFmpeg addCRF(final int crf) {
-		command_line.addParameters("-crf", String.valueOf(crf));
+		getInternalParameters().addParameters("-crf", String.valueOf(crf));
 		return this;
 	}
 
@@ -333,9 +332,9 @@ public class FFmpeg extends FFbase {
 	 */
 	public FFmpeg addVideoCodecName(final String codec_name, final int output_video_stream_index) {
 		if (output_video_stream_index > -1) {
-			command_line.addParameters("-c:v:" + output_video_stream_index, codec_name);
+			getInternalParameters().addParameters("-c:v:" + output_video_stream_index, codec_name);
 		} else {
-			command_line.addParameters("-c:v", codec_name);
+			getInternalParameters().addParameters("-c:v", codec_name);
 		}
 		return this;
 	}
@@ -345,13 +344,13 @@ public class FFmpeg extends FFbase {
 	 */
 	public FFmpeg addGOPControl(final int b_frames, final int gop_size, final int ref_frames) {
 		if (b_frames > 0) {
-			command_line.addParameters("-bf", String.valueOf(b_frames));
+			getInternalParameters().addParameters("-bf", String.valueOf(b_frames));
 		}
 		if (gop_size > 0) {
-			command_line.addParameters("-g", String.valueOf(gop_size));
+			getInternalParameters().addParameters("-g", String.valueOf(gop_size));
 		}
 		if (ref_frames > 0) {
-			command_line.addParameters("-ref", String.valueOf(ref_frames));
+			getInternalParameters().addParameters("-ref", String.valueOf(ref_frames));
 		}
 		return this;
 	}
@@ -361,10 +360,10 @@ public class FFmpeg extends FFbase {
 	 */
 	public FFmpeg addIBQfactor(final float i_qfactor, final float b_qfactor) {
 		if (i_qfactor > 0f) {
-			command_line.addParameters("-i_qfactor", String.valueOf(i_qfactor));
+			getInternalParameters().addParameters("-i_qfactor", String.valueOf(i_qfactor));
 		}
 		if (b_qfactor > 0f) {
-			command_line.addParameters("-b_qfactor", String.valueOf(b_qfactor));
+			getInternalParameters().addParameters("-b_qfactor", String.valueOf(b_qfactor));
 		}
 		return this;
 	}
@@ -374,10 +373,10 @@ public class FFmpeg extends FFbase {
 	 */
 	public FFmpeg addQMinMax(final int qmin, final int qmax) {
 		if (qmin > 0) {
-			command_line.addParameters("-qmin", String.valueOf(qmin));
+			getInternalParameters().addParameters("-qmin", String.valueOf(qmin));
 		}
 		if (qmax > 0) {
-			command_line.addParameters("-qmax", String.valueOf(qmax));
+			getInternalParameters().addParameters("-qmax", String.valueOf(qmax));
 		}
 		return this;
 	}
@@ -388,9 +387,9 @@ public class FFmpeg extends FFbase {
 	 */
 	public FFmpeg addAudioCodecName(final String codec_name, final int output_audio_stream_index) {
 		if (output_audio_stream_index > -1) {
-			command_line.addParameters("-c:a:" + output_audio_stream_index, codec_name);
+			getInternalParameters().addParameters("-c:a:" + output_audio_stream_index, codec_name);
 		} else {
-			command_line.addParameters("-c:a", codec_name);
+			getInternalParameters().addParameters("-c:a", codec_name);
 		}
 		return this;
 	}
@@ -400,7 +399,7 @@ public class FFmpeg extends FFbase {
 	 * like -vsync value
 	 */
 	public FFmpeg addVsync(final int value) {
-		command_line.addParameters("-vsync", String.valueOf(value));
+		getInternalParameters().addParameters("-vsync", String.valueOf(value));
 		return this;
 	}
 
@@ -409,7 +408,7 @@ public class FFmpeg extends FFbase {
 	 * like -map source_index:stream_index_in_source ; 0 is the first.
 	 */
 	public FFmpeg addMap(final int source_index, final int stream_index_in_source) {
-		command_line.addParameters("-map", String.valueOf(source_index) + ":" + String.valueOf(stream_index_in_source));
+		getInternalParameters().addParameters("-map", String.valueOf(source_index) + ":" + String.valueOf(stream_index_in_source));
 		return this;
 	}
 

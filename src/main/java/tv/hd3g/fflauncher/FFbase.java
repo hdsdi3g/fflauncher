@@ -16,50 +16,40 @@
 */
 package tv.hd3g.fflauncher;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor;
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor.DeprecatedCommandLine;
+import tv.hd3g.processlauncher.ProcesslauncherBuilder;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
+import tv.hd3g.processlauncher.cmdline.Parameters;
 
 public class FFbase extends ConversionTool {
 
 	private FFAbout about;
 
-	public FFbase(final ExecutableFinder exec_finder, final DeprecatedCommandLine command_line) throws FileNotFoundException {
-		super(exec_finder, command_line);
-
+	public FFbase(final String execName, final Parameters parameters) throws IOException {
+		super(execName, parameters);
 	}
 
-	public FFAbout getAbout() {
-		synchronized (this) {
-			if (about == null) {
-				try {
-					about = new FFAbout(exec_finder, new DeprecatedCommandLineProcessor().createCommandLine(executable.getPath()));
-				} catch (final FileNotFoundException e) {
-					throw new RuntimeException("Can't init About", e);
-				}
-			}
+	@Override
+	public void beforeRun(final ProcesslauncherBuilder processBuilder) {
+		super.beforeRun(processBuilder);
+		if (processBuilder.getEnvironmentVar("AV_LOG_FORCE_COLOR") == null) {
+			processBuilder.setEnvironmentVarIfNotFound("AV_LOG_FORCE_NOCOLOR", "1");
 		}
-		return about;
 	}
-
-	/* TODO inject this before exec:
-		if (exec_process.getEnvironmentVar("AV_LOG_FORCE_COLOR") == null) {
-			exec_process.setEnvironmentVarIfNotFound("AV_LOG_FORCE_NOCOLOR", "1");
-		}
-	 */
 
 	/**
 	 * Add like -loglevel repeat+level+verbose
 	 */
 	public FFbase setLogLevel(final FFLogLevel level, final boolean repeat, final boolean display_level) {
-		command_line.ifHasNotParameter(() -> {
+		parameters.ifHasNotParameter(() -> {
 			final StringBuilder sb = new StringBuilder();
 			if (repeat) {
 				sb.append("repeat+");
@@ -68,47 +58,47 @@ public class FFbase extends ConversionTool {
 				sb.append("level+");
 			}
 			sb.append(level.name());
-			command_line.prependParameters("-loglevel", sb.toString());
+			parameters.prependParameters("-loglevel", sb.toString());
 		}, "-loglevel", "-v");
 
 		return this;
 	}
 
 	public boolean isLogLevelSet() {
-		return command_line.hasParameters("-loglevel", "-v");
+		return parameters.hasParameters("-loglevel", "-v");
 	}
 
 	public FFbase setHidebanner() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.prependParameters("-hide_banner");
+		parameters.ifHasNotParameter(() -> {
+			parameters.prependParameters("-hide_banner");
 		}, "-hide_banner");
 		return this;
 	}
 
 	public boolean isHidebanner() {
-		return command_line.hasParameters("-hide_banner");
+		return parameters.hasParameters("-hide_banner");
 	}
 
 	public FFbase setOverwriteOutputFiles() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.prependParameters("-y");
+		parameters.ifHasNotParameter(() -> {
+			parameters.prependParameters("-y");
 		}, "-y");
 		return this;
 	}
 
 	public boolean isOverwriteOutputFiles() {
-		return command_line.hasParameters("-y");
+		return parameters.hasParameters("-y");
 	}
 
 	public FFbase setNeverOverwriteOutputFiles() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.prependParameters("-n");
+		parameters.ifHasNotParameter(() -> {
+			parameters.prependParameters("-n");
 		}, "-n");
 		return this;
 	}
 
 	public boolean isNeverOverwriteOutputFiles() {
-		return command_line.hasParameters("-n");
+		return parameters.hasParameters("-n");
 	}
 
 	/**
@@ -138,10 +128,26 @@ public class FFbase extends ConversionTool {
 			throw new NullPointerException("\"source_options\" can't to be null");
 		}
 
-		final String varname = command_line.addVariable("IN_AUTOMATIC_" + input_sources.size());
+		final String varname = parameters.addVariable("IN_AUTOMATIC_" + input_sources.size());
 		addInputSource(source_name, varname, Stream.concat(source_options.stream(), Stream.of("-i")).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
 
 		return this;
+	}
+
+	public synchronized FFAbout getAbout(final ExecutableFinder executableFinder) {
+		if (about == null) {
+			try {
+				final ScheduledExecutorService maxExecTimeScheduler = getMaxExecTimeScheduler();
+				if (maxExecTimeScheduler == null) {
+					about = new FFAbout(execName, executableFinder, Executors.newSingleThreadScheduledExecutor());
+				} else {
+					about = new FFAbout(execName, executableFinder, maxExecTimeScheduler);
+				}
+			} catch (final IOException e) {
+				throw new RuntimeException("Can't init About", e);
+			}
+		}
+		return about;
 	}
 
 }

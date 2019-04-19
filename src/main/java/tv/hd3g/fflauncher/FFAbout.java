@@ -16,41 +16,64 @@
 */
 package tv.hd3g.fflauncher;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor.DeprecatedCommandLine;
-import tv.hd3g.execprocess.ExecProcessTextResult;
+import tv.hd3g.processlauncher.Exec;
+import tv.hd3g.processlauncher.InvalidExecution;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
+import tv.hd3g.processlauncher.cmdline.Parameters;
+import tv.hd3g.processlauncher.io.CapturedStdOutErrTextRetention;
 
 /**
  * Threadsafe
+ * Sync (blocking) during executions
  */
 public class FFAbout {
 
 	private static final Logger log = LogManager.getLogger();
 
-	private final FFbase referer;
+	private final String execName;
+	private final ExecutableFinder executableFinder;
+	private final ScheduledExecutorService maxExecTimeScheduler;
 
-	FFAbout(final ExecutableFinder exec_finder, final DeprecatedCommandLine command_line) throws FileNotFoundException {
-		referer = new FFbase(exec_finder, command_line);
+	FFAbout(final String execName, final ExecutableFinder executableFinder, final ScheduledExecutorService maxExecTimeScheduler) throws IOException {
+		this.execName = Objects.requireNonNull(execName, "\"execName\" can't to be null");
+		this.executableFinder = Objects.requireNonNull(executableFinder, "\"executableFinder\" can't to be null");
+		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler, "\"maxExecTimeScheduler\" can't to be null");
 	}
 
 	/*
 	#-sources device     list sources of the input device
 	#-sinks device       list sinks of the output device
 	*/
+
+	private CapturedStdOutErrTextRetention internalRun(final String bulkParameters) {
+		try {
+			final FFbase referer = new FFbase(execName, new Parameters(bulkParameters));
+			referer.setMaxExecTimeScheduler(maxExecTimeScheduler);
+			return new Exec(referer, executableFinder).runWaitGetText(null);
+		} catch (final InvalidExecution e) {
+			if (log.isDebugEnabled()) {
+				log.debug("Can't execute " + execName + ", it return: {}", e.getStdErr());
+			}
+			throw e;
+		} catch (final IOException e) {
+			throw new RuntimeException("Can't execute " + execName, e);
+		}
+	}
 
 	private FFVersion version;
 	private List<FFCodec> codecs;
@@ -62,16 +85,9 @@ public class FFAbout {
 	private List<FFPixelFormat> pixels_formats;
 	private Set<String> hardware_acceleration_methods;
 
-	public FFVersion getVersion() {
-		synchronized (this) {
-			if (version == null) {
-				try {
-					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-loglevel quiet -version").run().checkExecution();
-					version = new FFVersion(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (final IOException e) {
-					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
-				}
-			}
+	public synchronized FFVersion getVersion() {
+		if (version == null) {
+			version = new FFVersion(internalRun("-loglevel quiet -version").getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 		}
 		return version;
 	}
@@ -79,16 +95,9 @@ public class FFAbout {
 	/**
 	 * -codecs show available codecs
 	 */
-	public List<FFCodec> getCodecs() {
-		synchronized (this) {
-			if (codecs == null) {
-				try {
-					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-codecs").run().checkExecution();
-					codecs = FFCodec.parse(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (final IOException e) {
-					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
-				}
-			}
+	public synchronized List<FFCodec> getCodecs() {
+		if (codecs == null) {
+			codecs = FFCodec.parse(internalRun("-codecs").getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 		}
 		return codecs;
 	}
@@ -96,16 +105,9 @@ public class FFAbout {
 	/**
 	 * -formats show available formats
 	 */
-	public List<FFFormat> getFormats() {
-		synchronized (this) {
-			if (formats == null) {
-				try {
-					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-formats").run().checkExecution();
-					formats = FFFormat.parseFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (final IOException e) {
-					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
-				}
-			}
+	public synchronized List<FFFormat> getFormats() {
+		if (formats == null) {
+			formats = FFFormat.parseFormats(internalRun("-formats").getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 		}
 		return formats;
 	}
@@ -113,16 +115,9 @@ public class FFAbout {
 	/**
 	 * -devices show available devices
 	 */
-	public List<FFDevice> getDevices() {
-		synchronized (this) {
-			if (devices == null) {
-				try {
-					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-devices").run().checkExecution();
-					devices = FFDevice.parseDevices(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (final IOException e) {
-					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
-				}
-			}
+	public synchronized List<FFDevice> getDevices() {
+		if (devices == null) {
+			devices = FFDevice.parseDevices(internalRun("-devices").getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 		}
 		return devices;
 	}
@@ -136,16 +131,9 @@ public class FFAbout {
 	/**
 	 * -bsfs show available bit stream filters
 	 */
-	public Set<String> getBitStreamFilters() {
-		synchronized (this) {
-			if (bit_stream_filters == null) {
-				try {
-					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-bsfs").run().checkExecution();
-					bit_stream_filters = parseBSFS(result.getStdoutLines(false).map(l -> l.trim()));
-				} catch (final IOException e) {
-					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
-				}
-			}
+	public synchronized Set<String> getBitStreamFilters() {
+		if (bit_stream_filters == null) {
+			bit_stream_filters = parseBSFS(internalRun("-bsfs").getStdoutLines(false).map(l -> l.trim()));
 		}
 		return bit_stream_filters;
 	}
@@ -153,16 +141,9 @@ public class FFAbout {
 	/**
 	 * -protocols show available protocols
 	 */
-	public FFProtocols getProtocols() {
-		synchronized (this) {
-			if (protocols == null) {
-				try {
-					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-protocols").run().checkExecution();
-					protocols = new FFProtocols(result.getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (final IOException e) {
-					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
-				}
-			}
+	public synchronized FFProtocols getProtocols() {
+		if (protocols == null) {
+			protocols = new FFProtocols(internalRun("-protocols").getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 		}
 
 		return protocols;
@@ -171,16 +152,9 @@ public class FFAbout {
 	/**
 	 * -filters show available filters
 	 */
-	public List<FFFilter> getFilters() {
-		synchronized (this) {
-			if (filters == null) {
-				try {
-					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-filters").run().checkExecution();
-					filters = FFFilter.parseFilters(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (final IOException e) {
-					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
-				}
-			}
+	public synchronized List<FFFilter> getFilters() {
+		if (filters == null) {
+			filters = FFFilter.parseFilters(internalRun("-filters").getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 		}
 		return filters;
 	}
@@ -188,16 +162,9 @@ public class FFAbout {
 	/**
 	 * -pix_fmts show available pixel formats
 	 */
-	public List<FFPixelFormat> getPixelFormats() {
-		synchronized (this) {
-			if (pixels_formats == null) {
-				try {
-					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-pix_fmts").run().checkExecution();
-					pixels_formats = FFPixelFormat.parsePixelsFormats(result.getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
-				} catch (final IOException e) {
-					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
-				}
-			}
+	public synchronized List<FFPixelFormat> getPixelFormats() {
+		if (pixels_formats == null) {
+			pixels_formats = FFPixelFormat.parsePixelsFormats(internalRun("-pix_fmts").getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
 		}
 		return pixels_formats;
 	}
@@ -211,16 +178,9 @@ public class FFAbout {
 	/**
 	 * -hwaccels show available HW acceleration methods
 	 */
-	public Set<String> getAvailableHWAccelerationMethods() {
-		synchronized (this) {
-			if (hardware_acceleration_methods == null) {
-				try {
-					final ExecProcessTextResult result = referer.createExecWithLimitedExecutionTime().addBulkParameters("-hwaccels").run().checkExecution();
-					hardware_acceleration_methods = parseHWAccelerationMethods(result.getStdoutLines(false).map(l -> l.trim()));
-				} catch (final IOException e) {
-					throw new RuntimeException("Can't execute " + referer.executable.getName(), e);
-				}
-			}
+	public synchronized Set<String> getAvailableHWAccelerationMethods() {
+		if (hardware_acceleration_methods == null) {
+			hardware_acceleration_methods = parseHWAccelerationMethods(internalRun("-hwaccels").getStdoutLines(false).map(l -> l.trim()));
 		}
 		return hardware_acceleration_methods;
 	}

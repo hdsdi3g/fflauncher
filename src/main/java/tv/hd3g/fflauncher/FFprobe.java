@@ -16,31 +16,30 @@
 */
 package tv.hd3g.fflauncher;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor.DeprecatedCommandLine;
-import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
+import tv.hd3g.processlauncher.cmdline.Parameters;
 
 public class FFprobe extends FFbase {
 
 	// private static Logger log = LogManager.getLogger();
 
-	public FFprobe(final ExecutableFinder exec_finder, final DeprecatedCommandLine command_line) throws FileNotFoundException {
-		super(exec_finder, command_line);
+	public FFprobe(final String execName, final Parameters parameters) throws IOException {
+		super(execName, parameters);
 	}
 
 	/**
 	 * -pretty prettify the format of displayed values, make it more human readable
 	 */
 	public FFprobe setPretty() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.addParameters("-pretty");
+		getInternalParameters().ifHasNotParameter(() -> {
+			getInternalParameters().addParameters("-pretty");
 		}, "-pretty");
 		return this;
 	}
 
 	public boolean isPretty() {
-		return command_line.hasParameters("-pretty");
+		return getInternalParameters().hasParameters("-pretty");
 	}
 
 	public enum FFPrintFormat {
@@ -57,14 +56,14 @@ public class FFprobe extends FFbase {
 	 * -print_format format set the output printing format
 	 */
 	public FFprobe setPrintFormat(final FFPrintFormat print_format) {
-		command_line.ifHasNotParameter(() -> {
-			command_line.addParameters("-print_format", print_format.toString().toLowerCase());
+		getInternalParameters().ifHasNotParameter(() -> {
+			getInternalParameters().addParameters("-print_format", print_format.toString().toLowerCase());
 		}, "-print_format", "-of");
 		return this;
 	}
 
 	public boolean hasPrintFormat() {
-		return command_line.hasParameters("-print_format", "-of");
+		return getInternalParameters().hasParameters("-print_format", "-of");
 	}
 
 	/**
@@ -72,126 +71,126 @@ public class FFprobe extends FFbase {
 	 * @return
 	 */
 	public FFprobe setShowFormat() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.addParameters("-show_format");
+		getInternalParameters().ifHasNotParameter(() -> {
+			getInternalParameters().addParameters("-show_format");
 		}, "-show_format");
 		return this;
 	}
 
 	public boolean isShowFormat() {
-		return command_line.hasParameters("-show_format");
+		return getInternalParameters().hasParameters("-show_format");
 	}
 
 	/**
 	 * -show_data show packets data
 	 */
 	public FFprobe setShowData() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.addParameters("-show_data");
+		getInternalParameters().ifHasNotParameter(() -> {
+			getInternalParameters().addParameters("-show_data");
 		}, "-show_data");
 		return this;
 	}
 
 	public boolean isShowData() {
-		return command_line.hasParameters("-show_data");
+		return getInternalParameters().hasParameters("-show_data");
 	}
 
 	/**
 	 * -show_error show probing error
 	 */
 	public FFprobe setShowError() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.addParameters("-show_error");
+		getInternalParameters().ifHasNotParameter(() -> {
+			getInternalParameters().addParameters("-show_error");
 		}, "-show_error");
 		return this;
 	}
 
 	public boolean isShowError() {
-		return command_line.hasParameters("-show_error");
+		return getInternalParameters().hasParameters("-show_error");
 	}
 
 	/**
 	 * -show_frames show frames info
 	 */
 	public FFprobe setShowFrames() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.addParameters("-show_frames");
+		getInternalParameters().ifHasNotParameter(() -> {
+			getInternalParameters().addParameters("-show_frames");
 		}, "-show_frames");
 		return this;
 	}
 
 	public boolean isShowFrames() {
-		return command_line.hasParameters("-show_frames");
+		return getInternalParameters().hasParameters("-show_frames");
 	}
 
 	/**
 	 * -show_log show log
 	 */
 	public FFprobe setShowLog() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.addParameters("-show_log");
+		getInternalParameters().ifHasNotParameter(() -> {
+			getInternalParameters().addParameters("-show_log");
 		}, "-show_log");
 		return this;
 	}
 
 	public boolean isShowLog() {
-		return command_line.hasParameters("-show_log");
+		return getInternalParameters().hasParameters("-show_log");
 	}
 
 	/**
 	 * -show_packets show packets info
 	 */
 	public FFprobe setShowPackets() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.addParameters("-show_packets");
+		getInternalParameters().ifHasNotParameter(() -> {
+			getInternalParameters().addParameters("-show_packets");
 		}, "-show_packets");
 		return this;
 	}
 
 	public boolean isShowPackets() {
-		return command_line.hasParameters("-show_packets");
+		return getInternalParameters().hasParameters("-show_packets");
 	}
 
 	/**
 	 * -show_programs show programs info
 	 */
 	public FFprobe setShowPrograms() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.addParameters("-show_programs");
+		getInternalParameters().ifHasNotParameter(() -> {
+			getInternalParameters().addParameters("-show_programs");
 		}, "-show_programs");
 		return this;
 	}
 
 	public boolean isShowPrograms() {
-		return command_line.hasParameters("-show_programs");
+		return getInternalParameters().hasParameters("-show_programs");
 	}
 
 	/**
 	 * -show_streams show streams info
 	 */
 	public FFprobe setShowStreams() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.addParameters("-show_streams");
+		getInternalParameters().ifHasNotParameter(() -> {
+			getInternalParameters().addParameters("-show_streams");
 		}, "-show_streams");
 		return this;
 	}
 
 	public boolean isShowStreams() {
-		return command_line.hasParameters("-show_streams");
+		return getInternalParameters().hasParameters("-show_streams");
 	}
 
 	/**
 	 * -show_chapters show chapters info
 	 */
 	public FFprobe setShowChapters() {
-		command_line.ifHasNotParameter(() -> {
-			command_line.addParameters("-show_chapters");
+		getInternalParameters().ifHasNotParameter(() -> {
+			getInternalParameters().addParameters("-show_chapters");
 		}, "-show_chapters");
 		return this;
 	}
 
 	public boolean isShowChapters() {
-		return command_line.hasParameters("-show_chapters");
+		return getInternalParameters().hasParameters("-show_chapters");
 	}
 
 }

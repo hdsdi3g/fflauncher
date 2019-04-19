@@ -17,7 +17,6 @@
 package tv.hd3g.fflauncher;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -28,52 +27,58 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import junit.framework.TestCase;
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor;
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor.DeprecatedCommandLine;
 import tv.hd3g.fflauncher.FFCodec.CodecType;
 import tv.hd3g.fflauncher.FFFilter.ConnectorType;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
+import tv.hd3g.processlauncher.cmdline.Parameters;
 
 public class FFbaseTest extends TestCase {
 
-	private static class FFbaseImpl extends FFbase {
+	private final ExecutableFinder executableFinder;
 
-		public FFbaseImpl(final ExecutableFinder exec_finder, final DeprecatedCommandLine command_line) throws FileNotFoundException {
-			super(exec_finder, command_line);
+	public FFbaseTest() {
+		executableFinder = new ExecutableFinder();
+	}
+
+	private static class FFbaseImpl extends FFbase {
+		private static final String execName = "ffmpeg";
+
+		public FFbaseImpl(final Parameters parameters) throws IOException {
+			super(execName, parameters);
 		}
 
 	}
 
 	public void testBase() throws Exception {
-		final FFbaseImpl b = new FFbaseImpl(new ExecutableFinder(), new DeprecatedCommandLineProcessor().createEmptyCommandLine("ffmpeg"));
+		final FFbaseImpl b = new FFbaseImpl(new Parameters());
 
-		assertNotNull(b.getAbout().getVersion());
-		assertFalse(b.getAbout().getCodecs().isEmpty());
-		assertFalse(b.getAbout().getFormats().isEmpty());
-		assertFalse(b.getAbout().getDevices().isEmpty());
-		assertFalse(b.getAbout().getBitStreamFilters().isEmpty());
-		assertNotNull(b.getAbout().getProtocols());
-		assertFalse(b.getAbout().getFilters().isEmpty());
-		assertFalse(b.getAbout().getPixelFormats().isEmpty());
+		assertNotNull(b.getAbout(executableFinder).getVersion());
+		assertFalse(b.getAbout(executableFinder).getCodecs().isEmpty());
+		assertFalse(b.getAbout(executableFinder).getFormats().isEmpty());
+		assertFalse(b.getAbout(executableFinder).getDevices().isEmpty());
+		assertFalse(b.getAbout(executableFinder).getBitStreamFilters().isEmpty());
+		assertNotNull(b.getAbout(executableFinder).getProtocols());
+		assertFalse(b.getAbout(executableFinder).getFilters().isEmpty());
+		assertFalse(b.getAbout(executableFinder).getPixelFormats().isEmpty());
 
-		assertTrue(b.getAbout().isCoderIsAvaliable("ffv1"));
-		assertFalse(b.getAbout().isCoderIsAvaliable("nonono"));
-		assertTrue(b.getAbout().isDecoderIsAvaliable("rl2"));
-		assertFalse(b.getAbout().isDecoderIsAvaliable("nonono"));
-		assertTrue(b.getAbout().isFilterIsAvaliable("color"));
-		assertFalse(b.getAbout().isFilterIsAvaliable("nonono"));
-		assertTrue(b.getAbout().isToFormatIsAvaliable("wav"));
-		assertFalse(b.getAbout().isToFormatIsAvaliable("nonono"));
+		assertTrue(b.getAbout(executableFinder).isCoderIsAvaliable("ffv1"));
+		assertFalse(b.getAbout(executableFinder).isCoderIsAvaliable("nonono"));
+		assertTrue(b.getAbout(executableFinder).isDecoderIsAvaliable("rl2"));
+		assertFalse(b.getAbout(executableFinder).isDecoderIsAvaliable("nonono"));
+		assertTrue(b.getAbout(executableFinder).isFilterIsAvaliable("color"));
+		assertFalse(b.getAbout(executableFinder).isFilterIsAvaliable("nonono"));
+		assertTrue(b.getAbout(executableFinder).isToFormatIsAvaliable("wav"));
+		assertFalse(b.getAbout(executableFinder).isToFormatIsAvaliable("nonono"));
 	}
 
 	public void testNVPresence() throws Exception {
-		final FFbaseImpl b = new FFbaseImpl(new ExecutableFinder(), new DeprecatedCommandLineProcessor().createEmptyCommandLine("ffmpeg"));
+		final FFbaseImpl b = new FFbaseImpl(new Parameters());
 
 		if (System.getProperty("ffmpeg.test.nvidia", "").equals("1")) {
-			assertTrue("Can't found NV lib like cuda, cuvid and nvenc", b.getAbout().isNVToolkitIsAvaliable());
+			assertTrue("Can't found NV lib like cuda, cuvid and nvenc", b.getAbout(executableFinder).isNVToolkitIsAvaliable());
 		}
 		if (System.getProperty("ffmpeg.test.libnpp", "").equals("1")) {
-			assertTrue("Can't found libnpp", b.getAbout().isHardwareNVScalerFilterIsAvaliable());
+			assertTrue("Can't found libnpp", b.getAbout(executableFinder).isHardwareNVScalerFilterIsAvaliable());
 		}
 	}
 
@@ -260,39 +265,39 @@ public class FFbaseTest extends TestCase {
 		assertTrue(list.contains("qsv"));
 	}
 
-	public void testParams() throws FileNotFoundException {
-		final FFbaseImpl b = new FFbaseImpl(new ExecutableFinder(), new DeprecatedCommandLineProcessor().createEmptyCommandLine("ffmpeg"));
+	public void testParams() throws IOException {
+		final FFbaseImpl b = new FFbaseImpl(new Parameters());
 		assertFalse(b.isLogLevelSet());
 
-		final int skip_base_cmdline = b.command_line.toString().length();
+		final int skip_base_cmdline = b.getInternalParameters().toString().length();
 
 		b.setLogLevel(FFLogLevel.fatal, true, true);
-		assertEquals("-loglevel repeat+level+fatal", b.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-loglevel repeat+level+fatal", b.getInternalParameters().toString().substring(skip_base_cmdline));
 
 		b.setLogLevel(FFLogLevel.debug, false, false);
-		assertEquals("-loglevel repeat+level+fatal", b.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-loglevel repeat+level+fatal", b.getInternalParameters().toString().substring(skip_base_cmdline));
 
 		assertTrue(b.isLogLevelSet());
 
-		b.command_line.clear();
+		b.getInternalParameters().clear();
 
 		assertFalse(b.isHidebanner());
 		b.setHidebanner();
-		assertEquals("-hide_banner", b.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-hide_banner", b.getInternalParameters().toString().substring(skip_base_cmdline));
 		assertTrue(b.isHidebanner());
 
-		b.command_line.clear();
+		b.getInternalParameters().clear();
 
 		assertFalse(b.isOverwriteOutputFiles());
 		b.setOverwriteOutputFiles();
-		assertEquals("-y", b.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-y", b.getInternalParameters().toString().substring(skip_base_cmdline));
 		assertTrue(b.isOverwriteOutputFiles());
 
-		b.command_line.clear();
+		b.getInternalParameters().clear();
 
 		assertFalse(b.isNeverOverwriteOutputFiles());
 		b.setNeverOverwriteOutputFiles();
-		assertEquals("-n", b.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-n", b.getInternalParameters().toString().substring(skip_base_cmdline));
 		assertTrue(b.isNeverOverwriteOutputFiles());
 	}
 

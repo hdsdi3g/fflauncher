@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -54,7 +53,7 @@ public class ConversionTool implements ExecutableTool {
 	private static Logger log = LogManager.getLogger();
 	private static final Function<ParameterReference, String> getRessourceFromParameterReference = param_ref -> param_ref.ressource;
 
-	private final String execName;
+	protected final String execName;
 	protected final ArrayList<ParameterReference> input_sources;
 	protected final ArrayList<ParameterReference> output_expected_destinations;
 
@@ -64,19 +63,23 @@ public class ConversionTool implements ExecutableTool {
 	public final LinkedHashMap<String, String> parameters_variables;// TODO not public
 
 	private File working_directory;
-	protected long max_exec_time_ms;
-	protected ScheduledExecutorService max_exec_time_scheduler;
+	private long max_exec_time_ms;
+	private ScheduledExecutorService max_exec_time_scheduler;
 	private boolean removeParamsIfNoVarToInject;
-	private final Parameters parameters;
+	protected final Parameters parameters;
 	private boolean onErrorDeleteOutFiles;
 
 	public ConversionTool(final String execName) throws IOException {
+		this(execName, new Parameters());
+	}
+
+	protected ConversionTool(final String execName, final Parameters parameters) throws IOException {
 		this.execName = Objects.requireNonNull(execName, "\"execName\" can't to be null");
+		this.parameters = Objects.requireNonNull(parameters, "\"parameters\" can't to be null");
 		max_exec_time_ms = 5000;
 		input_sources = new ArrayList<>();
 		output_expected_destinations = new ArrayList<>();
 		parameters_variables = new LinkedHashMap<>();
-		parameters = new Parameters();
 	}
 
 	public boolean isRemoveParamsIfNoVarToInject() {
@@ -96,7 +99,10 @@ public class ConversionTool implements ExecutableTool {
 		return this;
 	}
 
-	public ConversionTool setMaxExecTimeScheduler(final ScheduledThreadPoolExecutor max_exec_time_scheduler) {
+	/**
+	 * Enable the execution time limitation
+	 */
+	public ConversionTool setMaxExecTimeScheduler(final ScheduledExecutorService max_exec_time_scheduler) {
 		this.max_exec_time_scheduler = max_exec_time_scheduler;
 		return this;
 	}
@@ -198,7 +204,7 @@ public class ConversionTool implements ExecutableTool {
 	}
 
 	protected void onMissingInputOutputVar(final String var_name, final String ressource) {
-		log.warn("Missing I/O variable \"" + var_name + "\" in command line \"" + getParameters() + "\". Ressource \"" + ressource + "\" will be ignored");
+		log.warn("Missing I/O variable \"" + var_name + "\" in command line \"" + getInternalParameters() + "\". Ressource \"" + ressource + "\" will be ignored");
 	}
 
 	/**
@@ -396,7 +402,7 @@ public class ConversionTool implements ExecutableTool {
 	 * @return a copy form internal parameters, with variable injection
 	 */
 	@Override
-	public Parameters getParameters() {
+	public Parameters getReadyToRunParameters() {
 		final HashMap<String, String> all_vars_to_inject = new HashMap<>(parameters_variables);
 
 		final Parameters newer_parameters = parameters.clone();

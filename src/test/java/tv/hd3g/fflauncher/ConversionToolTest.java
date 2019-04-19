@@ -17,7 +17,6 @@
 package tv.hd3g.fflauncher;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -28,8 +27,7 @@ import java.util.stream.Collectors;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor;
-import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
+import tv.hd3g.processlauncher.cmdline.Parameters;
 
 public class ConversionToolTest extends TestCase {
 
@@ -61,7 +59,7 @@ public class ConversionToolTest extends TestCase {
 
 		final Parameters p = ct.getInternalParameters();
 		assertNotNull(p);
-		assertNotNull(ct.getParameters());
+		assertNotNull(ct.getReadyToRunParameters());
 
 		assertEquals("-firstparam", p.getParameters().stream().findFirst().get());
 
@@ -86,21 +84,10 @@ public class ConversionToolTest extends TestCase {
 		assertEquals("source1 source2", ct.getDeclaredSources().stream().collect(Collectors.joining(" ")));
 		assertEquals("dest1 dest2 dest-simple", ct.getDeclaredDestinations().stream().collect(Collectors.joining(" ")));
 
-		String processed_cmdline = ct.getParameters().getParameters().stream().collect(Collectors.joining(" "));
+		final String processed_cmdline = ct.getReadyToRunParameters().getParameters().stream().collect(Collectors.joining(" "));
 
 		final String expected = "-firstparam -pre1-source1 -pre2-source1 source1 -pre1-source2 -pre2-source2 source2 -post1-source2 -post2-source2 -pre1-dest1 -pre2-dest1 dest1 -pre1-dest2 -pre2-dest2 dest2 -post1-dest2 -post2-dest2 dest-simple";
 		assertEquals(expected, processed_cmdline);
-
-		processed_cmdline = exec.getParameters().stream().collect(Collectors.joining(" "));
-
-		assertEquals(expected, processed_cmdline);
-		assertTrue(exec.getMaxExecTime(TimeUnit.SECONDS) > 1l);
-
-		exec = ct.createExecWithLimitedExecutionTime();
-		assertEquals(working_directory, exec.getWorkingDirectory());
-		assertEquals(processed_cmdline, exec.getParameters().stream().collect(Collectors.joining(" ")));
-		assertEquals(1l, exec.getMaxExecTime(TimeUnit.SECONDS));
-		assertEquals(exec, ept_catched_list.stream().findFirst().get());
 
 		assertEquals("source1", ct.getDeclaredSourceByVarName("varsource1").orElse("nope"));
 		assertEquals("dest2", ct.getDeclaredDestinationByVarName("vardest2").orElse("nope"));
@@ -111,7 +98,7 @@ public class ConversionToolTest extends TestCase {
 
 		class CT extends ConversionTool {
 
-			public CT() throws FileNotFoundException {
+			public CT() throws IOException {
 				super("java");
 			}
 
@@ -124,19 +111,17 @@ public class ConversionToolTest extends TestCase {
 		}
 
 		final CT ct = new CT();
-		ct.getCommandLine().addParameters("-1", "<%not_found_var%>", "-2", "<%found_var%>");
+		final Parameters p = ct.getInternalParameters();
+		p.addParameters("-1", "<%not_found_var%>", "-2", "<%found_var%>");
 		ct.addInputSource("source", "found_var");
-		String result = ct.createProcessedCommandLine().getParameters().stream().collect(Collectors.joining(" "));
-		assertEquals("-1 -2 source", result);
+		assertEquals("-1 -2 source", ct.getReadyToRunParameters().toString());
 
 		ct.setRemoveParamsIfNoVarToInject(true);
-		result = ct.createProcessedCommandLine().getParameters().stream().collect(Collectors.joining(" "));
-		assertEquals("-2 source", result);
+		assertEquals("-2 source", ct.getReadyToRunParameters().toString());
 
 		assertTrue(catchs.isEmpty());
-		ct.getCommandLine().clear();
-		result = ct.createProcessedCommandLine().getParameters().stream().collect(Collectors.joining(" "));
-		assertEquals("", result);
+		p.clear();
+		assertEquals("", ct.getReadyToRunParameters().toString());
 		assertEquals(1, catchs.size());
 		assertTrue(catchs.containsKey("found_var"));
 		assertEquals("source", catchs.get("found_var"));
@@ -155,7 +140,8 @@ public class ConversionToolTest extends TestCase {
 		assertTrue(d1.exists());
 		assertTrue(d1.getParentFile().exists());
 
-		final ConversionTool ct = new ConversionTool(new ExecutableFinder(), new DeprecatedCommandLineProcessor().createCommandLine("java -firstparam"));
+		final ConversionTool ct = new ConversionTool("java");
+		ct.getInternalParameters().addParameters("-firstparam");
 		ct.addSimpleOutputDestination("nothing");
 		ct.addSimpleOutputDestination(f1.getAbsolutePath());
 		ct.addSimpleOutputDestination(f2.toURI().toURL().toString());
