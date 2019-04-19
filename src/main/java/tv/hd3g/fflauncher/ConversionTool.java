@@ -34,12 +34,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,13 +44,15 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tv.hd3g.processlauncher.ExecutionCallbacker;
 import tv.hd3g.processlauncher.ProcesslauncherBuilder;
-import tv.hd3g.processlauncher.cmdline.CommandLine;
+import tv.hd3g.processlauncher.ProcesslauncherLifecycle;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 import tv.hd3g.processlauncher.tool.ExecutableTool;
 
 public class ConversionTool implements ExecutableTool {
 	private static Logger log = LogManager.getLogger();
+	private static final Function<ParameterReference, String> getRessourceFromParameterReference = param_ref -> param_ref.ressource;
 
 	private final String execName;
 	protected final ArrayList<ParameterReference> input_sources;
@@ -65,27 +64,19 @@ public class ConversionTool implements ExecutableTool {
 	public final LinkedHashMap<String, String> parameters_variables;// TODO not public
 
 	private File working_directory;
-	protected long max_exec_time_ms = 5000;
+	protected long max_exec_time_ms;
 	protected ScheduledExecutorService max_exec_time_scheduler;
-	private Consumer<ProcesslauncherBuilder> exec_process_catcher;// TODO rename, ugly
 	private boolean removeParamsIfNoVarToInject;
 	private final Parameters parameters;
+	private boolean onErrorDeleteOutFiles;
 
 	public ConversionTool(final String execName) throws IOException {
 		this.execName = Objects.requireNonNull(execName, "\"execName\" can't to be null");
-
+		max_exec_time_ms = 5000;
 		input_sources = new ArrayList<>();
 		output_expected_destinations = new ArrayList<>();
-		parameters_variables = new LinkedHashMap<>(1);
+		parameters_variables = new LinkedHashMap<>();
 		parameters = new Parameters();
-
-		final AtomicLong counter = new AtomicLong();
-		max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1, r -> {
-			final Thread t = new Thread(r);
-			t.setName("ScheduledTask #" + counter.getAndIncrement() + " for " + getClass().getSimpleName());
-			t.setDaemon(true);
-			return t;
-		}, (r, executor) -> log.error("Can't schedule task on {}", executor));
 	}
 
 	public boolean isRemoveParamsIfNoVarToInject() {
@@ -97,6 +88,9 @@ public class ConversionTool implements ExecutableTool {
 		return this;
 	}
 
+	/**
+	 * You needs to provide a max_exec_time_scheduler
+	 */
 	public ConversionTool setMaxExecutionTimeForShortCommands(final long max_exec_time, final TimeUnit unit) {
 		max_exec_time_ms = unit.toMillis(max_exec_time);
 		return this;
@@ -113,24 +107,6 @@ public class ConversionTool implements ExecutableTool {
 
 	public ScheduledExecutorService getMaxExecTimeScheduler() {
 		return max_exec_time_scheduler;
-	}
-
-	/**
-	 * Can operate on process before execution.
-	 */
-	public ConversionTool setExecProcessCatcher(final Consumer<ProcesslauncherBuilder> new_instance_catcher) {// TODO rename
-		exec_process_catcher = Objects.requireNonNull(new_instance_catcher, "\"new_instance_catcher\" can't to be null");
-		return this;
-	}
-
-	public Consumer<ProcesslauncherBuilder> getExecProcessCatcher() {// TODO rename
-		return exec_process_catcher;
-	}
-
-	protected void applyExecProcessCatcher(final ProcesslauncherBuilder exec_process) {// TODO rename
-		if (exec_process_catcher != null) {
-			exec_process_catcher.accept(exec_process);
-		}
 	}
 
 	class ParameterReference {
@@ -222,31 +198,7 @@ public class ConversionTool implements ExecutableTool {
 	}
 
 	protected void onMissingInputOutputVar(final String var_name, final String ressource) {
-		log.warn("Missing I/O variable \"" + var_name + "\" in command line \"" + getCommandLineParameters() + "\". Ressource \"" + ressource + "\" will be ignored");
-	}
-
-	public List<String> createProcessedCommandLine() throws IOException {
-		final HashMap<String, String> all_vars_to_inject = new HashMap<>(parameters_variables);
-
-		final Parameters newer_parameters = parameters.clone();
-		final CommandLine newerCommandLine = new CommandLine(exec.getExecutableFile(), newer_parameters);// FIXME nope cmd line !!
-
-		Stream.concat(input_sources.stream(), output_expected_destinations.stream()).forEach(param_ref -> {
-			final String var_name = param_ref.var_name_in_parameters;
-
-			final boolean done = newerCommandLine.injectParamsAroundVariable(var_name, param_ref.parameters_before_ref.getParameters(), param_ref.parameters_after_ref.getParameters());
-
-			if (done) {
-				if (all_vars_to_inject.containsKey(var_name)) {
-					throw new RuntimeException("Variable collision: \"" + var_name + "\" was already set to \"" + all_vars_to_inject.get(var_name) + "\" in " + newer_parameters);
-				}
-				all_vars_to_inject.put(var_name, param_ref.ressource);
-			} else {
-				onMissingInputOutputVar(var_name, param_ref.ressource);
-			}
-		});
-
-		return newerCommandLine.getParametersInjectVars(all_vars_to_inject, exec.isRemoveParamsIfNoVarToInject());
+		log.warn("Missing I/O variable \"" + var_name + "\" in command line \"" + getParameters() + "\". Ressource \"" + ressource + "\" will be ignored");
 	}
 
 	/**
@@ -270,73 +222,41 @@ public class ConversionTool implements ExecutableTool {
 		return this;
 	}
 
-	private Executor on_error_delete_out_files_executor;
-
-	public Executor getOnErrorDeleteOutFilesExecutor() {
-		return on_error_delete_out_files_executor;
+	public boolean isOnErrorDeleteOutFiles() {
+		return onErrorDeleteOutFiles;
 	}
 
-	public boolean isOnErrorDeleteOutFilesExecutor() {
-		return on_error_delete_out_files_executor != null;
-	}
-
-	public ConversionTool setOnErrorDeleteOutFiles(final Executor executor) {
-		if (executor == null) {
-			throw new NullPointerException("\"executor\" can't to be null");
-		}
-		on_error_delete_out_files_executor = executor;
+	public ConversionTool setOnErrorDeleteOutFiles(final boolean onErrorDeleteOutFiles) {
+		this.onErrorDeleteOutFiles = onErrorDeleteOutFiles;
 		return this;
 	}
 
-	/*private ProcesslauncherBuilder createExec(final boolean short_command_limited_execution_time) throws IOException {
-		final ProcesslauncherBuilder processlauncherBuilder = new ProcesslauncherBuilder(commandLine.getExecutable(), createProcessedCommandLine().stream().skip(1).collect(Collectors.toUnmodifiableList()));// TODO ugly as fuck
-
-		if (short_command_limited_execution_time) {
-			exec_process.setMaxExecutionTime(max_exec_time_ms, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
+	@Override
+	public void beforeRun(final ProcesslauncherBuilder processBuilder) {
+		if (max_exec_time_scheduler != null) {
+			processBuilder.setExecutionTimeLimiter(max_exec_time_ms, TimeUnit.MILLISECONDS, max_exec_time_scheduler);
 		}
-
 		if (working_directory != null) {
-			exec_process.setWorkingDirectory(working_directory);
+			try {
+				processBuilder.setWorkingDirectory(working_directory);
+			} catch (final IOException e) {
+			}
 		}
-
-		// TODO restore this applyExecProcessCatcher(exec_process);
-
-		if (on_error_delete_out_files_executor != null) {
-			exec_process.addEndExecutionCallback(r -> {
-				**
-				 * If fail transcoding or shutdown hook, delete out files (optional)
-				 *
-				try {
-					if (r.isCorrectlyDone().get()) {
-						return;
+		if (onErrorDeleteOutFiles) {
+			/**
+			 * If fail transcoding or shutdown hook, delete out files (optional)
+			 */
+			processBuilder.addExecutionCallbacker(new ExecutionCallbacker() {
+				@Override
+				public void onEndExecution(final ProcesslauncherLifecycle processlauncherLifecycle) {
+					if (processlauncherLifecycle.isCorrectlyDone() == false) {
+						log.warn("Error during execution of \"" + processlauncherLifecycle.toString() + "\", remove output files");
+						cleanUpOutputFiles(true, true);
 					}
-				} catch (final InterruptedException e) {
-					**
-					 * Never start, never create files..
-					 *
-					return;
-				} catch (final ExecutionException e) {
 				}
-				log.warn("Error during execution of \"" + exec_process.getExecutable().getName() + "\", remove output files");
-				cleanUpOutputFiles(true, true);
-			}, on_error_delete_out_files_executor);
+			});
 		}
-
-		return processlauncherBuilder;
-	}*/
-
-	/**
-	 * Time controlled by setMaxExecutionTimeForShortCommands()
-	 */
-	/*public Processlauncher createExecWithLimitedExecutionTime() throws IOException {// TODO rename
-		return createExec(true);
-	}*/
-
-	/*public Processlauncher createExec() throws IOException {// TODO rename
-		return createExec(false);
-	}*/
-
-	private static final Function<ParameterReference, String> getRessourceFromParameterReference = param_ref -> param_ref.ressource;
+	}
 
 	/**
 	 * @return never null
@@ -364,10 +284,6 @@ public class ConversionTool implements ExecutableTool {
 	 */
 	public List<String> getDeclaredDestinations() {
 		return output_expected_destinations.stream().map(getRessourceFromParameterReference).collect(Collectors.toUnmodifiableList());
-	}
-
-	public Parameters getParameters() {
-		return parameters;
 	}
 
 	/**
@@ -469,9 +385,38 @@ public class ConversionTool implements ExecutableTool {
 		return this;
 	}
 
+	/**
+	 * @return without variable injection
+	 */
+	public Parameters getInternalParameters() {
+		return parameters;
+	}
+
+	/**
+	 * @return a copy form internal parameters, with variable injection
+	 */
 	@Override
-	public List<String> getCommandLineParameters() {
-		return createProcessedCommandLine();
+	public Parameters getParameters() {
+		final HashMap<String, String> all_vars_to_inject = new HashMap<>(parameters_variables);
+
+		final Parameters newer_parameters = parameters.clone();
+
+		Stream.concat(input_sources.stream(), output_expected_destinations.stream()).forEach(param_ref -> {
+			final String var_name = param_ref.var_name_in_parameters;
+
+			final boolean done = newer_parameters.injectParamsAroundVariable(var_name, param_ref.parameters_before_ref.getParameters(), param_ref.parameters_after_ref.getParameters());
+
+			if (done) {
+				if (all_vars_to_inject.containsKey(var_name)) {
+					throw new RuntimeException("Variable collision: \"" + var_name + "\" was already set to \"" + all_vars_to_inject.get(var_name) + "\" in " + newer_parameters);
+				}
+				all_vars_to_inject.put(var_name, param_ref.ressource);
+			} else {
+				onMissingInputOutputVar(var_name, param_ref.ressource);
+			}
+		});
+
+		return newer_parameters.getParametersInjectVars(all_vars_to_inject, removeParamsIfNoVarToInject);
 	}
 
 	@Override
