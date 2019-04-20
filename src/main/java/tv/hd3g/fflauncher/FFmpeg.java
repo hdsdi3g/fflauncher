@@ -17,7 +17,6 @@
 package tv.hd3g.fflauncher;
 
 import java.awt.Point;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Optional;
@@ -36,7 +35,7 @@ public class FFmpeg extends FFbase {
 	private static final Logger log = LogManager.getLogger();
 	private int device_id_to_use = -1;
 
-	public FFmpeg(final String execName, final Parameters parameters) throws IOException {
+	public FFmpeg(final String execName, final Parameters parameters) {
 		super(execName, parameters);
 	}
 

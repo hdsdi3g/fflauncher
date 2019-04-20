@@ -17,54 +17,58 @@
 package tv.hd3g.fflauncher.recipes;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor;
-import tv.hd3g.execprocess.ExecProcessText;
 import tv.hd3g.fflauncher.FFprobe;
 import tv.hd3g.fflauncher.FFprobe.FFPrintFormat;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
-import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
+import tv.hd3g.processlauncher.cmdline.Parameters;
+import tv.hd3g.processlauncher.tool.RunningTool;
+import tv.hd3g.processlauncher.tool.ToolRun;
 
 public class ProbeMedia extends Recipe {
+
 	private static Logger log = LogManager.getLogger();
 
-	public ProbeMedia() {
-		super();
+	private final ScheduledExecutorService maxExecTimeScheduler;
+
+	public ProbeMedia(final ToolRun toolRun, final ScheduledExecutorService maxExecTimeScheduler) {
+		super(toolRun, "ffprobe");
+		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler, "\"maxExecTimeScheduler\" can't to be null");
 	}
 
-	public ProbeMedia(final ExecutableFinder exec_finder, final String exec_name) {
-		super(exec_finder, exec_name);
+	public ProbeMedia(final ToolRun toolRun, final String execName, final ScheduledExecutorService maxExecTimeScheduler) {
+		super(toolRun, execName);
+		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler, "\"maxExecTimeScheduler\" can't to be null");
 	}
 
 	/**
 	 * Get streams, format and chapters.
+	 * Can throw an InvalidExecution in CompletableFuture, with stderr embedded.
 	 * @see FFprobe to get cool FfprobeType parsers
 	 */
 	public CompletableFuture<FFprobeJAXB> doAnalysing(final String source) throws IOException {
-		final FFprobe ffprobe = new FFprobe(getExecFinder(), new DeprecatedCommandLineProcessor().createEmptyCommandLine(getExecName()));
+		final Parameters parameters = new Parameters();
+		final FFprobe ffprobe = new FFprobe(execName, parameters);
 
 		ffprobe.setPrintFormat(FFPrintFormat.xml).setShowStreams().setShowFormat().setShowChapters().isHidebanner();
 		ffprobe.addSimpleInputSource(source);
+		ffprobe.setMaxExecTimeScheduler(maxExecTimeScheduler);
 
-		final ExecProcessText exec = ffprobe.createExecWithLimitedExecutionTime();
-		log.info("Queue \"" + source + "\" ffprobe analysing");
+		// TODO set setOnTextOutEventExecutor(final Executor onTextOutEventExecutor) for logging > in Recipe
 
-		return exec.start(getExecutionExecutor()).waitForEnd().thenApplyAsync(result -> {
+		return toolRun.execute(ffprobe).thenApplyAsync(RunningTool::checkExecutionGetText, executor).thenApplyAsync(textRetention -> {
 			try {
-				return new FFprobeJAXB(result.checkExecution().getStdout(false, System.lineSeparator()), warn -> log.warn(warn));
+				return new FFprobeJAXB(textRetention.getStdout(false, System.lineSeparator()), warn -> log.warn(warn));
 			} catch (final IOException e) {
 				throw new RuntimeException("Can't analyst " + source, e);
 			}
-		}, getPostProcessExecutor());
-	}
-
-	@Override
-	protected String getDefaultExecName() {
-		return "ffprobe";
+		}, executor);
 	}
 
 }

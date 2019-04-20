@@ -16,15 +16,13 @@
 */
 package tv.hd3g.fflauncher;
 
-import java.io.IOException;
-
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
 public class FFprobe extends FFbase {
 
 	// private static Logger log = LogManager.getLogger();
 
-	public FFprobe(final String execName, final Parameters parameters) throws IOException {
+	public FFprobe(final String execName, final Parameters parameters) {
 		super(execName, parameters);
 	}
 

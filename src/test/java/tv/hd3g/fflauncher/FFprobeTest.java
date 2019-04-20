@@ -16,96 +16,94 @@
 */
 package tv.hd3g.fflauncher;
 
-import java.io.FileNotFoundException;
-
 import junit.framework.TestCase;
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor;
 import tv.hd3g.fflauncher.FFprobe.FFPrintFormat;
-import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
+import tv.hd3g.processlauncher.cmdline.Parameters;
 
 public class FFprobeTest extends TestCase {
 
-	public void test() throws FileNotFoundException {
-		final FFprobe p = new FFprobe(new ExecutableFinder(), new DeprecatedCommandLineProcessor().createEmptyCommandLine("ffprobe"));
+	public void test() {
+		final Parameters parameters = new Parameters();
+		final FFprobe p = new FFprobe("ffprobe", parameters);
 
-		final int skip_base_cmdline = p.command_line.toString().length();
+		final int skip_base_cmdline = parameters.toString().length();
 
 		assertFalse(p.isPretty());
 		p.setPretty();
-		assertEquals("-pretty", p.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-pretty", parameters.toString().substring(skip_base_cmdline));
 		assertTrue(p.isPretty());
 
-		p.command_line.clear();
+		parameters.clear();
 
 		assertFalse(p.hasPrintFormat());
 		p.setPrintFormat(FFPrintFormat.xml);
-		assertEquals("-print_format xml", p.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-print_format xml", parameters.toString().substring(skip_base_cmdline));
 		assertTrue(p.hasPrintFormat());
 
-		p.command_line.clear();
+		parameters.clear();
 
 		assertFalse(p.isShowFormat());
 		p.setShowFormat();
-		assertEquals("-show_format", p.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-show_format", parameters.toString().substring(skip_base_cmdline));
 		assertTrue(p.isShowFormat());
 
-		p.command_line.clear();
+		parameters.clear();
 
 		assertFalse(p.isShowData());
 		p.setShowData();
-		assertEquals("-show_data", p.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-show_data", parameters.toString().substring(skip_base_cmdline));
 		assertTrue(p.isShowData());
 
-		p.command_line.clear();
+		parameters.clear();
 
 		assertFalse(p.isShowError());
 		p.setShowError();
-		assertEquals("-show_error", p.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-show_error", parameters.toString().substring(skip_base_cmdline));
 		assertTrue(p.isShowError());
 
-		p.command_line.clear();
+		parameters.clear();
 
 		assertFalse(p.isShowFrames());
 		p.setShowFrames();
-		assertEquals("-show_frames", p.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-show_frames", parameters.toString().substring(skip_base_cmdline));
 		assertTrue(p.isShowFrames());
 
-		p.command_line.clear();
+		parameters.clear();
 
 		assertFalse(p.isShowLog());
 		p.setShowLog();
-		assertEquals("-show_log", p.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-show_log", parameters.toString().substring(skip_base_cmdline));
 		assertTrue(p.isShowLog());
 
-		p.command_line.clear();
+		parameters.clear();
 
 		assertFalse(p.isShowPackets());
 		p.setShowPackets();
-		assertEquals("-show_packets", p.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-show_packets", parameters.toString().substring(skip_base_cmdline));
 		assertTrue(p.isShowPackets());
 
-		p.command_line.clear();
+		parameters.clear();
 
 		assertFalse(p.isShowPrograms());
 		p.setShowPrograms();
-		assertEquals("-show_programs", p.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-show_programs", parameters.toString().substring(skip_base_cmdline));
 		assertTrue(p.isShowPrograms());
 
-		p.command_line.clear();
+		parameters.clear();
 
 		assertFalse(p.isShowStreams());
 		p.setShowStreams();
-		assertEquals("-show_streams", p.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-show_streams", parameters.toString().substring(skip_base_cmdline));
 		assertTrue(p.isShowStreams());
 
-		p.command_line.clear();
+		parameters.clear();
 
 		assertFalse(p.isShowChapters());
 		p.setShowChapters();
-		assertEquals("-show_chapters", p.command_line.toString().substring(skip_base_cmdline));
+		assertEquals("-show_chapters", parameters.toString().substring(skip_base_cmdline));
 		assertTrue(p.isShowChapters());
 
-		p.command_line.clear();
+		parameters.clear();
 	}
 
 }

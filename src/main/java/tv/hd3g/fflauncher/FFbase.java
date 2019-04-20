@@ -16,7 +16,6 @@
 */
 package tv.hd3g.fflauncher;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +32,7 @@ public class FFbase extends ConversionTool {
 
 	private FFAbout about;
 
-	public FFbase(final String execName, final Parameters parameters) throws IOException {
+	public FFbase(final String execName, final Parameters parameters) {
 		super(execName, parameters);
 	}
 
@@ -136,15 +135,11 @@ public class FFbase extends ConversionTool {
 
 	public synchronized FFAbout getAbout(final ExecutableFinder executableFinder) {
 		if (about == null) {
-			try {
-				final ScheduledExecutorService maxExecTimeScheduler = getMaxExecTimeScheduler();
-				if (maxExecTimeScheduler == null) {
-					about = new FFAbout(execName, executableFinder, Executors.newSingleThreadScheduledExecutor());
-				} else {
-					about = new FFAbout(execName, executableFinder, maxExecTimeScheduler);
-				}
-			} catch (final IOException e) {
-				throw new RuntimeException("Can't init About", e);
+			final ScheduledExecutorService maxExecTimeScheduler = getMaxExecTimeScheduler();
+			if (maxExecTimeScheduler == null) {
+				about = new FFAbout(execName, executableFinder, Executors.newSingleThreadScheduledExecutor());
+			} else {
+				about = new FFAbout(execName, executableFinder, maxExecTimeScheduler);
 			}
 		}
 		return about;

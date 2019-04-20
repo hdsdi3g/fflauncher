@@ -93,12 +93,12 @@ public class ConversionToolTest extends TestCase {
 		assertEquals("dest2", ct.getDeclaredDestinationByVarName("vardest2").orElse("nope"));
 	}
 
-	public void testCatchMissingOutVar() throws IOException {
+	public void testCatchMissingOutVar() {
 		final LinkedHashMap<String, String> catchs = new LinkedHashMap<>();
 
 		class CT extends ConversionTool {
 
-			public CT() throws IOException {
+			public CT() {
 				super("java");
 			}
 

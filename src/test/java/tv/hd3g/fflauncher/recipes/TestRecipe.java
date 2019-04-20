@@ -22,33 +22,21 @@ import java.util.concurrent.ForkJoinPool;
 
 import junit.framework.TestCase;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
+import tv.hd3g.processlauncher.tool.ToolRun;
 
 public class TestRecipe extends TestCase {
 
 	public void test() {
+		final ToolRun run = new ToolRun(new ExecutableFinder(), 1);
 
-		final Recipe r = new Recipe(new ExecutableFinder(), "java") {
-			@Override
-			protected String getDefaultExecName() {
-				return "NOPE NOPE";
-			}
-		};
+		final Recipe r = new Recipe(run, "java") {};
 
 		assertEquals(r.getExecName(), "java");
-		assertEquals(r.getDefaultExecName(), "NOPE NOPE");
-		assertEquals(ForkJoinPool.commonPool(), r.getExecutionExecutor());
-		assertEquals(ForkJoinPool.commonPool(), r.getPostProcessExecutor());
-
-		final Executor e1 = Executors.newCachedThreadPool();
-		final Executor e2 = Executors.newCachedThreadPool();
-
-		assertFalse(e1.equals(e2));
-
-		r.setExecutionExecutor(e1);
-		r.setPostProcessExecutor(e2);
-
-		assertEquals(e1, r.getExecutionExecutor());
-		assertEquals(e2, r.getPostProcessExecutor());
+		assertEquals(r.toolRun, run);
+		assertEquals(ForkJoinPool.commonPool(), r.executor);
+		final Executor exec = Executors.newCachedThreadPool();
+		r.setPostProcessExecutor(exec);
+		assertEquals(exec, r.executor);
 	}
 
 }

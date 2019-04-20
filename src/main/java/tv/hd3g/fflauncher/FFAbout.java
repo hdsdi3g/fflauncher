@@ -49,7 +49,7 @@ public class FFAbout {
 	private final ExecutableFinder executableFinder;
 	private final ScheduledExecutorService maxExecTimeScheduler;
 
-	FFAbout(final String execName, final ExecutableFinder executableFinder, final ScheduledExecutorService maxExecTimeScheduler) throws IOException {
+	FFAbout(final String execName, final ExecutableFinder executableFinder, final ScheduledExecutorService maxExecTimeScheduler) {
 		this.execName = Objects.requireNonNull(execName, "\"execName\" can't to be null");
 		this.executableFinder = Objects.requireNonNull(executableFinder, "\"executableFinder\" can't to be null");
 		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler, "\"maxExecTimeScheduler\" can't to be null");

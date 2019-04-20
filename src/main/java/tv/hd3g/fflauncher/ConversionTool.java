@@ -32,8 +32,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -47,6 +49,7 @@ import tv.hd3g.processlauncher.ExecutionCallbacker;
 import tv.hd3g.processlauncher.ProcesslauncherBuilder;
 import tv.hd3g.processlauncher.ProcesslauncherLifecycle;
 import tv.hd3g.processlauncher.cmdline.Parameters;
+import tv.hd3g.processlauncher.io.CapturedStdOutErrTextRetention;
 import tv.hd3g.processlauncher.tool.ExecutableTool;
 
 public class ConversionTool implements ExecutableTool {
@@ -56,11 +59,9 @@ public class ConversionTool implements ExecutableTool {
 	protected final String execName;
 	protected final ArrayList<ParameterReference> input_sources;
 	protected final ArrayList<ParameterReference> output_expected_destinations;
+	private Optional<Executor> onTextOutEventExecutor;
 
-	/**
-	 * Set values for variables like <%myvar%> in the command line, do NOT set input/output references if they was set with addInputSource/addOutputDestination.
-	 */
-	public final LinkedHashMap<String, String> parameters_variables;// TODO not public
+	private final LinkedHashMap<String, String> parametersVariables;
 
 	private File working_directory;
 	private long max_exec_time_ms;
@@ -69,17 +70,18 @@ public class ConversionTool implements ExecutableTool {
 	protected final Parameters parameters;
 	private boolean onErrorDeleteOutFiles;
 
-	public ConversionTool(final String execName) throws IOException {
+	public ConversionTool(final String execName) {
 		this(execName, new Parameters());
 	}
 
-	protected ConversionTool(final String execName, final Parameters parameters) throws IOException {
+	protected ConversionTool(final String execName, final Parameters parameters) {
 		this.execName = Objects.requireNonNull(execName, "\"execName\" can't to be null");
 		this.parameters = Objects.requireNonNull(parameters, "\"parameters\" can't to be null");
 		max_exec_time_ms = 5000;
 		input_sources = new ArrayList<>();
 		output_expected_destinations = new ArrayList<>();
-		parameters_variables = new LinkedHashMap<>();
+		parametersVariables = new LinkedHashMap<>();
+		onTextOutEventExecutor = Optional.empty();
 	}
 
 	public boolean isRemoveParamsIfNoVarToInject() {
@@ -102,8 +104,8 @@ public class ConversionTool implements ExecutableTool {
 	/**
 	 * Enable the execution time limitation
 	 */
-	public ConversionTool setMaxExecTimeScheduler(final ScheduledExecutorService max_exec_time_scheduler) {
-		this.max_exec_time_scheduler = max_exec_time_scheduler;
+	public ConversionTool setMaxExecTimeScheduler(final ScheduledExecutorService maxExecTimeScheduler) {
+		max_exec_time_scheduler = maxExecTimeScheduler;
 		return this;
 	}
 
@@ -113,6 +115,13 @@ public class ConversionTool implements ExecutableTool {
 
 	public ScheduledExecutorService getMaxExecTimeScheduler() {
 		return max_exec_time_scheduler;
+	}
+
+	/**
+	 * Set values for variables like <%myvar%> in the command line, do NOT set input/output references if they was set with addInputSource/addOutputDestination.
+	 */
+	public Map<String, String> getParametersVariables() {
+		return parametersVariables;
 	}
 
 	class ParameterReference {
@@ -237,6 +246,15 @@ public class ConversionTool implements ExecutableTool {
 		return this;
 	}
 
+	public ConversionTool setOnTextOutEventExecutor(final Executor onTextOutEventExecutor) {
+		this.onTextOutEventExecutor = Optional.ofNullable(onTextOutEventExecutor);
+		return this;
+	}
+
+	public Optional<Executor> getOnTextOutEventExecutor() {
+		return onTextOutEventExecutor;
+	}
+
 	@Override
 	public void beforeRun(final ProcesslauncherBuilder processBuilder) {
 		if (max_exec_time_scheduler != null) {
@@ -259,6 +277,14 @@ public class ConversionTool implements ExecutableTool {
 						log.warn("Error during execution of \"" + processlauncherLifecycle.toString() + "\", remove output files");
 						cleanUpOutputFiles(true, true);
 					}
+				}
+			});
+		}
+		if (onTextOutEventExecutor.isPresent()) {
+			processBuilder.getCaptureStandardOutput().ifPresent(cso -> {
+				if (cso instanceof CapturedStdOutErrTextRetention) {
+					final CapturedStdOutErrTextRetention textRetention = (CapturedStdOutErrTextRetention) cso;
+					// TODO add textRetention external observer with onTextOutEventExecutor.get()
 				}
 			});
 		}
@@ -403,7 +429,7 @@ public class ConversionTool implements ExecutableTool {
 	 */
 	@Override
 	public Parameters getReadyToRunParameters() {
-		final HashMap<String, String> all_vars_to_inject = new HashMap<>(parameters_variables);
+		final HashMap<String, String> all_vars_to_inject = new HashMap<>(parametersVariables);
 
 		final Parameters newer_parameters = parameters.clone();
 
@@ -422,7 +448,7 @@ public class ConversionTool implements ExecutableTool {
 			}
 		});
 
-		return newer_parameters.getParametersInjectVars(all_vars_to_inject, removeParamsIfNoVarToInject);
+		return newer_parameters.injectVariables(all_vars_to_inject, removeParamsIfNoVarToInject);
 	}
 
 	@Override

@@ -16,87 +16,41 @@
 */
 package tv.hd3g.fflauncher.recipes;
 
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
+import tv.hd3g.processlauncher.tool.ToolRun;
 
 public abstract class Recipe {
 	private static Logger log = LogManager.getLogger();
 
-	private final ExecutableFinder exec_finder;
-	private final String exec_name;
-	private Executor execution_executor;
-	private Executor post_process_executor;
+	protected final ToolRun toolRun;
+	protected final String execName;
+	protected Executor executor;
 
-	public Recipe(final ExecutableFinder exec_finder, final String exec_name) {
-		this.exec_finder = exec_finder;
-		if (exec_finder == null) {
-			throw new NullPointerException("\"exec_finder\" can't to be null");
-		}
-		this.exec_name = exec_name;
-		if (exec_name == null) {
-			throw new NullPointerException("\"exec_name\" can't to be null");
-		} else if (exec_name.isEmpty()) {
+	public Recipe(final ToolRun toolRun, final String execName) {
+		this.toolRun = Objects.requireNonNull(toolRun, "\"toolRun\" can't to be null");
+		this.execName = Objects.requireNonNull(execName, "\"execName\" can't to be null");
+		if (execName.isEmpty()) {
 			throw new NullPointerException("\"exec_name\" can't to be empty");
 		}
-		execution_executor = ForkJoinPool.commonPool();
-		post_process_executor = ForkJoinPool.commonPool();
+		executor = ForkJoinPool.commonPool();
 
-		log.debug("Init recipe " + getClass().getSimpleName() + " with " + exec_name);
-	}
-
-	public Recipe() {
-		exec_finder = new ExecutableFinder();
-		exec_name = getDefaultExecName();
-		if (exec_name == null) {
-			throw new NullPointerException("\"exec_name\" can't to be null");
-		} else if (exec_name.isEmpty()) {
-			throw new NullPointerException("\"exec_name\" can't to be empty");
-		}
-		execution_executor = ForkJoinPool.commonPool();
-		post_process_executor = ForkJoinPool.commonPool();
-
-		log.debug("Init recipe " + getClass().getSimpleName() + " with " + exec_name + " (DefaultExecName)");
-	}
-
-	protected abstract String getDefaultExecName();
-
-	public ExecutableFinder getExecFinder() {
-		return exec_finder;
-	}
-
-	public Executor getExecutionExecutor() {
-		return execution_executor;
-	}
-
-	public Recipe setExecutionExecutor(final Executor execution_executor) {
-		if (execution_executor == null) {
-			throw new NullPointerException("\"execution_executor\" can't to be null");
-		}
-		this.execution_executor = execution_executor;
-		log.debug("Set executor for recipe " + getClass().getSimpleName() + ": " + execution_executor.getClass().getSimpleName());
-		return this;
-	}
-
-	public Executor getPostProcessExecutor() {
-		return post_process_executor;
-	}
-
-	public Recipe setPostProcessExecutor(final Executor post_process_executor) {
-		if (post_process_executor == null) {
-			throw new NullPointerException("\"post_process_executor\" can't to be null");
-		}
-		this.post_process_executor = post_process_executor;
-		log.debug("Set executor for recipe " + getClass().getSimpleName() + ": " + post_process_executor.getClass().getSimpleName());
-		return this;
+		log.debug("Init recipe " + getClass().getSimpleName() + " with " + execName);
 	}
 
 	public String getExecName() {
-		return exec_name;
+		return execName;
+	}
+
+	public Recipe setPostProcessExecutor(final Executor executor) {
+		this.executor = Objects.requireNonNull(executor, "\"executor\" can't to be null");
+		log.debug("Set executor for recipe " + getClass().getSimpleName() + ": " + executor.getClass().getSimpleName());
+		return this;
 	}
 
 }

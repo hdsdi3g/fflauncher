@@ -20,47 +20,44 @@ import java.awt.Point;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor;
-import tv.hd3g.execprocess.DeprecatedCommandLineProcessor.DeprecatedCommandLine;
-import tv.hd3g.execprocess.ExecProcessText;
+import tv.hd3g.fflauncher.FFAbout;
 import tv.hd3g.fflauncher.FFmpeg;
-import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
+import tv.hd3g.processlauncher.cmdline.Parameters;
+import tv.hd3g.processlauncher.tool.RunningTool;
+import tv.hd3g.processlauncher.tool.ToolRun;
 
 public class GenerateVideoFile extends Recipe {
-	private static Logger log = LogManager.getLogger();
 
-	public GenerateVideoFile() {
-		super();
+	public GenerateVideoFile(final ToolRun toolRun) {
+		super(toolRun, "ffmpeg");
 	}
 
-	public GenerateVideoFile(final ExecutableFinder exec_finder, final String exec_name) {
-		super(exec_finder, exec_name);
+	public GenerateVideoFile(final ToolRun toolRun, final String execName) {
+		super(toolRun, execName);
 	}
 
-	public CompletableFuture<FFmpeg> generateBarsAnd1k(final String destination, final int duration_in_sec, final Point resolution) throws IOException {
-		final FFmpeg ffmpeg = new FFmpeg(getExecFinder(), new DeprecatedCommandLineProcessor().createEmptyCommandLine(getExecName()));
+	public CompletableFuture<RunningTool<FFmpeg>> generateBarsAnd1k(final String destination, final int duration_in_sec, final Point resolution) throws IOException {
+		final Parameters parameters = new Parameters();
+		final FFmpeg ffmpeg = new FFmpeg(execName, parameters);
 
-		if (ffmpeg.getAbout().isFromFormatIsAvaliable("lavfi") == false) {
-			throw new IOException("This ffmpeg (" + ffmpeg.getExecutable() + ") can't handle \"lavfi\"");
+		final FFAbout about = ffmpeg.getAbout(toolRun.getExecutableFinder());
+		if (about.isFromFormatIsAvaliable("lavfi") == false) {
+			throw new IOException("This ffmpeg (" + toolRun.getExecutableFinder().get(ffmpeg.getExecutableName()) + ") can't handle \"lavfi\"");
 		}
 
 		ffmpeg.setOverwriteOutputFiles();
 		ffmpeg.setOnErrorDeleteOutFiles(true);
 
-		final DeprecatedCommandLine cmd = ffmpeg.getCommandLine();
-		cmd.addBulkParameters("-f lavfi -i smptehdbars=duration=" + duration_in_sec + ":size=" + resolution.x + "x" + resolution.y + ":rate=25");
-		cmd.addBulkParameters("-f lavfi -i sine=frequency=1000:sample_rate=48000:duration=" + duration_in_sec);
+		parameters.addBulkParameters("-f lavfi -i smptehdbars=duration=" + duration_in_sec + ":size=" + resolution.x + "x" + resolution.y + ":rate=25");
+		parameters.addBulkParameters("-f lavfi -i sine=frequency=1000:sample_rate=48000:duration=" + duration_in_sec);
 
-		if (ffmpeg.getAbout().isCoderIsAvaliable("h264")) {
+		if (about.isCoderIsAvaliable("h264")) {
 			ffmpeg.addVideoCodecName("h264", -1).addCRF(1);
 		} else {
 			ffmpeg.addVideoCodecName("ffv1", -1);
 		}
 
-		if (ffmpeg.getAbout().isCoderIsAvaliable("aac")) {
+		if (about.isCoderIsAvaliable("aac")) {
 			ffmpeg.addAudioCodecName("aac", -1);
 		} else {
 			ffmpeg.addAudioCodecName("opus", -1);
@@ -68,17 +65,9 @@ public class GenerateVideoFile extends Recipe {
 
 		ffmpeg/*.addFastStartMovMp4File()*/.addSimpleOutputDestination(destination);
 
-		final ExecProcessText exec = ffmpeg.createExec();
-		log.info("Generate test file to \"" + destination + "\"");
+		// TODO set setOnTextOutEventExecutor(final Executor onTextOutEventExecutor) for logging
 
-		return exec.start(getExecutionExecutor()).waitForEnd().thenAcceptAsync(result -> {
-			result.checkExecution();
-		}, getPostProcessExecutor()).thenApplyAsync(_void -> ffmpeg, getPostProcessExecutor());
-	}
-
-	@Override
-	protected String getDefaultExecName() {
-		return "ffmpeg";
+		return toolRun.execute(ffmpeg);
 	}
 
 }
