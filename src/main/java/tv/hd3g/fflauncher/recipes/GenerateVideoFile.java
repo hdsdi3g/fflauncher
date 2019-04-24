@@ -17,6 +17,7 @@
 package tv.hd3g.fflauncher.recipes;
 
 import java.awt.Point;
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
@@ -24,19 +25,22 @@ import tv.hd3g.fflauncher.FFAbout;
 import tv.hd3g.fflauncher.FFmpeg;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 import tv.hd3g.processlauncher.tool.RunningTool;
-import tv.hd3g.processlauncher.tool.ToolRun;
+import tv.hd3g.processlauncher.tool.ToolRunner;
 
 public class GenerateVideoFile extends Recipe {
 
-	public GenerateVideoFile(final ToolRun toolRun) {
+	public GenerateVideoFile(final ToolRunner toolRun) {
 		super(toolRun, "ffmpeg");
 	}
 
-	public GenerateVideoFile(final ToolRun toolRun, final String execName) {
+	public GenerateVideoFile(final ToolRunner toolRun, final String execName) {
 		super(toolRun, execName);
 	}
 
-	public CompletableFuture<RunningTool<FFmpeg>> generateBarsAnd1k(final String destination, final int duration_in_sec, final Point resolution) throws IOException {
+	/**
+	 * Stateless
+	 */
+	private FFmpeg internal(final int duration_in_sec, final Point resolution) throws IOException {
 		final Parameters parameters = new Parameters();
 		final FFmpeg ffmpeg = new FFmpeg(execName, parameters);
 
@@ -63,10 +67,26 @@ public class GenerateVideoFile extends Recipe {
 			ffmpeg.addAudioCodecName("opus", -1);
 		}
 
-		ffmpeg/*.addFastStartMovMp4File()*/.addSimpleOutputDestination(destination);
-
 		// TODO set setOnTextOutEventExecutor(final Executor onTextOutEventExecutor) for logging
 
+		return ffmpeg; /*.addFastStartMovMp4File()*/
+	}
+
+	/**
+	 * Stateless
+	 */
+	public CompletableFuture<RunningTool<FFmpeg>> generateBarsAnd1k(final String destination, final int duration_in_sec, final Point resolution) throws IOException {
+		final FFmpeg ffmpeg = internal(duration_in_sec, resolution);
+		ffmpeg.addSimpleOutputDestination(destination);
+		return toolRun.execute(ffmpeg);
+	}
+
+	/**
+	 * Stateless
+	 */
+	public CompletableFuture<RunningTool<FFmpeg>> generateBarsAnd1k(final File destination, final int duration_in_sec, final Point resolution) throws IOException {
+		final FFmpeg ffmpeg = internal(duration_in_sec, resolution);
+		ffmpeg.addSimpleOutputDestination(destination);
 		return toolRun.execute(ffmpeg);
 	}
 

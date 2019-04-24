@@ -23,16 +23,16 @@ import java.util.concurrent.ForkJoinPool;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tv.hd3g.processlauncher.tool.ToolRun;
+import tv.hd3g.processlauncher.tool.ToolRunner;
 
 public abstract class Recipe {
 	private static Logger log = LogManager.getLogger();
 
-	protected final ToolRun toolRun;
+	protected final ToolRunner toolRun;
 	protected final String execName;
 	protected Executor executor;
 
-	public Recipe(final ToolRun toolRun, final String execName) {
+	public Recipe(final ToolRunner toolRun, final String execName) {
 		this.toolRun = Objects.requireNonNull(toolRun, "\"toolRun\" can't to be null");
 		this.execName = Objects.requireNonNull(execName, "\"execName\" can't to be null");
 		if (execName.isEmpty()) {

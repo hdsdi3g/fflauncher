@@ -16,11 +16,13 @@
 */
 package tv.hd3g.fflauncher;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -120,6 +122,22 @@ public class FFbase extends ConversionTool {
 	 * Define cmd var name like <%IN_AUTOMATIC_n%> with "n" the # of setted sources.
 	 * Add -i parameter
 	 */
+	public FFbase addSimpleInputSource(final File file, final String... source_options) {
+		if (file == null) {
+			throw new NullPointerException("\"file\" can't to be null");
+		}
+
+		if (source_options == null) {
+			return addSimpleInputSource(file, Collections.emptyList());
+		} else {
+			return addSimpleInputSource(file, Arrays.stream(source_options).collect(Collectors.toUnmodifiableList()));
+		}
+	}
+
+	/**
+	 * Define cmd var name like <%IN_AUTOMATIC_n%> with "n" the # of setted sources.
+	 * Add -i parameter
+	 */
 	public FFbase addSimpleInputSource(final String source_name, final List<String> source_options) {
 		if (source_name == null) {
 			throw new NullPointerException("\"source_name\" can't to be null");
@@ -129,6 +147,23 @@ public class FFbase extends ConversionTool {
 
 		final String varname = parameters.addVariable("IN_AUTOMATIC_" + input_sources.size());
 		addInputSource(source_name, varname, Stream.concat(source_options.stream(), Stream.of("-i")).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
+
+		return this;
+	}
+
+	/**
+	 * Define cmd var name like <%IN_AUTOMATIC_n%> with "n" the # of setted sources.
+	 * Add -i parameter
+	 */
+	public FFbase addSimpleInputSource(final File file, final List<String> source_options) {
+		if (file == null) {
+			throw new NullPointerException("\"file\" can't to be null");
+		} else if (source_options == null) {
+			throw new NullPointerException("\"source_options\" can't to be null");
+		}
+
+		final String varname = parameters.addVariable("IN_AUTOMATIC_" + input_sources.size());
+		addInputSource(file, varname, Stream.concat(source_options.stream(), Stream.of("-i")).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
 
 		return this;
 	}
@@ -145,4 +180,20 @@ public class FFbase extends ConversionTool {
 		return about;
 	}
 
+	private static final Predicate<String> filterOutErrorLines = _l -> {
+		final String l = _l.trim();
+		if (l.startsWith("[")) {
+			return true;
+		} else if (l.startsWith("ffmpeg version") | l.startsWith("ffprobe version") | l.startsWith("built with") | l.startsWith("configuration:") | l.startsWith("Press [q]")) {
+			return false;
+		} else if (l.startsWith("libavutil") | l.startsWith("libavcodec") | l.startsWith("libavformat") | l.startsWith("libavdevice") | l.startsWith("libavfilter") | l.startsWith("libswscale") | l.startsWith("libswresample") | l.startsWith("libpostproc")) {
+			return false;
+		}
+		return true;
+	};
+
+	@Override
+	public Predicate<String> filterOutErrorLines() {
+		return filterOutErrorLines;
+	}
 }

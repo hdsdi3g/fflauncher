@@ -17,10 +17,10 @@
 package tv.hd3g.fflauncher;
 
 import java.awt.Point;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -50,29 +50,26 @@ public class FFmpeg extends FFbase {
 			throw new NullPointerException("\"destination_container\" can't to be null");
 		}
 
-		/*Stream<String> s_source_options = Stream.empty();
-		if (source_options != null) {
-			s_source_options = Arrays.stream(source_options);
-		}*/
-
 		final String varname = getInternalParameters().addVariable("OUT_AUTOMATIC_" + output_expected_destinations.size());
 		addOutputDestination(destination_name, varname, "-f", destination_container);
 		return this;
 	}
 
-	public final Predicate<String> filterOutErrorLines = _l -> {
-		final String l = _l.trim();
-		if (l.startsWith("[")) {
-			return true;
+	/**
+	 * Define cmd var name like <%OUT_AUTOMATIC_n%> with "n" the # of setted destination.
+	 * Add "-f container /destination"
+	 */
+	public FFmpeg addSimpleOutputDestination(final File destination_file, final String destination_container) {
+		if (destination_file == null) {
+			throw new NullPointerException("\"destinatdestination_fileion_name\" can't to be null");
+		} else if (destination_container == null) {
+			throw new NullPointerException("\"destination_container\" can't to be null");
 		}
-		if (l.startsWith("ffmpeg version") | l.startsWith("built with") | l.startsWith("configuration:") | l.startsWith("Press [q]")) {
-			return false;
-		}
-		if (l.startsWith("libavutil") | l.startsWith("libavcodec") | l.startsWith("libavformat") | l.startsWith("libavdevice") | l.startsWith("libavfilter") | l.startsWith("libswscale") | l.startsWith("libswresample") | l.startsWith("libpostproc")) {
-			return false;
-		}
-		return true;
-	};
+
+		final String varname = getInternalParameters().addVariable("OUT_AUTOMATIC_" + output_expected_destinations.size());
+		addOutputDestination(destination_file, varname, "-f", destination_container);
+		return this;
+	}
 
 	/**
 	 * Add "-movflags faststart"

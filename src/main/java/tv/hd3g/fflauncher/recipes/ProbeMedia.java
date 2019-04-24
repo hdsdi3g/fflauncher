@@ -16,6 +16,7 @@
 */
 package tv.hd3g.fflauncher.recipes;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -29,7 +30,7 @@ import tv.hd3g.fflauncher.FFprobe.FFPrintFormat;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 import tv.hd3g.processlauncher.tool.RunningTool;
-import tv.hd3g.processlauncher.tool.ToolRun;
+import tv.hd3g.processlauncher.tool.ToolRunner;
 
 public class ProbeMedia extends Recipe {
 
@@ -37,31 +38,28 @@ public class ProbeMedia extends Recipe {
 
 	private final ScheduledExecutorService maxExecTimeScheduler;
 
-	public ProbeMedia(final ToolRun toolRun, final ScheduledExecutorService maxExecTimeScheduler) {
+	public ProbeMedia(final ToolRunner toolRun, final ScheduledExecutorService maxExecTimeScheduler) {
 		super(toolRun, "ffprobe");
 		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler, "\"maxExecTimeScheduler\" can't to be null");
 	}
 
-	public ProbeMedia(final ToolRun toolRun, final String execName, final ScheduledExecutorService maxExecTimeScheduler) {
+	public ProbeMedia(final ToolRunner toolRun, final String execName, final ScheduledExecutorService maxExecTimeScheduler) {
 		super(toolRun, execName);
 		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler, "\"maxExecTimeScheduler\" can't to be null");
 	}
 
-	/**
-	 * Get streams, format and chapters.
-	 * Can throw an InvalidExecution in CompletableFuture, with stderr embedded.
-	 * @see FFprobe to get cool FfprobeType parsers
-	 */
-	public CompletableFuture<FFprobeJAXB> doAnalysing(final String source) throws IOException {
+	private FFprobe internal() throws IOException {
 		final Parameters parameters = new Parameters();
 		final FFprobe ffprobe = new FFprobe(execName, parameters);
 
 		ffprobe.setPrintFormat(FFPrintFormat.xml).setShowStreams().setShowFormat().setShowChapters().isHidebanner();
-		ffprobe.addSimpleInputSource(source);
 		ffprobe.setMaxExecTimeScheduler(maxExecTimeScheduler);
-
 		// TODO set setOnTextOutEventExecutor(final Executor onTextOutEventExecutor) for logging > in Recipe
 
+		return ffprobe;
+	}
+
+	private CompletableFuture<FFprobeJAXB> execute(final FFprobe ffprobe, final String source) throws IOException {
 		return toolRun.execute(ffprobe).thenApplyAsync(RunningTool::checkExecutionGetText, executor).thenApplyAsync(textRetention -> {
 			try {
 				return new FFprobeJAXB(textRetention.getStdout(false, System.lineSeparator()), warn -> log.warn(warn));
@@ -69,6 +67,30 @@ public class ProbeMedia extends Recipe {
 				throw new RuntimeException("Can't analyst " + source, e);
 			}
 		}, executor);
+	}
+
+	/**
+	 * Stateless
+	 * Get streams, format and chapters.
+	 * Can throw an InvalidExecution in CompletableFuture, with stderr embedded.
+	 * @see FFprobe to get cool FfprobeType parsers
+	 */
+	public CompletableFuture<FFprobeJAXB> doAnalysing(final String source) throws IOException {
+		final FFprobe ffprobe = internal();
+		ffprobe.addSimpleInputSource(source);
+		return execute(ffprobe, source);
+	}
+
+	/**
+	 * Stateless
+	 * Get streams, format and chapters.
+	 * Can throw an InvalidExecution in CompletableFuture, with stderr embedded.
+	 * @see FFprobe to get cool FfprobeType parsers
+	 */
+	public CompletableFuture<FFprobeJAXB> doAnalysing(final File source) throws IOException {
+		final FFprobe ffprobe = internal();
+		ffprobe.addSimpleInputSource(source);
+		return execute(ffprobe, source.getPath());
 	}
 
 }

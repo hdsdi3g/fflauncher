@@ -22,12 +22,12 @@ import java.util.concurrent.ForkJoinPool;
 
 import junit.framework.TestCase;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
-import tv.hd3g.processlauncher.tool.ToolRun;
+import tv.hd3g.processlauncher.tool.ToolRunner;
 
 public class TestRecipe extends TestCase {
 
 	public void test() {
-		final ToolRun run = new ToolRun(new ExecutableFinder(), 1);
+		final ToolRunner run = new ToolRunner(new ExecutableFinder(), 1);
 
 		final Recipe r = new Recipe(run, "java") {};
 

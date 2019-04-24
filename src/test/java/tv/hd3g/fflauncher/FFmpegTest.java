@@ -20,21 +20,31 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.ffmpeg.ffprobe.StreamType;
 
 import junit.framework.TestCase;
-import tv.hd3g.execprocess.ExecProcessText;
-import tv.hd3g.execprocess.ExecProcessTextResult;
 import tv.hd3g.fflauncher.FFmpeg.FFHardwareCodec;
 import tv.hd3g.fflauncher.FFmpeg.Preset;
 import tv.hd3g.fflauncher.FFmpeg.Tune;
 import tv.hd3g.fflauncher.recipes.ProbeMedia;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.cmdline.Parameters;
+import tv.hd3g.processlauncher.tool.ToolRunner;
 
 public class FFmpegTest extends TestCase {
+
+	private final ToolRunner toolRun;
+	private final ScheduledExecutorService maxExecTimeScheduler;
+	private final ProbeMedia probeMedia;
+
+	public FFmpegTest() {
+		toolRun = new ToolRunner(new ExecutableFinder(), 1);
+		maxExecTimeScheduler = Executors.newSingleThreadScheduledExecutor();
+		probeMedia = new ProbeMedia(toolRun, maxExecTimeScheduler);
+	}
 
 	private FFmpeg create() {
 		return new FFmpeg("ffmpeg", new Parameters());
@@ -44,7 +54,7 @@ public class FFmpegTest extends TestCase {
 		final FFmpeg ffmpeg = create();
 		ffmpeg.addSimpleOutputDestination("dest", "container");
 
-		assertTrue(ffmpeg.getInternalParameters().getParameters().stream().collect(Collectors.joining(" ")).endsWith("-f container dest"));
+		assertTrue(ffmpeg.getReadyToRunParameters().toString().endsWith("-f container dest"));
 	}
 
 	public void testParameters() throws FileNotFoundException {
@@ -81,13 +91,9 @@ public class FFmpegTest extends TestCase {
 		final File test_file = File.createTempFile("smptebars", ".mkv");
 		ffmpeg.addSimpleOutputDestination(test_file.getPath());
 
-		ExecProcessText exec = ffmpeg.createExec();
 		System.out.println("Generate test file to \"" + test_file.getPath() + "\"");
 
-		ExecProcessTextResult result = exec.run();
-		if (result.isCorrectlyDone().get() == false) {
-			fail(result.getStderrLines(false).filter(ffmpeg.filterOutErrorLines).collect(Collectors.joining(System.lineSeparator())));
-		}
+		toolRun.execute(ffmpeg).get().checkExecutionGetText();
 
 		assertTrue(test_file.exists());
 
@@ -95,22 +101,16 @@ public class FFmpegTest extends TestCase {
 		ffmpeg.setOverwriteOutputFiles();
 		ffmpeg.setOnErrorDeleteOutFiles(true);
 
-		ffmpeg.addHardwareVideoDecoding(test_file.getPath(), new ProbeMedia().doAnalysing(test_file.getPath()).get(), FFHardwareCodec.NV, about);
+		ffmpeg.addHardwareVideoDecoding(test_file.getPath(), probeMedia.doAnalysing(test_file.getPath()).get(), FFHardwareCodec.NV, about);
 		ffmpeg.addHardwareVideoEncoding("h264", -1, FFHardwareCodec.NV, about).addCRF(40);
 
 		final File test_file2 = File.createTempFile("smptebars", ".mkv");
 		ffmpeg.addSimpleOutputDestination(test_file2.getPath());
 
-		exec = ffmpeg.createExec();
 		System.out.println("Hardware decoding to \"" + test_file.getPath() + "\"");
-
-		result = exec.run();
-		if (result.isCorrectlyDone().get() == false) {
-			fail(result.getStderrLines(false).filter(ffmpeg.filterOutErrorLines).collect(Collectors.joining(System.lineSeparator())));
-		}
+		toolRun.execute(ffmpeg).get().checkExecutionGetText();
 
 		assertTrue(test_file2.exists());
-
 		assertTrue(test_file.delete());
 		assertTrue(test_file2.delete());
 	}
@@ -131,17 +131,12 @@ public class FFmpegTest extends TestCase {
 		final File test_file = File.createTempFile("smptebars", ".mkv");
 		ffmpeg.addSimpleOutputDestination(test_file.getPath());
 
-		final ExecProcessText exec = ffmpeg.createExec();
 		System.out.println("Generate test file to \"" + test_file.getPath() + "\"");
-
-		final ExecProcessTextResult result = exec.run();
-		if (result.isCorrectlyDone().get() == false) {
-			fail(result.getStderrLines(false).filter(ffmpeg.filterOutErrorLines).collect(Collectors.joining(System.lineSeparator())));
-		}
+		toolRun.execute(ffmpeg).get().checkExecutionGetText();
 
 		assertTrue(test_file.exists());
 
-		final StreamType s = FFmpeg.getFirstVideoStream(new ProbeMedia().doAnalysing(test_file.getPath()).get()).get();
+		final StreamType s = FFmpeg.getFirstVideoStream(probeMedia.doAnalysing(test_file.getPath()).get()).get();
 		assertEquals("ffv1", s.getCodecName());
 	}
 

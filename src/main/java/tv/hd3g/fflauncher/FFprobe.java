@@ -20,8 +20,6 @@ import tv.hd3g.processlauncher.cmdline.Parameters;
 
 public class FFprobe extends FFbase {
 
-	// private static Logger log = LogManager.getLogger();
-
 	public FFprobe(final String execName, final Parameters parameters) {
 		super(execName, parameters);
 	}
