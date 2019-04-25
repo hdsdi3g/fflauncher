@@ -17,6 +17,7 @@
 package tv.hd3g.fflauncher;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -44,6 +45,11 @@ public class FFbase extends ConversionTool {
 		if (processBuilder.getEnvironmentVar("AV_LOG_FORCE_COLOR") == null) {
 			processBuilder.setEnvironmentVarIfNotFound("AV_LOG_FORCE_NOCOLOR", "1");
 		}
+	}
+
+	@Override
+	protected PrintStream getStdErrPrintStreamToDisplayLinesEvents() {
+		return System.out;
 	}
 
 	/**

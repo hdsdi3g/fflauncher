@@ -51,6 +51,9 @@ public class GenerateVideoFile extends Recipe {
 
 		ffmpeg.setOverwriteOutputFiles();
 		ffmpeg.setOnErrorDeleteOutFiles(true);
+		ffmpeg.setFilterForLinesEventsToDisplay(l -> {
+			return l.isStdErr() == false || l.isStdErr() && ffmpeg.filterOutErrorLines().test(l.getLine());
+		});
 
 		parameters.addBulkParameters("-f lavfi -i smptehdbars=duration=" + duration_in_sec + ":size=" + resolution.x + "x" + resolution.y + ":rate=25");
 		parameters.addBulkParameters("-f lavfi -i sine=frequency=1000:sample_rate=48000:duration=" + duration_in_sec);

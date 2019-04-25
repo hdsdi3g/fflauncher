@@ -19,6 +19,7 @@ package tv.hd3g.fflauncher;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -35,9 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,17 +49,17 @@ import tv.hd3g.processlauncher.ExecutionCallbacker;
 import tv.hd3g.processlauncher.ProcesslauncherBuilder;
 import tv.hd3g.processlauncher.ProcesslauncherLifecycle;
 import tv.hd3g.processlauncher.cmdline.Parameters;
-import tv.hd3g.processlauncher.io.CapturedStdOutErrTextRetention;
-import tv.hd3g.processlauncher.io.CapturedStreamToPrintStream;
+import tv.hd3g.processlauncher.io.CapturedStdOutErrToPrintStream;
+import tv.hd3g.processlauncher.io.LineEntry;
 import tv.hd3g.processlauncher.tool.ExecutableTool;
 
 public class ConversionTool implements ExecutableTool {
 	private static Logger log = LogManager.getLogger();
+	private static final Predicate<LineEntry> ignoreAllLinesEventsToDisplay = le -> false;
 
 	protected final String execName;
 	protected final ArrayList<ConversionToolParameterReference> input_sources;
 	protected final ArrayList<ConversionToolParameterReference> output_expected_destinations;
-	private Optional<Executor> onTextOutEventExecutor;
 
 	private final LinkedHashMap<String, String> parametersVariables;
 
@@ -69,6 +70,7 @@ public class ConversionTool implements ExecutableTool {
 	protected final Parameters parameters;
 	private boolean onErrorDeleteOutFiles;
 	private boolean checkSourcesBeforeReady;
+	private Optional<Predicate<LineEntry>> filterForLinesEventsToDisplay;
 
 	public ConversionTool(final String execName) {
 		this(execName, new Parameters());
@@ -81,8 +83,8 @@ public class ConversionTool implements ExecutableTool {
 		input_sources = new ArrayList<>();
 		output_expected_destinations = new ArrayList<>();
 		parametersVariables = new LinkedHashMap<>();
-		onTextOutEventExecutor = Optional.empty();
 		checkSourcesBeforeReady = true;
+		filterForLinesEventsToDisplay = Optional.of(ignoreAllLinesEventsToDisplay);
 	}
 
 	public boolean isRemoveParamsIfNoVarToInject() {
@@ -116,6 +118,15 @@ public class ConversionTool implements ExecutableTool {
 
 	public ScheduledExecutorService getMaxExecTimeScheduler() {
 		return max_exec_time_scheduler;
+	}
+
+	public ConversionTool setFilterForLinesEventsToDisplay(final Predicate<LineEntry> filterForLinesEventsToDisplay) {
+		this.filterForLinesEventsToDisplay = Optional.ofNullable(filterForLinesEventsToDisplay);
+		return this;
+	}
+
+	public Optional<Predicate<LineEntry>> getFilterForLinesEventsToDisplay() {
+		return filterForLinesEventsToDisplay;
 	}
 
 	/**
@@ -275,15 +286,6 @@ public class ConversionTool implements ExecutableTool {
 		return this;
 	}
 
-	public ConversionTool setOnTextOutEventExecutor(final Executor onTextOutEventExecutor) {
-		this.onTextOutEventExecutor = Optional.ofNullable(onTextOutEventExecutor);
-		return this;
-	}
-
-	public Optional<Executor> getOnTextOutEventExecutor() {
-		return onTextOutEventExecutor;
-	}
-
 	@Override
 	public void beforeRun(final ProcesslauncherBuilder processBuilder) {
 		if (max_exec_time_scheduler != null) {
@@ -310,14 +312,19 @@ public class ConversionTool implements ExecutableTool {
 			});
 		}
 
-		onTextOutEventExecutor.ifPresent(t -> {
-			processBuilder.getCaptureStandardOutput().ifPresent(cso -> {
-				if (cso instanceof CapturedStdOutErrTextRetention) {
-					final CapturedStdOutErrTextRetention textRetention = (CapturedStdOutErrTextRetention) cso;
-					textRetention.getObservers().add(new CapturedStreamToPrintStream(System.out, System.err));
-				}
-			});
+		filterForLinesEventsToDisplay.filter(ffletd -> ignoreAllLinesEventsToDisplay.equals(ffletd) == false).ifPresent(filter -> {
+			final CapturedStdOutErrToPrintStream psOut = new CapturedStdOutErrToPrintStream(getStdOutPrintStreamToDisplayLinesEvents(), getStdErrPrintStreamToDisplayLinesEvents());
+			psOut.setFilter(filter);
+			processBuilder.getSetCaptureStandardOutputAsOutputText().getObservers().add(psOut);
 		});
+	}
+
+	protected PrintStream getStdOutPrintStreamToDisplayLinesEvents() {
+		return System.out;
+	}
+
+	protected PrintStream getStdErrPrintStreamToDisplayLinesEvents() {
+		return System.err;
 	}
 
 	/**
