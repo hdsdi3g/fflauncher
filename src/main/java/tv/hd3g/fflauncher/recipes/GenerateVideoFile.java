@@ -70,8 +70,6 @@ public class GenerateVideoFile extends Recipe {
 			ffmpeg.addAudioCodecName("opus", -1);
 		}
 
-		// TODO set setOnTextOutEventExecutor(final Executor onTextOutEventExecutor) for logging
-
 		return ffmpeg; /*.addFastStartMovMp4File()*/
 	}
 

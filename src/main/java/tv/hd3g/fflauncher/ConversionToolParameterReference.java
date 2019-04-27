@@ -33,7 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
-class ConversionToolParameterReference {// TODO tests
+class ConversionToolParameterReference {
 
 	private static final int TRY_COUNT_TO_OPEN_FILE = 5;
 
@@ -46,6 +46,10 @@ class ConversionToolParameterReference {// TODO tests
 	private final Parameters parametersBeforeRef;
 	private final Parameters parametersAfterRef;
 
+	/**
+	 * @param parametersBeforeRef can be null
+	 * @param parametersAfterRef can be null
+	 */
 	ConversionToolParameterReference(final String reference, final String varNameInParameters, final Collection<String> parametersBeforeRef, final Collection<String> parametersAfterRef) {
 		ressource = Objects.requireNonNull(reference, "\"reference\" can't to be null");
 		this.varNameInParameters = Objects.requireNonNull(varNameInParameters, "\"var_name_in_parameters\" can't to be null");
@@ -54,6 +58,10 @@ class ConversionToolParameterReference {// TODO tests
 		ressourceAsFile = false;
 	}
 
+	/**
+	 * @param parametersBeforeRef can be null
+	 * @param parametersAfterRef can be null
+	 */
 	ConversionToolParameterReference(final File reference, final String varNameInParameters, final Collection<String> parametersBeforeRef, final Collection<String> parametersAfterRef) {
 		ressource = Objects.requireNonNull(reference, "\"reference\" can't to be null").getPath();
 		this.varNameInParameters = Objects.requireNonNull(varNameInParameters, "\"var_name_in_parameters\" can't to be null");
@@ -111,8 +119,11 @@ class ConversionToolParameterReference {// TODO tests
 		}
 	}
 
+	/**
+	 * @return getRessource()
+	 */
 	@Override
 	public String toString() {
-		return ressource;
+		return getRessource();
 	}
 }
