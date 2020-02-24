@@ -16,12 +16,12 @@
 */
 package tv.hd3g.fflauncher;
 
-import java.io.BufferedReader;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -82,18 +82,9 @@ public class FFbaseTest extends TestCase {
 		}
 	}
 
-	/**
-	 * @return unmodifiableList
-	 */
-	List<String> readLinesFromResource(final String resource) {
-		try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(resource)))) {
-
-			final ArrayList<String> lines = new ArrayList<>();
-			String line;
-			while ((line = br.readLine()) != null) {
-				lines.add(line);
-			}
-			return Collections.unmodifiableList(lines);
+	private static List<String> readLinesFromResource(final String resource) {
+		try {
+			return Files.readAllLines(new File("src/test/resources/" + resource).toPath(), UTF_8);
 		} catch (final IOException e) {
 			throw new RuntimeException("Can't get resource " + resource, e);
 		}
