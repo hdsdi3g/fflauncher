@@ -109,7 +109,7 @@ public class FFbase extends ConversionTool {
 	}
 
 	/**
-	 * Define cmd var name like <%IN_AUTOMATIC_n%> with "n" the # of setted sources.
+	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
 	 */
 	public FFbase addSimpleInputSource(final String source_name, final String... source_options) {
@@ -125,7 +125,7 @@ public class FFbase extends ConversionTool {
 	}
 
 	/**
-	 * Define cmd var name like <%IN_AUTOMATIC_n%> with "n" the # of setted sources.
+	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
 	 */
 	public FFbase addSimpleInputSource(final File file, final String... source_options) {
@@ -141,7 +141,7 @@ public class FFbase extends ConversionTool {
 	}
 
 	/**
-	 * Define cmd var name like <%IN_AUTOMATIC_n%> with "n" the # of setted sources.
+	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
 	 */
 	public FFbase addSimpleInputSource(final String source_name, final List<String> source_options) {
@@ -158,7 +158,7 @@ public class FFbase extends ConversionTool {
 	}
 
 	/**
-	 * Define cmd var name like <%IN_AUTOMATIC_n%> with "n" the # of setted sources.
+	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
 	 */
 	public FFbase addSimpleInputSource(final File file, final List<String> source_options) {

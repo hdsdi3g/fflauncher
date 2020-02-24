@@ -40,7 +40,7 @@ public class FFmpeg extends FFbase {
 	}
 
 	/**
-	 * Define cmd var name like <%OUT_AUTOMATIC_n%> with "n" the # of setted destination.
+	 * Define cmd var name like &lt;%OUT_AUTOMATIC_n%&gt; with "n" the # of setted destination.
 	 * Add "-f container destination"
 	 */
 	public FFmpeg addSimpleOutputDestination(final String destination_name, final String destination_container) {
@@ -56,7 +56,7 @@ public class FFmpeg extends FFbase {
 	}
 
 	/**
-	 * Define cmd var name like <%OUT_AUTOMATIC_n%> with "n" the # of setted destination.
+	 * Define cmd var name like &lt;%OUT_AUTOMATIC_n%&gt; with "n" the # of setted destination.
 	 * Add "-f container /destination"
 	 */
 	public FFmpeg addSimpleOutputDestination(final File destination_file, final String destination_container) {
@@ -85,8 +85,9 @@ public class FFmpeg extends FFbase {
 	 * NVIDIA Performance Primitives via libnpp.
 	 * Via -vf ffmpeg's option.
 	 * @param new_size like 1280x720 or -1x720
-	 * @param pixel_format can be null ( -> same) or nv12, yuv444p16...
-	 * @param interp_algo can be null or nn (Nearest neighbour), linear (2-parameter cubic (B=1, C=0)), cubic2p_catmullrom (2-parameter cubic (B=0, C=1/2)), cubic2p_b05c03 (2-parameter cubic (B=1/2, C=3/10)), super (Supersampling), lanczos ...
+	 * @param pixel_format can be null (== same) or nv12, yuv444p16...
+	 * @param interp_algo can be null or nn (Nearest neighbour), linear (2-parameter cubic (B=1, C=0)), cubic2p_catmullrom (2-parameter cubic (B=0, C=1/2)), cubic2p_b05c03 (2-parameter cubic (B=1/2,
+	 *        C=3/10)), super (Supersampling), lanczos ...
 	 */
 	public FFmpeg addHardwareNVScalerFilter(final Point new_size, final String pixel_format, final String interp_algo) {
 		final StringBuilder scale = new StringBuilder();
@@ -110,8 +111,7 @@ public class FFmpeg extends FFbase {
 	/**
 	 * Use nvresize
 	 * Not checks will be done
-	 * @param configuration resolution -> filter out name ; resolution can be litteral like hd1080 or cif and filter out name can be "out0", usable after with "-map [out0] -vcodec xxx out.ext"
-	 * @param device_id_to_use -1 for default, 0 for first graphic card...
+	 * @param configuration resolution -&gt; filter out name ; resolution can be litteral like hd1080 or cif and filter out name can be "out0", usable after with "-map [out0] -vcodec xxx out.ext"
 	 */
 	public FFmpeg addHardwareNVMultipleScalerFilterComplex(final LinkedHashMap<String, String> configuration) {
 		if (configuration == null) {
@@ -189,7 +189,6 @@ public class FFmpeg extends FFbase {
 	/**
 	 * "Patch" ffmpeg command line for hardware decoding. Only first video stream will be decoded.
 	 * Hardware decoding often works in tandem with hardware coding.
-	 * @param device_id_to_use -1 for default, 0 for first graphic card...
 	 * @throws MediaException if hardware decoding is not possible.
 	 */
 	public FFmpeg addHardwareVideoDecoding(final String source, final FFprobeJAXB analysing_result, final FFHardwareCodec hardware_codec, final FFAbout about) throws MediaException {
@@ -236,7 +235,7 @@ public class FFmpeg extends FFbase {
 	/**
 	 * Set codec name, and if it possible, use hardware encoding.
 	 * @param dest_codec_name
-	 * @param output_video_stream_index (-1 by default), X -> -c:v:X
+	 * @param output_video_stream_index (-1 by default), X -&gt; -c:v:X
 	 */
 	public FFmpeg addHardwareVideoEncoding(final String dest_codec_name, final int output_video_stream_index, final FFHardwareCodec hardware_codec, final FFAbout about) throws MediaException {
 		String coder = dest_codec_name;
@@ -298,7 +297,9 @@ public class FFmpeg extends FFbase {
 	}
 
 	/**
-	 * @param min_rate/max_rate/bufsize, set -1 for default.
+	 * @param min_rate set -1 for default
+	 * @param max_rate set -1 for default
+	 * @param bufsize set -1 for default
 	 */
 	public FFmpeg addBitrateControl(final int min_rate, final int max_rate, final int bufsize, final FFUnit bitrate_unit) {
 		if (min_rate > 0) {
@@ -323,7 +324,7 @@ public class FFmpeg extends FFbase {
 
 	/**
 	 * No checks will be done.
-	 * @see FFmpeg.addVideoEncoding for hardware use
+	 * See FFmpeg.addVideoEncoding for hardware use
 	 * @param output_video_stream_index -1 by default
 	 */
 	public FFmpeg addVideoCodecName(final String codec_name, final int output_video_stream_index) {
@@ -336,7 +337,9 @@ public class FFmpeg extends FFbase {
 	}
 
 	/**
-	 * @param min_rate/max_rate/bufsize, set -1 for default.
+	 * @param b_frames set 0 for default
+	 * @param gop_size set 0 for default
+	 * @param ref_frames set 0 for default
 	 */
 	public FFmpeg addGOPControl(final int b_frames, final int gop_size, final int ref_frames) {
 		if (b_frames > 0) {
@@ -352,7 +355,8 @@ public class FFmpeg extends FFbase {
 	}
 
 	/**
-	 * @param i_qfactor/b_qfactor set 0 for default
+	 * @param i_qfactor set 0 for default
+	 * @param b_qfactor set 0 for default
 	 */
 	public FFmpeg addIBQfactor(final float i_qfactor, final float b_qfactor) {
 		if (i_qfactor > 0f) {
@@ -365,7 +369,8 @@ public class FFmpeg extends FFbase {
 	}
 
 	/**
-	 * @param qmin/qmax set 0 for default
+	 * @param qmin set 0 for default
+	 * @param qmax set 0 for default
 	 */
 	public FFmpeg addQMinMax(final int qmin, final int qmax) {
 		if (qmin > 0) {

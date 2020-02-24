@@ -130,7 +130,7 @@ public class ConversionTool implements ExecutableTool {
 	}
 
 	/**
-	 * Set values for variables like <%myvar%> in the command line, do NOT set input/output references if they was set with addInputSource/addOutputDestination.
+	 * Set values for variables like &lt;%myvar%&gt; in the command line, do NOT set input/output references if they was set with addInputSource/addOutputDestination.
 	 */
 	public Map<String, String> getParametersVariables() {
 		return parametersVariables;
@@ -140,8 +140,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an input reference, like:
 	 * [parameters_before_input_source] {var_name_in_parameters replaced by source}
 	 * For example, set source = "myfile", var_name_in_parameters = "IN", parameters_before_input_source = [-i],
-	 * For an parameters = "exec -verbose <%IN%> -send <%OUT>", you will get an updated parameters:
-	 * "exec -verbose -i myfile -send <%OUT>"
+	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -verbose -i myfile -send &lt;%OUT%&gt;"
 	 * @param source can be another var name (mindfuck)
 	 */
 	public ConversionTool addInputSource(final String source, final String var_name_in_parameters, final String... parameters_before_input_source) {
@@ -155,8 +155,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an input reference, like:
 	 * [parameters_before_input_source] {var_name_in_parameters replaced by source}
 	 * For example, set source = "/myfile", var_name_in_parameters = "IN", parameters_before_input_source = [-i],
-	 * For an parameters = "exec -verbose <%IN%> -send <%OUT>", you will get an updated parameters:
-	 * "exec -verbose -i /myfile -send <%OUT>"
+	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -verbose -i /myfile -send &lt;%OUT%&gt;"
 	 */
 	public ConversionTool addInputSource(final File source, final String var_name_in_parameters, final String... parameters_before_input_source) {
 		if (parameters_before_input_source != null) {
@@ -169,8 +169,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an input reference, like:
 	 * [parameters_before_input_source] {var_name_in_parameters replaced by source} [parameters_after_input_source]
 	 * For example, set source = "myfile", var_name_in_parameters = "IN", parameters_before_input_source = [-i], parameters_after_input_source = [-w],
-	 * For an parameters = "exec -verbose <%IN%> -send <%OUT>", you will get an updated parameters:
-	 * "exec -verbose -i myfile -w -send <%OUT>"
+	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -verbose -i myfile -w -send &lt;%OUT%&gt;"
 	 * @param source can be another var name (mindfuck)
 	 * @param parameters_before_input_source can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_input_source can be null, and can be another var name (mindfuck)
@@ -184,8 +184,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an input reference, like:
 	 * [parameters_before_input_source] {var_name_in_parameters replaced by source} [parameters_after_input_source]
 	 * For example, set source = "/myfile", var_name_in_parameters = "IN", parameters_before_input_source = [-i], parameters_after_input_source = [-w],
-	 * For an parameters = "exec -verbose <%IN%> -send <%OUT>", you will get an updated parameters:
-	 * "exec -verbose -i /myfile -w -send <%OUT>"
+	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -verbose -i /myfile -w -send &lt;%OUT%&gt;"
 	 * @param parameters_before_input_source can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_input_source can be null, and can be another var name (mindfuck)
 	 */
@@ -198,8 +198,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an output reference, like:
 	 * [parameters_before_output_destination] {var_name_in_parameters replaced by destination}
 	 * For example, set destination = "myfile", var_name_in_parameters = "OUT", parameters_before_output_destination = [-o],
-	 * For an parameters = "exec -verbose <%IN%> -send <%OUT%>", you will get an updated parameters:
-	 * "exec -verbose <%IN%> -send -o myfile"
+	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -verbose &lt;%IN%&gt; -send -o myfile"
 	 * @param destination can be another var name (mindfuck)
 	 */
 	public ConversionTool addOutputDestination(final String destination, final String var_name_in_parameters, final String... parameters_before_output_destination) {
@@ -213,8 +213,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an output reference, like:
 	 * [parameters_before_output_destination] {var_name_in_parameters replaced by destination}
 	 * For example, set destination = "myfile", var_name_in_parameters = "OUT", parameters_before_output_destination = [-o],
-	 * For an parameters = "exec -verbose <%IN%> -send <%OUT%>", you will get an updated parameters:
-	 * "exec -verbose <%IN%> -send -o myfile"
+	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -verbose &lt;%IN%&gt; -send -o myfile"
 	 */
 	public ConversionTool addOutputDestination(final File destination, final String var_name_in_parameters, final String... parameters_before_output_destination) {
 		if (parameters_before_output_destination != null) {
@@ -227,8 +227,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an output reference, like:
 	 * [parameters_before_output_destination] {var_name_in_parameters replaced by destination} [parameters_after_output_destination]
 	 * For example, set destination = "myfile", var_name_in_parameters = "OUT", parameters_before_output_destination = [-o], parameters_after_output_destination = [-w],
-	 * For an parameters = "exec -verbose <%IN%> -send <%OUT%>", you will get an updated parameters:
-	 * "exec -verbose <%IN%> -send -o myfile -w"
+	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -verbose &lt;%IN%&gt; -send -o myfile -w"
 	 * @param destination can be another var name (mindfuck)
 	 * @param parameters_before_output_destination can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_output_destination can be null, and can be another var name (mindfuck)
@@ -242,8 +242,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an output reference, like:
 	 * [parameters_before_output_destination] {var_name_in_parameters replaced by destination} [parameters_after_output_destination]
 	 * For example, set destination = "myfile", var_name_in_parameters = "OUT", parameters_before_output_destination = [-o], parameters_after_output_destination = [-w],
-	 * For an parameters = "exec -verbose <%IN%> -send <%OUT%>", you will get an updated parameters:
-	 * "exec -verbose <%IN%> -send -o myfile -w"
+	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -verbose &lt;%IN%&gt; -send -o myfile -w"
 	 * @param parameters_before_output_destination can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_output_destination can be null, and can be another var name (mindfuck)
 	 */
@@ -356,7 +356,7 @@ public class ConversionTool implements ExecutableTool {
 	}
 
 	/**
-	 * Define cmd var name like <%OUT_AUTOMATIC_n%> with "n" the # of setted destination.
+	 * Define cmd var name like &lt;%OUT_AUTOMATIC_n%&gt; with "n" the # of setted destination.
 	 * Add -i parameter
 	 */
 	public ConversionTool addSimpleOutputDestination(final String destination_name) {
@@ -370,7 +370,7 @@ public class ConversionTool implements ExecutableTool {
 	}
 
 	/**
-	 * Define cmd var name like <%OUT_AUTOMATIC_n%> with "n" the # of setted destination.
+	 * Define cmd var name like &lt;%OUT_AUTOMATIC_n%&gt; with "n" the # of setted destination.
 	 * Add -i parameter
 	 */
 	public ConversionTool addSimpleOutputDestination(final File destination_file) {
