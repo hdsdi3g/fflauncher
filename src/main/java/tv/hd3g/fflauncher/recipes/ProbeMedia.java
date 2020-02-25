@@ -25,6 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tv.hd3g.fflauncher.FFLogLevel;
 import tv.hd3g.fflauncher.FFprobe;
 import tv.hd3g.fflauncher.FFprobe.FFPrintFormat;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
@@ -54,6 +55,7 @@ public class ProbeMedia extends Recipe {
 
 		ffprobe.setPrintFormat(FFPrintFormat.xml).setShowStreams().setShowFormat().setShowChapters().isHidebanner();
 		ffprobe.setMaxExecTimeScheduler(maxExecTimeScheduler);
+		ffprobe.setLogLevel(FFLogLevel.error, false, false);
 		ffprobe.setFilterForLinesEventsToDisplay(l -> {
 			return l.isStdErr() && ffprobe.filterOutErrorLines().test(l.getLine());
 		});
