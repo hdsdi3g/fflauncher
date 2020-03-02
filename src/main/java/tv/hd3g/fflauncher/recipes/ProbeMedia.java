@@ -63,14 +63,23 @@ public class ProbeMedia extends Recipe {
 		return ffprobe;
 	}
 
+	public static class InvalidFFprobeReturn extends RuntimeException {
+		private InvalidFFprobeReturn(final String source, final String actualPayload, final IOException origin) {
+			super("Can't analyst " + source + ". Raw ffprobe return: \"" + actualPayload + "\"", origin);
+		}
+	}
+
 	private CompletableFuture<FFprobeJAXB> execute(final FFprobe ffprobe, final String source) throws IOException {
-		return toolRun.execute(ffprobe).thenApplyAsync(RunningTool::checkExecutionGetText, executor).thenApplyAsync(textRetention -> {
-			try {
-				return new FFprobeJAXB(textRetention.getStdout(false, System.lineSeparator()), warn -> log.warn(warn));
-			} catch (final IOException e) {
-				throw new RuntimeException("Can't analyst " + source, e);
-			}
-		}, executor);
+		return toolRun.execute(ffprobe)
+		        .thenApplyAsync(RunningTool::checkExecutionGetText, executor)
+		        .thenApplyAsync(textRetention -> {
+			        final var stdOut = textRetention.getStdout(false, System.lineSeparator());
+			        try {
+				        return new FFprobeJAXB(stdOut, warn -> log.warn(warn));
+			        } catch (final IOException e) {
+				        throw new InvalidFFprobeReturn(source, stdOut, e);
+			        }
+		        }, executor);
 	}
 
 	/**
