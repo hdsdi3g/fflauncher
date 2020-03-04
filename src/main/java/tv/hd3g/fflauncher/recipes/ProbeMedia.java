@@ -64,8 +64,8 @@ public class ProbeMedia extends Recipe {
 	}
 
 	public static class InvalidFFprobeReturn extends RuntimeException {
-		private InvalidFFprobeReturn(final String source, final String actualPayload, final IOException origin) {
-			super("Can't analyst " + source + ". Raw ffprobe return: \"" + actualPayload + "\"", origin);
+		private InvalidFFprobeReturn(final String source, final IOException origin) {
+			super("Can't analyst " + source, origin);
 		}
 	}
 
