@@ -77,7 +77,8 @@ public class ProbeMedia extends Recipe {
 			        try {
 				        return new FFprobeJAXB(stdOut, warn -> log.warn(warn));
 			        } catch (final IOException e) {
-				        throw new InvalidFFprobeReturn(source, stdOut, e);
+				        log.error("Raw ffprobe return: \"{}\"", stdOut);
+				        throw new InvalidFFprobeReturn(source, e);
 			        }
 		        }, executor);
 	}

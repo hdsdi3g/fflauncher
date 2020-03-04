@@ -33,7 +33,7 @@ public class TestRecipe extends TestCase {
 
 		assertEquals(r.getExecName(), "java");
 		assertEquals(r.toolRun, run);
-		assertEquals(ForkJoinPool.commonPool(), r.executor);
+		assertNotSame(ForkJoinPool.commonPool(), r.executor);
 		final Executor exec = Executors.newCachedThreadPool();
 		r.setPostProcessExecutor(exec);
 		assertEquals(exec, r.executor);
