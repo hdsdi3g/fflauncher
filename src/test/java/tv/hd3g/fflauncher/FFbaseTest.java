@@ -8,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
-*/
+ */
 package tv.hd3g.fflauncher;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -51,31 +51,33 @@ public class FFbaseTest extends TestCase {
 
 	public void testBase() throws Exception {
 		final FFbaseImpl b = new FFbaseImpl(new Parameters());
+		final var about = b.getAbout(executableFinder);
 
-		assertNotNull(b.getAbout(executableFinder).getVersion());
-		assertFalse(b.getAbout(executableFinder).getCodecs().isEmpty());
-		assertFalse(b.getAbout(executableFinder).getFormats().isEmpty());
-		assertFalse(b.getAbout(executableFinder).getDevices().isEmpty());
-		assertFalse(b.getAbout(executableFinder).getBitStreamFilters().isEmpty());
-		assertNotNull(b.getAbout(executableFinder).getProtocols());
-		assertFalse(b.getAbout(executableFinder).getFilters().isEmpty());
-		assertFalse(b.getAbout(executableFinder).getPixelFormats().isEmpty());
+		assertNotNull("version", about.getVersion());
+		assertFalse("codecs empty", about.getCodecs().isEmpty());
+		assertFalse("formats empty", about.getFormats().isEmpty());
+		assertFalse("devices empty", about.getDevices().isEmpty());
+		assertFalse("bitstream empty", about.getBitStreamFilters().isEmpty());
+		assertNotNull("protocols", about.getProtocols());
+		assertFalse("filters empty", about.getFilters().isEmpty());
+		assertFalse("pixelFormats empty", about.getPixelFormats().isEmpty());
 
-		assertTrue(b.getAbout(executableFinder).isCoderIsAvaliable("ffv1"));
-		assertFalse(b.getAbout(executableFinder).isCoderIsAvaliable("nonono"));
-		assertTrue(b.getAbout(executableFinder).isDecoderIsAvaliable("rl2"));
-		assertFalse(b.getAbout(executableFinder).isDecoderIsAvaliable("nonono"));
-		assertTrue(b.getAbout(executableFinder).isFilterIsAvaliable("color"));
-		assertFalse(b.getAbout(executableFinder).isFilterIsAvaliable("nonono"));
-		assertTrue(b.getAbout(executableFinder).isToFormatIsAvaliable("wav"));
-		assertFalse(b.getAbout(executableFinder).isToFormatIsAvaliable("nonono"));
+		assertTrue("Coder Avaliable", about.isCoderIsAvaliable("ffv1"));
+		assertFalse("Coder notAvaliable", about.isCoderIsAvaliable("nonono"));
+		assertTrue("Decoder Avaliable", about.isDecoderIsAvaliable("rl2"));
+		assertFalse("Decoder notAvaliable", about.isDecoderIsAvaliable("nonono"));
+		assertTrue("Filter Avaliable", about.isFilterIsAvaliable("color"));
+		assertFalse("Filter notAvaliable", about.isFilterIsAvaliable("nonono"));
+		assertTrue("Format Avaliable", about.isToFormatIsAvaliable("wav"));
+		assertFalse("Format notAvaliable", about.isToFormatIsAvaliable("nonono"));
 	}
 
 	public void testNVPresence() throws Exception {
 		final FFbaseImpl b = new FFbaseImpl(new Parameters());
 
 		if (System.getProperty("ffmpeg.test.nvidia", "").equals("1")) {
-			assertTrue("Can't found NV lib like cuda, cuvid and nvenc", b.getAbout(executableFinder).isNVToolkitIsAvaliable());
+			assertTrue("Can't found NV lib like cuda, cuvid and nvenc", b.getAbout(executableFinder)
+			        .isNVToolkitIsAvaliable());
 		}
 		if (System.getProperty("ffmpeg.test.libnpp", "").equals("1")) {
 			assertTrue("Can't found libnpp", b.getAbout(executableFinder).isHardwareNVScalerFilterIsAvaliable());
@@ -96,11 +98,15 @@ public class FFbaseTest extends TestCase {
 		assertEquals("3.3.3 Copyright (c) 2000-2017 the FFmpeg developers", v.header_version);
 		assertEquals("gcc 4.9.2 (Debian 4.9.2-10)", v.built_with);
 
-		Arrays.stream("gpl version3 nonfree yasm libmp3lame libbluray libopenjpeg libtheora libvorbis libtwolame libvpx libxvid libgsm libopencore-amrnb libopencore-amrwb libopus librtmp libschroedinger libsmbclient libspeex libssh libvo-amrwbenc libwavpack libwebp libzvbi libx264 libx265 libsmbclient libssh".split(" ")).forEach(cf -> {
-			assertTrue("Missing " + cf, v.configuration.contains(cf));
-		});
+		Arrays.stream(
+		        "gpl version3 nonfree yasm libmp3lame libbluray libopenjpeg libtheora libvorbis libtwolame libvpx libxvid libgsm libopencore-amrnb libopencore-amrwb libopus librtmp libschroedinger libsmbclient libspeex libssh libvo-amrwbenc libwavpack libwebp libzvbi libx264 libx265 libsmbclient libssh"
+		                .split(" ")).forEach(cf -> {
+			                assertTrue("Missing " + cf, v.configuration.contains(cf));
+		                });
 
-		assertEquals("--enable-gpl --enable-version3 --enable-nonfree --as=yasm --enable-libmp3lame --enable-libbluray --enable-libopenjpeg --enable-libtheora --enable-libvorbis --enable-libtwolame --enable-libvpx --enable-libxvid --enable-libgsm --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopus --enable-librtmp --enable-libschroedinger --enable-libsmbclient --enable-libspeex --enable-libssh --enable-libvo-amrwbenc --enable-libwavpack --enable-libwebp --enable-libzvbi --enable-libx264 --enable-libx265 --enable-libsmbclient --enable-libssh", v.raw_configuration);
+		assertEquals(
+		        "--enable-gpl --enable-version3 --enable-nonfree --as=yasm --enable-libmp3lame --enable-libbluray --enable-libopenjpeg --enable-libtheora --enable-libvorbis --enable-libtwolame --enable-libvpx --enable-libxvid --enable-libgsm --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopus --enable-librtmp --enable-libschroedinger --enable-libsmbclient --enable-libspeex --enable-libssh --enable-libvo-amrwbenc --enable-libwavpack --enable-libwebp --enable-libzvbi --enable-libx264 --enable-libx265 --enable-libsmbclient --enable-libssh",
+		        v.raw_configuration);
 		assertEquals(v.libavutil_version, "55. 58.100 / 55. 58.100");
 		assertEquals(v.libavcodec_version, "57. 89.100 / 57. 89.100");
 		assertEquals(v.libavformat_version, "57. 71.100 / 57. 71.100");
@@ -115,7 +121,8 @@ public class FFbaseTest extends TestCase {
 		final List<FFCodec> list = FFCodec.parse(readLinesFromResource("test-codecs.txt"));
 
 		final List<FFCodec> test1 = list.stream().filter(c -> {
-			return c.type == CodecType.AUDIO & c.encoding_supported & c.decoding_supported & c.lossy_compression & c.name.equals("adpcm_g722");
+			return c.type == CodecType.AUDIO & c.encoding_supported & c.decoding_supported & c.lossy_compression
+			       & c.name.equals("adpcm_g722");
 		}).collect(Collectors.toUnmodifiableList());
 
 		assertEquals(1, test1.size());
@@ -127,7 +134,8 @@ public class FFbaseTest extends TestCase {
 		}).count());
 
 		assertEquals(10, list.stream().filter(c -> {
-			return c.encoding_supported == false & c.decoding_supported == false & c.lossless_compression == false && c.lossy_compression == false;
+			return c.encoding_supported == false & c.decoding_supported == false & c.lossless_compression == false
+			       && c.lossy_compression == false;
 		}).count());
 
 		final FFCodec t = list.stream().filter(c -> {
@@ -219,11 +227,13 @@ public class FFbaseTest extends TestCase {
 		}).count());
 
 		assertEquals(1, list.stream().filter(f -> {
-			return f.source_connectors_count == 2 && f.source_connector == ConnectorType.VIDEO && f.dest_connectors_count == 2 && f.dest_connector == ConnectorType.VIDEO;
+			return f.source_connectors_count == 2 && f.source_connector == ConnectorType.VIDEO
+			       && f.dest_connectors_count == 2 && f.dest_connector == ConnectorType.VIDEO;
 		}).filter(f -> {
 			return f.tag.equals("scale2ref");
 		}).filter(f -> {
-			return f.long_name.equals("Scale the input video size and/or convert the image format to the given reference.");
+			return f.long_name.equals(
+			        "Scale the input video size and/or convert the image format to the given reference.");
 		}).count());
 
 		assertTrue(list.get(0).toString().startsWith(list.get(0).long_name));
@@ -231,16 +241,19 @@ public class FFbaseTest extends TestCase {
 	}
 
 	public void testPixelFormats() {
-		final List<FFPixelFormat> list = FFPixelFormat.parsePixelsFormats(readLinesFromResource("test-pixelsformats.txt"));
+		final List<FFPixelFormat> list = FFPixelFormat.parsePixelsFormats(readLinesFromResource(
+		        "test-pixelsformats.txt"));
 
 		assertEquals(183, list.size());
 
 		assertEquals(1, list.stream().filter(pf -> {
-			return pf.tag.equals("pal8") && pf.supported_input && pf.supported_output == false && pf.paletted && pf.nb_components == 1 && pf.bits_per_pixel == 8;
+			return pf.tag.equals("pal8") && pf.supported_input && pf.supported_output == false && pf.paletted
+			       && pf.nb_components == 1 && pf.bits_per_pixel == 8;
 		}).count());
 
 		assertEquals(1, list.stream().filter(pf -> {
-			return pf.tag.equals("yuv444p16le") && pf.supported_input && pf.supported_output && pf.paletted == false && pf.hardware_accelerated == false && pf.nb_components == 3 && pf.bits_per_pixel == 48;
+			return pf.tag.equals("yuv444p16le") && pf.supported_input && pf.supported_output && pf.paletted == false
+			       && pf.hardware_accelerated == false && pf.nb_components == 3 && pf.bits_per_pixel == 48;
 		}).count());
 	}
 

@@ -16,10 +16,6 @@
  */
 package tv.hd3g.fflauncher.recipes;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-
 import junit.framework.TestCase;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.tool.ToolRunner;
@@ -30,13 +26,8 @@ public class TestRecipe extends TestCase {
 		final ToolRunner run = new ToolRunner(new ExecutableFinder());
 
 		final Recipe r = new Recipe(run, "java") {};
-
 		assertEquals(r.getExecName(), "java");
 		assertEquals(r.toolRun, run);
-		assertNotSame(ForkJoinPool.commonPool(), r.executor);
-		final Executor exec = Executors.newCachedThreadPool();
-		r.setPostProcessExecutor(exec);
-		assertEquals(exec, r.executor);
 	}
 
 }

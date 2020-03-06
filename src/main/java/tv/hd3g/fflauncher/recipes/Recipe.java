@@ -17,7 +17,6 @@
 package tv.hd3g.fflauncher.recipes;
 
 import java.util.Objects;
-import java.util.concurrent.Executor;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +28,6 @@ public abstract class Recipe {
 
 	protected final ToolRunner toolRun;
 	protected final String execName;
-	protected Executor executor;// TODO keep ??
 
 	public Recipe(final ToolRunner toolRun, final String execName) {
 		this.toolRun = Objects.requireNonNull(toolRun, "\"toolRun\" can't to be null");
@@ -37,19 +35,11 @@ public abstract class Recipe {
 		if (execName.isEmpty()) {
 			throw new NullPointerException("\"exec_name\" can't to be empty");
 		}
-		executor = Runnable::run;
-
 		log.debug("Init recipe " + getClass().getSimpleName() + " with " + execName);
 	}
 
 	public String getExecName() {
 		return execName;
-	}
-
-	public Recipe setPostProcessExecutor(final Executor executor) {
-		this.executor = Objects.requireNonNull(executor, "\"executor\" can't to be null");
-		log.debug("Set executor for recipe " + getClass().getSimpleName() + ": " + executor.getClass().getSimpleName());
-		return this;
 	}
 
 }
