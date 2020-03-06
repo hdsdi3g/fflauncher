@@ -8,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
-*/
+ */
 package tv.hd3g.fflauncher;
 
 import java.io.File;
@@ -45,12 +45,12 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tv.hd3g.processlauncher.CapturedStdOutErrToPrintStream;
 import tv.hd3g.processlauncher.ExecutionCallbacker;
+import tv.hd3g.processlauncher.LineEntry;
 import tv.hd3g.processlauncher.ProcesslauncherBuilder;
 import tv.hd3g.processlauncher.ProcesslauncherLifecycle;
 import tv.hd3g.processlauncher.cmdline.Parameters;
-import tv.hd3g.processlauncher.io.CapturedStdOutErrToPrintStream;
-import tv.hd3g.processlauncher.io.LineEntry;
 import tv.hd3g.processlauncher.tool.ExecutableTool;
 
 public class ConversionTool implements ExecutableTool {
@@ -144,9 +144,12 @@ public class ConversionTool implements ExecutableTool {
 	 * "exec -verbose -i myfile -send &lt;%OUT%&gt;"
 	 * @param source can be another var name (mindfuck)
 	 */
-	public ConversionTool addInputSource(final String source, final String var_name_in_parameters, final String... parameters_before_input_source) {
+	public ConversionTool addInputSource(final String source,
+	                                     final String var_name_in_parameters,
+	                                     final String... parameters_before_input_source) {
 		if (parameters_before_input_source != null) {
-			return addInputSource(source, var_name_in_parameters, Arrays.stream(parameters_before_input_source).filter(p -> p != null).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
+			return addInputSource(source, var_name_in_parameters, Arrays.stream(parameters_before_input_source).filter(
+			        p -> p != null).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
 		}
 		return addInputSource(source, var_name_in_parameters, Collections.emptyList(), Collections.emptyList());
 	}
@@ -158,9 +161,12 @@ public class ConversionTool implements ExecutableTool {
 	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
 	 * "exec -verbose -i /myfile -send &lt;%OUT%&gt;"
 	 */
-	public ConversionTool addInputSource(final File source, final String var_name_in_parameters, final String... parameters_before_input_source) {
+	public ConversionTool addInputSource(final File source,
+	                                     final String var_name_in_parameters,
+	                                     final String... parameters_before_input_source) {
 		if (parameters_before_input_source != null) {
-			return addInputSource(source, var_name_in_parameters, Arrays.stream(parameters_before_input_source).filter(p -> p != null).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
+			return addInputSource(source, var_name_in_parameters, Arrays.stream(parameters_before_input_source).filter(
+			        p -> p != null).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
 		}
 		return addInputSource(source, var_name_in_parameters, Collections.emptyList(), Collections.emptyList());
 	}
@@ -175,8 +181,12 @@ public class ConversionTool implements ExecutableTool {
 	 * @param parameters_before_input_source can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_input_source can be null, and can be another var name (mindfuck)
 	 */
-	public ConversionTool addInputSource(final String source, final String var_name_in_parameters, final Collection<String> parameters_before_input_source, final Collection<String> parameters_after_input_source) {
-		input_sources.add(new ConversionToolParameterReference(source, var_name_in_parameters, parameters_before_input_source, parameters_after_input_source));
+	public ConversionTool addInputSource(final String source,
+	                                     final String var_name_in_parameters,
+	                                     final Collection<String> parameters_before_input_source,
+	                                     final Collection<String> parameters_after_input_source) {
+		input_sources.add(new ConversionToolParameterReference(source, var_name_in_parameters,
+		        parameters_before_input_source, parameters_after_input_source));
 		return this;
 	}
 
@@ -189,8 +199,12 @@ public class ConversionTool implements ExecutableTool {
 	 * @param parameters_before_input_source can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_input_source can be null, and can be another var name (mindfuck)
 	 */
-	public ConversionTool addInputSource(final File source, final String var_name_in_parameters, final Collection<String> parameters_before_input_source, final Collection<String> parameters_after_input_source) {
-		input_sources.add(new ConversionToolParameterReference(source, var_name_in_parameters, parameters_before_input_source, parameters_after_input_source));
+	public ConversionTool addInputSource(final File source,
+	                                     final String var_name_in_parameters,
+	                                     final Collection<String> parameters_before_input_source,
+	                                     final Collection<String> parameters_after_input_source) {
+		input_sources.add(new ConversionToolParameterReference(source, var_name_in_parameters,
+		        parameters_before_input_source, parameters_after_input_source));
 		return this;
 	}
 
@@ -202,11 +216,16 @@ public class ConversionTool implements ExecutableTool {
 	 * "exec -verbose &lt;%IN%&gt; -send -o myfile"
 	 * @param destination can be another var name (mindfuck)
 	 */
-	public ConversionTool addOutputDestination(final String destination, final String var_name_in_parameters, final String... parameters_before_output_destination) {
+	public ConversionTool addOutputDestination(final String destination,
+	                                           final String var_name_in_parameters,
+	                                           final String... parameters_before_output_destination) {
 		if (parameters_before_output_destination != null) {
-			return addOutputDestination(destination, var_name_in_parameters, Arrays.stream(parameters_before_output_destination).filter(p -> p != null).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
+			return addOutputDestination(destination, var_name_in_parameters, Arrays.stream(
+			        parameters_before_output_destination).filter(p -> p != null).collect(Collectors
+			                .toUnmodifiableList()), Collections.emptyList());
 		}
-		return addOutputDestination(destination, var_name_in_parameters, Collections.emptyList(), Collections.emptyList());
+		return addOutputDestination(destination, var_name_in_parameters, Collections.emptyList(), Collections
+		        .emptyList());
 	}
 
 	/**
@@ -216,11 +235,16 @@ public class ConversionTool implements ExecutableTool {
 	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
 	 * "exec -verbose &lt;%IN%&gt; -send -o myfile"
 	 */
-	public ConversionTool addOutputDestination(final File destination, final String var_name_in_parameters, final String... parameters_before_output_destination) {
+	public ConversionTool addOutputDestination(final File destination,
+	                                           final String var_name_in_parameters,
+	                                           final String... parameters_before_output_destination) {
 		if (parameters_before_output_destination != null) {
-			return addOutputDestination(destination, var_name_in_parameters, Arrays.stream(parameters_before_output_destination).filter(p -> p != null).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
+			return addOutputDestination(destination, var_name_in_parameters, Arrays.stream(
+			        parameters_before_output_destination).filter(p -> p != null).collect(Collectors
+			                .toUnmodifiableList()), Collections.emptyList());
 		}
-		return addOutputDestination(destination, var_name_in_parameters, Collections.emptyList(), Collections.emptyList());
+		return addOutputDestination(destination, var_name_in_parameters, Collections.emptyList(), Collections
+		        .emptyList());
 	}
 
 	/**
@@ -233,8 +257,12 @@ public class ConversionTool implements ExecutableTool {
 	 * @param parameters_before_output_destination can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_output_destination can be null, and can be another var name (mindfuck)
 	 */
-	public ConversionTool addOutputDestination(final String destination, final String var_name_in_parameters, final Collection<String> parameters_before_output_destination, final Collection<String> parameters_after_output_destination) {
-		output_expected_destinations.add(new ConversionToolParameterReference(destination, var_name_in_parameters, parameters_before_output_destination, parameters_after_output_destination));
+	public ConversionTool addOutputDestination(final String destination,
+	                                           final String var_name_in_parameters,
+	                                           final Collection<String> parameters_before_output_destination,
+	                                           final Collection<String> parameters_after_output_destination) {
+		output_expected_destinations.add(new ConversionToolParameterReference(destination, var_name_in_parameters,
+		        parameters_before_output_destination, parameters_after_output_destination));
 		return this;
 	}
 
@@ -247,13 +275,18 @@ public class ConversionTool implements ExecutableTool {
 	 * @param parameters_before_output_destination can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_output_destination can be null, and can be another var name (mindfuck)
 	 */
-	public ConversionTool addOutputDestination(final File destination, final String var_name_in_parameters, final Collection<String> parameters_before_output_destination, final Collection<String> parameters_after_output_destination) {
-		output_expected_destinations.add(new ConversionToolParameterReference(destination, var_name_in_parameters, parameters_before_output_destination, parameters_after_output_destination));
+	public ConversionTool addOutputDestination(final File destination,
+	                                           final String var_name_in_parameters,
+	                                           final Collection<String> parameters_before_output_destination,
+	                                           final Collection<String> parameters_after_output_destination) {
+		output_expected_destinations.add(new ConversionToolParameterReference(destination, var_name_in_parameters,
+		        parameters_before_output_destination, parameters_after_output_destination));
 		return this;
 	}
 
 	protected void onMissingInputOutputVar(final String var_name, final String ressource) {
-		log.warn("Missing I/O variable \"" + var_name + "\" in command line \"" + getInternalParameters() + "\". Ressource \"" + ressource + "\" will be ignored");
+		log.warn("Missing I/O variable \"" + var_name + "\" in command line \"" + getInternalParameters()
+		         + "\". Ressource \"" + ressource + "\" will be ignored");
 	}
 
 	/**
@@ -305,18 +338,24 @@ public class ConversionTool implements ExecutableTool {
 				@Override
 				public void onEndExecution(final ProcesslauncherLifecycle processlauncherLifecycle) {
 					if (processlauncherLifecycle.isCorrectlyDone() == false) {
-						log.warn("Error during execution of \"" + processlauncherLifecycle.toString() + "\", remove output files");
+						log.warn("Error during execution of \"" + processlauncherLifecycle.toString()
+						         + "\", remove output files");
 						cleanUpOutputFiles(true, true);
 					}
 				}
 			});
 		}
 
-		filterForLinesEventsToDisplay.filter(ffletd -> ignoreAllLinesEventsToDisplay.equals(ffletd) == false).ifPresent(filter -> {
-			final CapturedStdOutErrToPrintStream psOut = new CapturedStdOutErrToPrintStream(getStdOutPrintStreamToDisplayLinesEvents(), getStdErrPrintStreamToDisplayLinesEvents());
-			psOut.setFilter(filter);
-			processBuilder.getSetCaptureStandardOutputAsOutputText().getObservers().add(psOut);
-		});
+		filterForLinesEventsToDisplay
+		        .filter(ffletd -> ignoreAllLinesEventsToDisplay.equals(ffletd) == false)
+		        .ifPresent(
+		                filter -> {
+			                final CapturedStdOutErrToPrintStream psOut = new CapturedStdOutErrToPrintStream(
+			                        getStdOutPrintStreamToDisplayLinesEvents(),
+			                        getStdErrPrintStreamToDisplayLinesEvents());
+			                psOut.setFilter(filter);
+			                processBuilder.getSetCaptureStandardOutputAsOutputText().addObserver(psOut);
+		                });
 	}
 
 	protected PrintStream getStdOutPrintStreamToDisplayLinesEvents() {
@@ -331,28 +370,32 @@ public class ConversionTool implements ExecutableTool {
 	 * @return never null
 	 */
 	public Optional<String> getDeclaredSourceByVarName(final String var_name) {
-		return input_sources.stream().filter(param_ref -> param_ref.isVarNameInParametersEquals(var_name)).map(ConversionToolParameterReference::getRessource).findFirst();
+		return input_sources.stream().filter(param_ref -> param_ref.isVarNameInParametersEquals(var_name)).map(
+		        ConversionToolParameterReference::getRessource).findFirst();
 	}
 
 	/**
 	 * @return never null
 	 */
 	public Optional<String> getDeclaredDestinationByVarName(final String var_name) {
-		return output_expected_destinations.stream().filter(param_ref -> param_ref.isVarNameInParametersEquals(var_name)).map(ConversionToolParameterReference::getRessource).findFirst();
+		return output_expected_destinations.stream().filter(param_ref -> param_ref.isVarNameInParametersEquals(
+		        var_name)).map(ConversionToolParameterReference::getRessource).findFirst();
 	}
 
 	/**
 	 * @return never null, can be empty
 	 */
 	public List<String> getDeclaredSources() {
-		return input_sources.stream().map(ConversionToolParameterReference::getRessource).collect(Collectors.toUnmodifiableList());
+		return input_sources.stream().map(ConversionToolParameterReference::getRessource).collect(Collectors
+		        .toUnmodifiableList());
 	}
 
 	/**
 	 * @return never null, can be empty
 	 */
 	public List<String> getDeclaredDestinations() {
-		return output_expected_destinations.stream().map(ConversionToolParameterReference::getRessource).collect(Collectors.toUnmodifiableList());
+		return output_expected_destinations.stream().map(ConversionToolParameterReference::getRessource).collect(
+		        Collectors.toUnmodifiableList());
 	}
 
 	/**
@@ -387,29 +430,30 @@ public class ConversionTool implements ExecutableTool {
 	 * Don't need to be executed before, only checks.
 	 */
 	public List<File> getOutputFiles(final OutputFilePresencePolicy filterPolicy) {
-		return output_expected_destinations.stream().map(ConversionToolParameterReference::getRessource).flatMap(ressource -> {
-			try {
-				final URL url = new URL(ressource);
-				if (url.getProtocol().equals("file")) {
-					return Stream.of(Paths.get(url.toURI()).toFile());
-				}
-			} catch (final MalformedURLException e) {
-				/**
-				 * Not an URL, maybe a file
-				 */
-				return Stream.of(new File(ressource));
-			} catch (final URISyntaxException e) {
-				/**
-				 * It's an URL, but not a file
-				 */
-			}
-			return Stream.empty();
-		}).map(file -> {
-			if (file.exists() == false & getWorkingDirectory() != null) {
-				return new File(getWorkingDirectory().getAbsolutePath() + File.separator + file.getPath());
-			}
-			return file;
-		}).distinct().filter(filterPolicy.filter()).collect(Collectors.toUnmodifiableList());
+		return output_expected_destinations.stream().map(ConversionToolParameterReference::getRessource).flatMap(
+		        ressource -> {
+			        try {
+				        final URL url = new URL(ressource);
+				        if (url.getProtocol().equals("file")) {
+					        return Stream.of(Paths.get(url.toURI()).toFile());
+				        }
+			        } catch (final MalformedURLException e) {
+				        /**
+				         * Not an URL, maybe a file
+				         */
+				        return Stream.of(new File(ressource));
+			        } catch (final URISyntaxException e) {
+				        /**
+				         * It's an URL, but not a file
+				         */
+			        }
+			        return Stream.empty();
+		        }).map(file -> {
+			        if (file.exists() == false & getWorkingDirectory() != null) {
+				        return new File(getWorkingDirectory().getAbsolutePath() + File.separator + file.getPath());
+			        }
+			        return file;
+		        }).distinct().filter(filterPolicy.filter()).collect(Collectors.toUnmodifiableList());
 	}
 
 	/**
@@ -527,11 +571,13 @@ public class ConversionTool implements ExecutableTool {
 		Stream.concat(input_sources.stream(), output_expected_destinations.stream()).forEach(param_ref -> {
 			final String var_name = param_ref.getVarNameInParameters();
 
-			final boolean done = newer_parameters.injectParamsAroundVariable(var_name, param_ref.getParametersListBeforeRef(), param_ref.getParametersListAfterRef());
+			final boolean done = newer_parameters.injectParamsAroundVariable(var_name, param_ref
+			        .getParametersListBeforeRef(), param_ref.getParametersListAfterRef());
 
 			if (done) {
 				if (all_vars_to_inject.containsKey(var_name)) {
-					throw new RuntimeException("Variable collision: \"" + var_name + "\" was already set to \"" + all_vars_to_inject.get(var_name) + "\" in " + newer_parameters);
+					throw new RuntimeException("Variable collision: \"" + var_name + "\" was already set to \""
+					                           + all_vars_to_inject.get(var_name) + "\" in " + newer_parameters);
 				}
 				all_vars_to_inject.put(var_name, param_ref.getRessource());
 			} else {
