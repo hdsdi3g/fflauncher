@@ -8,18 +8,17 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
-*/
+ */
 package tv.hd3g.fflauncher.recipes;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.logging.log4j.LogManager;
@@ -30,7 +29,6 @@ import tv.hd3g.fflauncher.FFprobe;
 import tv.hd3g.fflauncher.FFprobe.FFPrintFormat;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 import tv.hd3g.processlauncher.cmdline.Parameters;
-import tv.hd3g.processlauncher.tool.RunningTool;
 import tv.hd3g.processlauncher.tool.ToolRunner;
 
 public class ProbeMedia extends Recipe {
@@ -41,12 +39,15 @@ public class ProbeMedia extends Recipe {
 
 	public ProbeMedia(final ToolRunner toolRun, final ScheduledExecutorService maxExecTimeScheduler) {
 		super(toolRun, "ffprobe");
-		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler, "\"maxExecTimeScheduler\" can't to be null");
+		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler,
+		        "\"maxExecTimeScheduler\" can't to be null");
 	}
 
-	public ProbeMedia(final ToolRunner toolRun, final String execName, final ScheduledExecutorService maxExecTimeScheduler) {
+	public ProbeMedia(final ToolRunner toolRun, final String execName,
+	                  final ScheduledExecutorService maxExecTimeScheduler) {
 		super(toolRun, execName);
-		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler, "\"maxExecTimeScheduler\" can't to be null");
+		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler,
+		        "\"maxExecTimeScheduler\" can't to be null");
 	}
 
 	private FFprobe internal() throws IOException {
@@ -69,18 +70,16 @@ public class ProbeMedia extends Recipe {
 		}
 	}
 
-	private CompletableFuture<FFprobeJAXB> execute(final FFprobe ffprobe, final String source) throws IOException {
-		return toolRun.execute(ffprobe)
-		        .thenApplyAsync(RunningTool::checkExecutionGetText, executor)
-		        .thenApplyAsync(textRetention -> {
-			        final var stdOut = textRetention.getStdout(false, System.lineSeparator());
-			        try {
-				        return new FFprobeJAXB(stdOut, warn -> log.warn(warn));
-			        } catch (final IOException e) {
-				        log.error("Raw ffprobe return: \"{}\"", stdOut);
-				        throw new InvalidFFprobeReturn(source, e);
-			        }
-		        }, executor);
+	private FFprobeJAXB execute(final FFprobe ffprobe, final String source) throws IOException {
+		final var rtFFprobe = toolRun.execute(ffprobe);
+		final var textRetention = rtFFprobe.checkExecutionGetText();
+		final var stdOut = textRetention.getStdout(false, System.lineSeparator());
+		try {
+			return new FFprobeJAXB(stdOut, warn -> log.warn(warn));
+		} catch (final IOException e) {
+			log.error("Raw ffprobe return: \"{}\"", stdOut);
+			throw new InvalidFFprobeReturn(source, e);
+		}
 	}
 
 	/**
@@ -89,7 +88,7 @@ public class ProbeMedia extends Recipe {
 	 * Can throw an InvalidExecution in CompletableFuture, with stderr embedded.
 	 * @see FFprobe to get cool FfprobeType parsers
 	 */
-	public CompletableFuture<FFprobeJAXB> doAnalysing(final String source) throws IOException {
+	public FFprobeJAXB doAnalysing(final String source) throws IOException {
 		final FFprobe ffprobe = internal();
 		ffprobe.addSimpleInputSource(source);
 		return execute(ffprobe, source);
@@ -101,7 +100,7 @@ public class ProbeMedia extends Recipe {
 	 * Can throw an InvalidExecution in CompletableFuture, with stderr embedded.
 	 * @see FFprobe to get cool FfprobeType parsers
 	 */
-	public CompletableFuture<FFprobeJAXB> doAnalysing(final File source) throws IOException {
+	public FFprobeJAXB doAnalysing(final File source) throws IOException {
 		final FFprobe ffprobe = internal();
 		ffprobe.addSimpleInputSource(source);
 		return execute(ffprobe, source.getPath());

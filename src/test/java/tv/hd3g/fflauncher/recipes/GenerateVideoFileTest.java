@@ -8,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
-*/
+ */
 package tv.hd3g.fflauncher.recipes;
 
 import java.awt.Point;
@@ -29,12 +29,12 @@ import tv.hd3g.processlauncher.tool.ToolRunner;
 public class GenerateVideoFileTest extends TestCase {
 
 	public void test() throws InterruptedException, ExecutionException, IOException {
-		final ToolRunner run = new ToolRunner(new ExecutableFinder(), 1);
+		final ToolRunner run = new ToolRunner(new ExecutableFinder());
 		final GenerateVideoFile gvf = new GenerateVideoFile(run);
 
 		final File test_file = File.createTempFile("smptebars", ".mkv");
 
-		final FFmpeg ffmpeg = gvf.generateBarsAnd1k(test_file, 5, new Point(1280, 720)).get().getExecutableToolSource();
+		final FFmpeg ffmpeg = gvf.generateBarsAnd1k(test_file, 5, new Point(1280, 720)).getExecutableToolSource();
 
 		assertTrue(test_file.exists());
 

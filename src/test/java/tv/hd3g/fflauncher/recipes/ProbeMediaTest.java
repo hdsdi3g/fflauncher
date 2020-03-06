@@ -8,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
-*/
+ */
 package tv.hd3g.fflauncher.recipes;
 
 import java.awt.Point;
@@ -34,7 +34,7 @@ public class ProbeMediaTest extends TestCase {
 	private final ToolRunner run;
 
 	public ProbeMediaTest() {
-		run = new ToolRunner(new ExecutableFinder(), 1);
+		run = new ToolRunner(new ExecutableFinder());
 	}
 
 	public void test() throws Exception {
@@ -42,7 +42,8 @@ public class ProbeMediaTest extends TestCase {
 
 		final String tDir = System.getProperty("java.io.tmpdir");
 		final File test_file_to_create = new File(tDir + File.separator + "smptebars-" + System.nanoTime() + ".mkv");
-		final FFmpeg ffmpeg = gvf.generateBarsAnd1k(test_file_to_create, 1, new Point(768, 432)).get().getExecutableToolSource();
+		final FFmpeg ffmpeg = gvf.generateBarsAnd1k(test_file_to_create, 1, new Point(768, 432))
+		        .getExecutableToolSource();
 
 		ffmpeg.checkDestinations();
 		final List<File> outputFiles = ffmpeg.getOutputFiles(OutputFilePresencePolicy.ALL);
@@ -51,7 +52,7 @@ public class ProbeMediaTest extends TestCase {
 		Assert.assertNotSame(0, test_file_to_create.length());
 
 		final ProbeMedia probe = new ProbeMedia(run, Executors.newSingleThreadScheduledExecutor());
-		final FFprobeJAXB result = probe.doAnalysing(test_file_to_create).get();
+		final FFprobeJAXB result = probe.doAnalysing(test_file_to_create);
 
 		Assert.assertEquals(1, result.getFormat().getDuration().intValue());
 		Assert.assertEquals(432, result.getVideoStreams().findFirst().get().getHeight().intValue());

@@ -8,24 +8,23 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
-*/
+ */
 package tv.hd3g.fflauncher.recipes;
 
 import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 
 import tv.hd3g.fflauncher.FFAbout;
 import tv.hd3g.fflauncher.FFmpeg;
 import tv.hd3g.processlauncher.cmdline.Parameters;
-import tv.hd3g.processlauncher.tool.RunningTool;
 import tv.hd3g.processlauncher.tool.ToolRunner;
+import tv.hd3g.processlauncher.tool.ToolRunner.RunningTool;
 
 public class GenerateVideoFile extends Recipe {
 
@@ -46,7 +45,8 @@ public class GenerateVideoFile extends Recipe {
 
 		final FFAbout about = ffmpeg.getAbout(toolRun.getExecutableFinder());
 		if (about.isFromFormatIsAvaliable("lavfi") == false) {
-			throw new IOException("This ffmpeg (" + toolRun.getExecutableFinder().get(ffmpeg.getExecutableName()) + ") can't handle \"lavfi\"");
+			throw new IOException("This ffmpeg (" + toolRun.getExecutableFinder().get(ffmpeg.getExecutableName())
+			                      + ") can't handle \"lavfi\"");
 		}
 
 		ffmpeg.setOverwriteOutputFiles();
@@ -55,7 +55,8 @@ public class GenerateVideoFile extends Recipe {
 			return l.isStdErr() == false || l.isStdErr() && ffmpeg.filterOutErrorLines().test(l.getLine());
 		});
 
-		parameters.addBulkParameters("-f lavfi -i smptehdbars=duration=" + duration_in_sec + ":size=" + resolution.x + "x" + resolution.y + ":rate=25");
+		parameters.addBulkParameters("-f lavfi -i smptehdbars=duration=" + duration_in_sec + ":size=" + resolution.x
+		                             + "x" + resolution.y + ":rate=25");
 		parameters.addBulkParameters("-f lavfi -i sine=frequency=1000:sample_rate=48000:duration=" + duration_in_sec);
 
 		if (about.isCoderIsAvaliable("h264")) {
@@ -76,19 +77,23 @@ public class GenerateVideoFile extends Recipe {
 	/**
 	 * Stateless
 	 */
-	public CompletableFuture<RunningTool<FFmpeg>> generateBarsAnd1k(final String destination, final int duration_in_sec, final Point resolution) throws IOException {
+	public RunningTool<FFmpeg> generateBarsAnd1k(final String destination,
+	                                             final int duration_in_sec,
+	                                             final Point resolution) throws IOException {
 		final FFmpeg ffmpeg = internal(duration_in_sec, resolution);
 		ffmpeg.addSimpleOutputDestination(destination);
-		return toolRun.execute(ffmpeg);
+		return toolRun.execute(ffmpeg).waitForEnd();
 	}
 
 	/**
 	 * Stateless
 	 */
-	public CompletableFuture<RunningTool<FFmpeg>> generateBarsAnd1k(final File destination, final int duration_in_sec, final Point resolution) throws IOException {
+	public RunningTool<FFmpeg> generateBarsAnd1k(final File destination,
+	                                             final int duration_in_sec,
+	                                             final Point resolution) throws IOException {
 		final FFmpeg ffmpeg = internal(duration_in_sec, resolution);
 		ffmpeg.addSimpleOutputDestination(destination);
-		return toolRun.execute(ffmpeg);
+		return toolRun.execute(ffmpeg).waitForEnd();
 	}
 
 }
