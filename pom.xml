@@ -44,6 +44,12 @@
 			<artifactId>processlauncher</artifactId>
 			<version>2.1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>tv.hd3g.commons</groupId>
+			<artifactId>codepolicyvalidation</artifactId>
+			<version>0.0.2</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<organization>
