@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -486,9 +487,9 @@ public class ConversionTool implements ExecutableTool {
 				return false;
 			}
 			return true;
-		}).map(dir -> dir.toPath()).flatMap(dir_path -> {
+		}).map(File::toPath).flatMap(dir_path -> {
 			try {
-				return Files.walk(dir_path).sorted(Comparator.reverseOrder()).map(path -> path.toFile());
+				return Files.walk(dir_path).sorted(Comparator.reverseOrder()).map(Path::toFile);
 			} catch (final IOException e) {
 				log.error("Can't access to " + dir_path, e);
 				return Stream.empty();

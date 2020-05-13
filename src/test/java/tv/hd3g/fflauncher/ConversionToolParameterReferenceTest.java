@@ -8,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * Copyright (C) hdsdi3g for hd3g.tv 2019
  *
-*/
+ */
 package tv.hd3g.fflauncher;
 
 import java.io.File;
@@ -37,13 +37,17 @@ public class ConversionToolParameterReferenceTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		ctprS = new ConversionToolParameterReference("reference", "var", Arrays.asList("before1", "before2"), Arrays.asList("after1", "after2"));
-		ctprF = new ConversionToolParameterReference(tempFile, "var", Arrays.asList("before1", "before2"), Arrays.asList("after1", "after2"));
+		ctprS = new ConversionToolParameterReference("reference", "var", Arrays.asList("before1", "before2"), Arrays
+		        .asList("after1", "after2"));
+		ctprF = new ConversionToolParameterReference(tempFile, "var", Arrays.asList("before1", "before2"), Arrays
+		        .asList("after1", "after2"));
 	}
 
 	public void testNullConstructor() {
-		final ConversionToolParameterReference ctprS = new ConversionToolParameterReference("reference", "var", null, null);
-		final ConversionToolParameterReference ctprF = new ConversionToolParameterReference(tempFile, "var", null, null);
+		final ConversionToolParameterReference ctprS = new ConversionToolParameterReference("reference", "var", null,
+		        null);
+		final ConversionToolParameterReference ctprF = new ConversionToolParameterReference(tempFile, "var", null,
+		        null);
 
 		Assert.assertEquals(Collections.emptyList(), ctprS.getParametersListBeforeRef());
 		Assert.assertEquals(Collections.emptyList(), ctprS.getParametersListAfterRef());

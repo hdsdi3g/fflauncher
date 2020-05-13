@@ -8,16 +8,39 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
-*/
+ */
 package tv.hd3g.fflauncher;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
+import static tv.hd3g.fflauncher.Channel.BC;
+import static tv.hd3g.fflauncher.Channel.BL;
+import static tv.hd3g.fflauncher.Channel.BR;
+import static tv.hd3g.fflauncher.Channel.DL;
+import static tv.hd3g.fflauncher.Channel.DR;
+import static tv.hd3g.fflauncher.Channel.FC;
+import static tv.hd3g.fflauncher.Channel.FL;
+import static tv.hd3g.fflauncher.Channel.FLC;
+import static tv.hd3g.fflauncher.Channel.FR;
+import static tv.hd3g.fflauncher.Channel.FRC;
+import static tv.hd3g.fflauncher.Channel.LFE;
+import static tv.hd3g.fflauncher.Channel.SL;
+import static tv.hd3g.fflauncher.Channel.SR;
+import static tv.hd3g.fflauncher.Channel.TBC;
+import static tv.hd3g.fflauncher.Channel.TBL;
+import static tv.hd3g.fflauncher.Channel.TBR;
+import static tv.hd3g.fflauncher.Channel.TFC;
+import static tv.hd3g.fflauncher.Channel.TFL;
+import static tv.hd3g.fflauncher.Channel.TFR;
+import static tv.hd3g.fflauncher.Channel.WL;
+import static tv.hd3g.fflauncher.Channel.WR;
+
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -49,16 +72,13 @@ public class FFAbout {
 	private final ExecutableFinder executableFinder;
 	private final ScheduledExecutorService maxExecTimeScheduler;
 
-	FFAbout(final String execName, final ExecutableFinder executableFinder, final ScheduledExecutorService maxExecTimeScheduler) {
+	FFAbout(final String execName, final ExecutableFinder executableFinder,
+	        final ScheduledExecutorService maxExecTimeScheduler) {
 		this.execName = Objects.requireNonNull(execName, "\"execName\" can't to be null");
 		this.executableFinder = Objects.requireNonNull(executableFinder, "\"executableFinder\" can't to be null");
-		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler, "\"maxExecTimeScheduler\" can't to be null");
+		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler,
+		        "\"maxExecTimeScheduler\" can't to be null");
 	}
-
-	/*
-	#-sources device     list sources of the input device
-	#-sinks device       list sinks of the output device
-	*/
 
 	private CapturedStdOutErrTextRetention internalRun(final String bulkParameters) {
 		try {
@@ -87,7 +107,8 @@ public class FFAbout {
 
 	public synchronized FFVersion getVersion() {
 		if (version == null) {
-			version = new FFVersion(internalRun("-loglevel quiet -version").getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
+			version = new FFVersion(internalRun("-loglevel quiet -version").getStdouterrLines(false).map(String::trim)
+			        .collect(Collectors.toUnmodifiableList()));
 		}
 		return version;
 	}
@@ -97,7 +118,8 @@ public class FFAbout {
 	 */
 	public synchronized List<FFCodec> getCodecs() {
 		if (codecs == null) {
-			codecs = FFCodec.parse(internalRun("-codecs").getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
+			codecs = FFCodec.parse(internalRun("-codecs").getStdoutLines(false).map(String::trim).collect(Collectors
+			        .toUnmodifiableList()));
 		}
 		return codecs;
 	}
@@ -107,7 +129,8 @@ public class FFAbout {
 	 */
 	public synchronized List<FFFormat> getFormats() {
 		if (formats == null) {
-			formats = FFFormat.parseFormats(internalRun("-formats").getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
+			formats = FFFormat.parseFormats(internalRun("-formats").getStdoutLines(false).map(String::trim).collect(
+			        Collectors.toUnmodifiableList()));
 		}
 		return formats;
 	}
@@ -117,15 +140,15 @@ public class FFAbout {
 	 */
 	public synchronized List<FFDevice> getDevices() {
 		if (devices == null) {
-			devices = FFDevice.parseDevices(internalRun("-devices").getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
+			devices = FFDevice.parseDevices(internalRun("-devices").getStdoutLines(false).map(String::trim).collect(
+			        Collectors.toUnmodifiableList()));
 		}
 		return devices;
 	}
 
 	static Set<String> parseBSFS(final Stream<String> lines) {
-		return lines.map(l -> l.trim()).filter(line -> {
-			return line.toLowerCase().startsWith("Bitstream filters:".toLowerCase()) == false;
-		}).collect(Collectors.toSet());
+		return lines.map(String::trim).filter(line -> (line.toLowerCase().startsWith("Bitstream filters:"
+		        .toLowerCase()) == false)).collect(Collectors.toSet());
 	}
 
 	/**
@@ -133,7 +156,7 @@ public class FFAbout {
 	 */
 	public synchronized Set<String> getBitStreamFilters() {
 		if (bit_stream_filters == null) {
-			bit_stream_filters = parseBSFS(internalRun("-bsfs").getStdoutLines(false).map(l -> l.trim()));
+			bit_stream_filters = parseBSFS(internalRun("-bsfs").getStdoutLines(false).map(String::trim));
 		}
 		return bit_stream_filters;
 	}
@@ -143,7 +166,8 @@ public class FFAbout {
 	 */
 	public synchronized FFProtocols getProtocols() {
 		if (protocols == null) {
-			protocols = new FFProtocols(internalRun("-protocols").getStdouterrLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
+			protocols = new FFProtocols(internalRun("-protocols").getStdouterrLines(false).map(String::trim).collect(
+			        Collectors.toUnmodifiableList()));
 		}
 
 		return protocols;
@@ -154,7 +178,8 @@ public class FFAbout {
 	 */
 	public synchronized List<FFFilter> getFilters() {
 		if (filters == null) {
-			filters = FFFilter.parseFilters(internalRun("-filters").getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
+			filters = FFFilter.parseFilters(internalRun("-filters").getStdoutLines(false).map(String::trim).collect(
+			        Collectors.toUnmodifiableList()));
 		}
 		return filters;
 	}
@@ -164,15 +189,15 @@ public class FFAbout {
 	 */
 	public synchronized List<FFPixelFormat> getPixelFormats() {
 		if (pixels_formats == null) {
-			pixels_formats = FFPixelFormat.parsePixelsFormats(internalRun("-pix_fmts").getStdoutLines(false).map(l -> l.trim()).collect(Collectors.toUnmodifiableList()));
+			pixels_formats = FFPixelFormat.parsePixelsFormats(internalRun("-pix_fmts").getStdoutLines(false).map(
+			        String::trim).collect(Collectors.toUnmodifiableList()));
 		}
 		return pixels_formats;
 	}
 
 	static Set<String> parseHWAccelerationMethods(final Stream<String> lines) {
-		return lines.map(l -> l.trim()).filter(line -> {
-			return line.toLowerCase().startsWith("Hardware acceleration methods:".toLowerCase()) == false;
-		}).collect(Collectors.toSet());
+		return lines.map(String::trim).filter(line -> (line.toLowerCase().startsWith("Hardware acceleration methods:"
+		        .toLowerCase()) == false)).collect(Collectors.toSet());
 	}
 
 	/**
@@ -180,7 +205,8 @@ public class FFAbout {
 	 */
 	public synchronized Set<String> getAvailableHWAccelerationMethods() {
 		if (hardware_acceleration_methods == null) {
-			hardware_acceleration_methods = parseHWAccelerationMethods(internalRun("-hwaccels").getStdoutLines(false).map(l -> l.trim()));
+			hardware_acceleration_methods = parseHWAccelerationMethods(internalRun("-hwaccels").getStdoutLines(false)
+			        .map(String::trim));
 		}
 		return hardware_acceleration_methods;
 	}
@@ -212,65 +238,60 @@ public class FFAbout {
 		sample_formats = Collections.unmodifiableMap(sf);
 
 		final HashMap<String, List<Channel>> cl = new HashMap<>();
-		cl.put("mono           ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FC)));
-		cl.put("stereo         ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR)));
-		cl.put("2.1            ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.LFE)));
-		cl.put("3.0            ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC)));
-		cl.put("3.0(back)      ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.BC)));
-		cl.put("4.0            ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.BC)));
-		cl.put("quad           ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.BL, Channel.BR)));
-		cl.put("quad(side)     ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.SL, Channel.SR)));
-		cl.put("3.1            ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.LFE)));
-		cl.put("5.0            ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.BL, Channel.BR)));
-		cl.put("5.0(side)      ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.SL, Channel.SR)));
-		cl.put("4.1            ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.LFE, Channel.BC)));
-		cl.put("5.1            ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.LFE, Channel.BL, Channel.BR)));
-		cl.put("5.1(side)      ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.LFE, Channel.SL, Channel.SR)));
-		cl.put("6.0            ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.BC, Channel.SL, Channel.SR)));
-		cl.put("6.0(front)     ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FLC, Channel.FRC, Channel.SL, Channel.SR)));
-		cl.put("hexagonal      ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.BL, Channel.BR, Channel.BC)));
-		cl.put("6.1            ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.LFE, Channel.BC, Channel.SL, Channel.SR)));
-		cl.put("6.1(back)      ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.LFE, Channel.BL, Channel.BR, Channel.BC)));
-		cl.put("6.1(front)     ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.LFE, Channel.FLC, Channel.FRC, Channel.SL, Channel.SR)));
-		cl.put("7.0            ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.BL, Channel.BR, Channel.SL, Channel.SR)));
-		cl.put("7.0(front)     ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.FLC, Channel.FRC, Channel.SL, Channel.SR)));
-		cl.put("7.1            ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.LFE, Channel.BL, Channel.BR, Channel.SL, Channel.SR)));
-		cl.put("7.1(wide)      ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.LFE, Channel.BL, Channel.BR, Channel.FLC, Channel.FRC)));
-		cl.put("7.1(wide-side) ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.LFE, Channel.FLC, Channel.FRC, Channel.SL, Channel.SR)));
-		cl.put("octagonal      ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.BL, Channel.BR, Channel.BC, Channel.SL, Channel.SR)));
-		cl.put("hexadecagonal  ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.FL, Channel.FR, Channel.FC, Channel.BL, Channel.BR, Channel.BC, Channel.SL, Channel.SR, Channel.TFL, Channel.TFC, Channel.TFR, Channel.TBL, Channel.TBC, Channel.TBR, Channel.WL, Channel.WR)));
-		cl.put("downmix        ".trim(), Collections.unmodifiableList(Arrays.asList(Channel.DL, Channel.DR)));
+		cl.put("mono           ".trim(), unmodifiableList(asList(FC)));
+		cl.put("stereo         ".trim(), unmodifiableList(asList(FL, FR)));
+		cl.put("2.1            ".trim(), unmodifiableList(asList(FL, FR, LFE)));
+		cl.put("3.0            ".trim(), unmodifiableList(asList(FL, FR, FC)));
+		cl.put("3.0(back)      ".trim(), unmodifiableList(asList(FL, FR, BC)));
+		cl.put("4.0            ".trim(), unmodifiableList(asList(FL, FR, FC, BC)));
+		cl.put("quad           ".trim(), unmodifiableList(asList(FL, FR, BL, BR)));
+		cl.put("quad(side)     ".trim(), unmodifiableList(asList(FL, FR, SL, SR)));
+		cl.put("3.1            ".trim(), unmodifiableList(asList(FL, FR, FC, LFE)));
+		cl.put("5.0            ".trim(), unmodifiableList(asList(FL, FR, FC, BL, BR)));
+		cl.put("5.0(side)      ".trim(), unmodifiableList(asList(FL, FR, FC, SL, SR)));
+		cl.put("4.1            ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, BC)));
+		cl.put("5.1            ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, BL, BR)));
+		cl.put("5.1(side)      ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, SL, SR)));
+		cl.put("6.0            ".trim(), unmodifiableList(asList(FL, FR, FC, BC, SL, SR)));
+		cl.put("6.0(front)     ".trim(), unmodifiableList(asList(FL, FR, FLC, FRC, SL, SR)));
+		cl.put("hexagonal      ".trim(), unmodifiableList(asList(FL, FR, FC, BL, BR, BC)));
+		cl.put("6.1            ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, BC, SL, SR)));
+		cl.put("6.1(back)      ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, BL, BR, BC)));
+		cl.put("6.1(front)     ".trim(), unmodifiableList(asList(FL, FR, LFE, FLC, FRC, SL, SR)));
+		cl.put("7.0            ".trim(), unmodifiableList(asList(FL, FR, FC, BL, BR, SL, SR)));
+		cl.put("7.0(front)     ".trim(), unmodifiableList(asList(FL, FR, FC, FLC, FRC, SL, SR)));
+		cl.put("7.1            ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, BL, BR, SL, SR)));
+		cl.put("7.1(wide)      ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, BL, BR, FLC, FRC)));
+		cl.put("7.1(wide-side) ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, FLC, FRC, SL, SR)));
+		cl.put("octagonal      ".trim(), unmodifiableList(asList(FL, FR, FC, BL, BR, BC, SL, SR)));
+		cl.put("hexadecagonal  ".trim(),
+		        unmodifiableList(asList(FL, FR, FC, BL, BR, BC, SL, SR, TFL, TFC, TFR, TBL, TBC, TBR, WL, WR)));
+		cl.put("downmix        ".trim(), unmodifiableList(asList(DL, DR)));
 		channel_layouts = Collections.unmodifiableMap(cl);
 	}
 
 	public boolean isCoderIsAvaliable(final String codec_name) {
-		return getCodecs().stream().anyMatch(codec -> {
-			return codec.name.equals(codec_name.toLowerCase()) & codec.encoding_supported == true;
-		});
+		return getCodecs().stream().anyMatch(codec -> (codec.name.equals(codec_name.toLowerCase())
+		                                               & codec.encoding_supported == true));
 	}
 
 	public boolean isDecoderIsAvaliable(final String codec_name) {
-		return getCodecs().stream().anyMatch(codec -> {
-			return codec.name.equals(codec_name.toLowerCase()) & codec.decoding_supported == true;
-		});
+		return getCodecs().stream().anyMatch(codec -> (codec.name.equals(codec_name.toLowerCase())
+		                                               & codec.decoding_supported == true));
 	}
 
 	public boolean isFromFormatIsAvaliable(final String demuxer_name) {
-		return getFormats().stream().anyMatch(format -> {
-			return format.name.equals(demuxer_name.toLowerCase()) & format.demuxing == true;
-		});
+		return getFormats().stream().anyMatch(format -> (format.name.equals(demuxer_name.toLowerCase())
+		                                                 & format.demuxing == true));
 	}
 
 	public boolean isToFormatIsAvaliable(final String muxer_name) {
-		return getFormats().stream().anyMatch(format -> {
-			return format.name.equals(muxer_name.toLowerCase()) & format.muxing == true;
-		});
+		return getFormats().stream().anyMatch(format -> (format.name.equals(muxer_name.toLowerCase())
+		                                                 & format.muxing == true));
 	}
 
 	public boolean isFilterIsAvaliable(final String filter_name) {
-		return getFilters().stream().anyMatch(filter -> {
-			return filter.tag.equals(filter_name.toLowerCase());
-		});
+		return getFilters().stream().anyMatch(filter -> filter.tag.equals(filter_name.toLowerCase()));
 	}
 
 	/**
@@ -278,9 +299,8 @@ public class FFAbout {
 	 *        ALL CODECS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
 	 */
 	public boolean isCoderEngineIsAvaliable(final String engine_name) {
-		return getCodecs().stream().anyMatch(codec -> {
-			return codec.encoding_supported == true & codec.encoders.contains(engine_name);
-		});
+		return getCodecs().stream().anyMatch(codec -> (codec.encoding_supported == true & codec.encoders.contains(
+		        engine_name)));
 	}
 
 	/**
@@ -288,9 +308,8 @@ public class FFAbout {
 	 *        ALL CODECS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
 	 */
 	public boolean isDecoderEngineIsAvaliable(final String engine_name) {
-		return getCodecs().stream().anyMatch(codec -> {
-			return codec.decoding_supported == true & codec.decoders.contains(engine_name);
-		});
+		return getCodecs().stream().anyMatch(codec -> (codec.decoding_supported == true & codec.decoders.contains(
+		        engine_name)));
 	}
 
 	/**
@@ -305,9 +324,10 @@ public class FFAbout {
 			log.debug("(NVIDIA) Cuvid is not available in hardware acceleration methods");
 			return false;
 		}
-		final List<String> all_nv_related_codecs = getCodecs().stream().filter(c -> c.decoders.isEmpty() == false | c.encoders.isEmpty() == false).flatMap(c -> {
-			return Stream.concat(c.decoders.stream(), c.encoders.stream());
-		}).distinct().filter(c -> c.contains("nvenc") | c.contains("cuvid")).collect(Collectors.toList());
+		final List<String> all_nv_related_codecs = getCodecs().stream().filter(c -> c.decoders.isEmpty() == false
+		                                                                            | c.encoders.isEmpty() == false)
+		        .flatMap(c -> Stream.concat(c.decoders.stream(), c.encoders.stream())).distinct().filter(c -> c
+		                .contains("nvenc") | c.contains("cuvid")).collect(Collectors.toList());
 
 		if (all_nv_related_codecs.stream().noneMatch(c -> c.contains("nvenc"))) {
 			log.debug("(NVIDIA) nvenc is not available in codec list");

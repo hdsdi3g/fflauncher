@@ -1,6 +1,6 @@
 /*
  * This file is part of fflauncher.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -8,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
- * 
-*/
+ *
+ */
 package tv.hd3g.fflauncher;
 
 import java.util.Arrays;
@@ -82,23 +82,20 @@ public class FFVersion {
 	 */
 	public final String libpostproc_version;
 
-	FFVersion(List<String> process_result) {
+	FFVersion(final List<String> process_result) {
 		/*this.base = base;
 		if (base == null) {
 			throw new NullPointerException("\"base\" can't to be null");
 		}*/
 
-		header_version = process_result.stream().filter(l -> {
-			return l.startsWith("ffmpeg version ");
-		}).findFirst().orElse("ffmpeg version ?").substring("ffmpeg version ".length()).trim();
+		header_version = process_result.stream().filter(l -> l.startsWith("ffmpeg version ")).findFirst().orElse(
+		        "ffmpeg version ?").substring("ffmpeg version ".length()).trim();
 
-		built_with = process_result.stream().filter(l -> {
-			return l.startsWith("built with ");
-		}).findFirst().orElse("built with ?").substring("built with ".length()).trim();
+		built_with = process_result.stream().filter(l -> l.startsWith("built with ")).findFirst().orElse("built with ?")
+		        .substring("built with ".length()).trim();
 
-		raw_configuration = process_result.stream().filter(l -> {
-			return l.startsWith("configuration:");
-		}).findFirst().orElse("configuration:").substring("configuration:".length()).trim();
+		raw_configuration = process_result.stream().filter(l -> l.startsWith("configuration:")).findFirst().orElse(
+		        "configuration:").substring("configuration:".length()).trim();
 
 		configuration = Collections.unmodifiableSet(Arrays.stream(raw_configuration.split(" ")).map(c -> {
 			if (c.startsWith("--enable-")) {
@@ -124,15 +121,14 @@ public class FFVersion {
 	/**
 	 * @return header_version
 	 */
+	@Override
 	public String toString() {
 		return header_version;
 	}
 
-	private static String extractLibavVersion(String key, List<String> lines) {
+	private static String extractLibavVersion(final String key, final List<String> lines) {
 
-		String line = lines.stream().filter(l -> {
-			return l.startsWith(key);
-		}).findFirst().orElse(key + "      ?.?.?");
+		final String line = lines.stream().filter(l -> l.startsWith(key)).findFirst().orElse(key + "      ?.?.?");
 
 		/**
 		 * libavutil 56. 14.100 / 56. 14.100

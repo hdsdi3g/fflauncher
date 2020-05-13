@@ -57,9 +57,8 @@ public class ProbeMedia extends Recipe {
 		ffprobe.setPrintFormat(FFPrintFormat.xml).setShowStreams().setShowFormat().setShowChapters().isHidebanner();
 		ffprobe.setMaxExecTimeScheduler(maxExecTimeScheduler);
 		ffprobe.setLogLevel(FFLogLevel.error, false, false);
-		ffprobe.setFilterForLinesEventsToDisplay(l -> {
-			return l.isStdErr() && ffprobe.filterOutErrorLines().test(l.getLine());
-		});
+		ffprobe.setFilterForLinesEventsToDisplay(l -> (l.isStdErr() && ffprobe.filterOutErrorLines().test(l
+		        .getLine())));
 
 		return ffprobe;
 	}

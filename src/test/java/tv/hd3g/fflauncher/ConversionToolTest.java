@@ -8,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
-*/
+ */
 package tv.hd3g.fflauncher;
 
 import java.io.File;
@@ -69,13 +69,15 @@ public class ConversionToolTest extends TestCase {
 		assertEquals(2, p.getParameters().size());
 
 		p.addParameters("<%varsource2%>");
-		ct.addInputSource("source2", "varsource2", Arrays.asList("-pre1-source2", "-pre2-source2"), Arrays.asList("-post1-source2", "-post2-source2"));
+		ct.addInputSource("source2", "varsource2", Arrays.asList("-pre1-source2", "-pre2-source2"), Arrays.asList(
+		        "-post1-source2", "-post2-source2"));
 
 		p.addParameters("<%vardest1%>");
 		ct.addOutputDestination("dest1", "vardest1", "-pre1-dest1", "-pre2-dest1");
 
 		p.addParameters("<%vardest2%>");
-		ct.addOutputDestination("dest2", "vardest2", Arrays.asList("-pre1-dest2", "-pre2-dest2"), Arrays.asList("-post1-dest2", "-post2-dest2"));
+		ct.addOutputDestination("dest2", "vardest2", Arrays.asList("-pre1-dest2", "-pre2-dest2"), Arrays.asList(
+		        "-post1-dest2", "-post2-dest2"));
 
 		ct.addSimpleOutputDestination("dest-simple");
 
@@ -84,7 +86,8 @@ public class ConversionToolTest extends TestCase {
 		assertEquals("source1 source2", ct.getDeclaredSources().stream().collect(Collectors.joining(" ")));
 		assertEquals("dest1 dest2 dest-simple", ct.getDeclaredDestinations().stream().collect(Collectors.joining(" ")));
 
-		final String processed_cmdline = ct.getReadyToRunParameters().getParameters().stream().collect(Collectors.joining(" "));
+		final String processed_cmdline = ct.getReadyToRunParameters().getParameters().stream().collect(Collectors
+		        .joining(" "));
 
 		final String expected = "-firstparam -pre1-source1 -pre2-source1 source1 -pre1-source2 -pre2-source2 source2 -post1-source2 -post2-source2 -pre1-dest1 -pre2-dest1 dest1 -pre1-dest2 -pre2-dest2 dest2 -post1-dest2 -post2-dest2 dest-simple";
 		assertEquals(expected, processed_cmdline);

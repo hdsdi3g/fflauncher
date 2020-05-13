@@ -8,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
-*/
+ */
 package tv.hd3g.fflauncher;
 
 import java.io.File;
@@ -120,7 +120,8 @@ public class FFbase extends ConversionTool {
 		if (source_options == null) {
 			return addSimpleInputSource(source_name, Collections.emptyList());
 		} else {
-			return addSimpleInputSource(source_name, Arrays.stream(source_options).collect(Collectors.toUnmodifiableList()));
+			return addSimpleInputSource(source_name, Arrays.stream(source_options).collect(Collectors
+			        .toUnmodifiableList()));
 		}
 	}
 
@@ -152,7 +153,8 @@ public class FFbase extends ConversionTool {
 		}
 
 		final String varname = parameters.addVariable("IN_AUTOMATIC_" + input_sources.size());
-		addInputSource(source_name, varname, Stream.concat(source_options.stream(), Stream.of("-i")).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
+		addInputSource(source_name, varname, Stream.concat(source_options.stream(), Stream.of("-i")).collect(Collectors
+		        .toUnmodifiableList()), Collections.emptyList());
 
 		return this;
 	}
@@ -169,7 +171,8 @@ public class FFbase extends ConversionTool {
 		}
 
 		final String varname = parameters.addVariable("IN_AUTOMATIC_" + input_sources.size());
-		addInputSource(file, varname, Stream.concat(source_options.stream(), Stream.of("-i")).collect(Collectors.toUnmodifiableList()), Collections.emptyList());
+		addInputSource(file, varname, Stream.concat(source_options.stream(), Stream.of("-i")).collect(Collectors
+		        .toUnmodifiableList()), Collections.emptyList());
 
 		return this;
 	}
@@ -190,9 +193,12 @@ public class FFbase extends ConversionTool {
 		final String l = _l.trim();
 		if (l.startsWith("[")) {
 			return true;
-		} else if (l.startsWith("ffmpeg version") | l.startsWith("ffprobe version") | l.startsWith("built with") | l.startsWith("configuration:") | l.startsWith("Press [q]")) {
+		} else if (l.startsWith("ffmpeg version") | l.startsWith("ffprobe version") | l.startsWith("built with") | l
+		        .startsWith("configuration:") | l.startsWith("Press [q]")) {
 			return false;
-		} else if (l.startsWith("libavutil") | l.startsWith("libavcodec") | l.startsWith("libavformat") | l.startsWith("libavdevice") | l.startsWith("libavfilter") | l.startsWith("libswscale") | l.startsWith("libswresample") | l.startsWith("libpostproc")) {
+		} else if (l.startsWith("libavutil") | l.startsWith("libavcodec") | l.startsWith("libavformat") | l.startsWith(
+		        "libavdevice") | l.startsWith("libavfilter") | l.startsWith("libswscale") | l.startsWith(
+		                "libswresample") | l.startsWith("libpostproc")) {
 			return false;
 		}
 		return true;

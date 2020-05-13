@@ -1,6 +1,6 @@
 /*
  * This file is part of fflauncher.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -8,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
- * 
-*/
+ *
+ */
 package tv.hd3g.fflauncher;
 
 import java.util.Arrays;
@@ -22,17 +22,14 @@ import java.util.stream.Collectors;
 
 public class FFFilter {
 
-	static List<FFFilter> parseFilters(List<String> lines) {
-		return lines.stream().map(line -> line.trim()).filter(line -> {
-			return line.toLowerCase().startsWith("Filters:".toLowerCase()) == false;
-		}).filter(line -> {
-		    /**
-		     * Not mandatory
-		     */
-		    return line.startsWith("---") == false;
-		}).filter(line -> {
-			return line.indexOf("=") == -1;
-		}).map(line -> new FFFilter(line)).collect(Collectors.toUnmodifiableList());
+	static List<FFFilter> parseFilters(final List<String> lines) {
+		return lines.stream()
+		        .map(String::trim)
+		        .filter(line -> (line.toLowerCase().startsWith("Filters:".toLowerCase()) == false))
+		        .filter(line -> (line.startsWith("---") == false))
+		        .filter(line -> (line.indexOf("=") == -1))
+		        .map(FFFilter::new)
+		        .collect(Collectors.toUnmodifiableList());
 	}
 
 	/**
@@ -50,11 +47,13 @@ public class FFFilter {
 	public final boolean command_support;
 
 	public enum ConnectorType {
-		AUDIO, VIDEO,
+		AUDIO,
+		VIDEO,
 		/**
 		 * Dynamic number and/or type
 		 */
-		DYNAMIC, SOURCE_SINK;
+		DYNAMIC,
+		SOURCE_SINK;
 	}
 
 	public final ConnectorType source_connector;
@@ -63,26 +62,28 @@ public class FFFilter {
 	public final int source_connectors_count;
 	public final int dest_connectors_count;
 
-	FFFilter(String line) {
+	FFFilter(final String line) {
 
-		List<String> line_blocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(lb -> lb.trim()).collect(Collectors.toUnmodifiableList());
+		final List<String> line_blocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(
+		        String::trim).collect(Collectors.toUnmodifiableList());
 
 		if (line_blocs.size() < 4) {
 			throw new RuntimeException("Can't parse line: \"" + line + "\"");
 		}
 
 		tag = line_blocs.get(1);
-		long_name = line_blocs.stream().filter(lb -> lb.trim().equals("") == false).skip(3).collect(Collectors.joining(" "));
+		long_name = line_blocs.stream().filter(lb -> lb.trim().equals("") == false).skip(3).collect(Collectors.joining(
+		        " "));
 
 		timeline_support = line_blocs.get(0).contains("T");
 		slice_threading = line_blocs.get(0).contains("S");
 		command_support = line_blocs.get(0).contains("C");
 
-		String filter_graph = line_blocs.get(2);
+		final String filter_graph = line_blocs.get(2);
 
-		int pos = filter_graph.indexOf("->");
-		String s_source_connector = filter_graph.substring(0, pos);
-		String s_dest_connector = filter_graph.substring(pos + "->".length());
+		final int pos = filter_graph.indexOf("->");
+		final String s_source_connector = filter_graph.substring(0, pos);
+		final String s_dest_connector = filter_graph.substring(pos + "->".length());
 
 		if (s_source_connector.contains("A")) {
 			source_connector = ConnectorType.AUDIO;
@@ -112,8 +113,9 @@ public class FFFilter {
 		dest_connectors_count = s_dest_connector.length();
 	}
 
+	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 
 		sb.append(long_name);
 		sb.append(" [");

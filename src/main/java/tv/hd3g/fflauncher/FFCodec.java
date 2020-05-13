@@ -1,6 +1,6 @@
 /*
  * This file is part of fflauncher.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -8,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * Copyright (C) hdsdi3g for hd3g.tv 2018
- * 
-*/
+ *
+ */
 package tv.hd3g.fflauncher;
 
 import java.util.Arrays;
@@ -24,18 +24,20 @@ import java.util.stream.Collectors;
 
 public class FFCodec {
 
-	static List<FFCodec> parse(List<String> lines) {
-		return lines.stream().map(line -> line.trim()).filter(line -> {
-			return line.toLowerCase().startsWith("codecs:") == false;
-		}).filter(line -> {
-			return line.startsWith("-------") == false;
-		}).filter(line -> {
-			return line.indexOf("=") == -1;
-		}).map(line -> new FFCodec(line)).collect(Collectors.toUnmodifiableList());
+	static List<FFCodec> parse(final List<String> lines) {
+		return lines.stream()
+		        .map(String::trim)
+		        .filter(line -> (line.toLowerCase().startsWith("codecs:") == false))
+		        .filter(line -> (line.startsWith("-------") == false))
+		        .filter(line -> (line.indexOf("=") == -1)).map(FFCodec::new)
+		        .collect(Collectors.toUnmodifiableList());
 	}
 
 	public enum CodecType {
-		VIDEO, AUDIO, SUBTITLE, DATA;
+		VIDEO,
+		AUDIO,
+		SUBTITLE,
+		DATA;
 	}
 
 	public final boolean decoding_supported;
@@ -58,8 +60,8 @@ public class FFCodec {
 	 */
 	public final String long_name;
 
-	FFCodec(String line) {
-		String[] line_blocs = line.split(" ");
+	FFCodec(final String line) {
+		final String[] line_blocs = line.split(" ");
 
 		if (line_blocs.length < 3) {
 			throw new RuntimeException("Can't parse line: \"" + line + "\"");
@@ -88,9 +90,7 @@ public class FFCodec {
 		lossy_compression = line_blocs[0].charAt(4) == 'L';
 		lossless_compression = line_blocs[0].charAt(5) == 'S';
 
-		if (line_blocs[0].substring(3).chars().noneMatch(i -> {
-			return i == 'I' | i == 'L' | i == 'S' | i == '.';
-		})) {
+		if (line_blocs[0].substring(3).chars().noneMatch(i -> (i == 'I' | i == 'L' | i == 'S' | i == '.'))) {
 			throw new RuntimeException("Can't parse line: \"" + line + "\" (invalid ends for codec type)");
 		}
 
@@ -99,28 +99,34 @@ public class FFCodec {
 		/**
 		 * Like "Dirac (decoders: dirac libschroedinger ) (encoders: vc2 libschroedinger )"
 		 */
-		String raw_long_name = Arrays.stream(line_blocs).filter(lb -> lb.trim().equals("") == false).skip(2).collect(Collectors.joining(" "));
+		final String raw_long_name = Arrays.stream(line_blocs).filter(lb -> lb.trim().equals("") == false).skip(2)
+		        .collect(
+		                Collectors.joining(" "));
 
-		int decoders_tag_pos = raw_long_name.indexOf("(decoders:");
-		int encoders_tag_pos = raw_long_name.indexOf("(encoders:");
+		final int decoders_tag_pos = raw_long_name.indexOf("(decoders:");
+		final int encoders_tag_pos = raw_long_name.indexOf("(encoders:");
 
 		if (decoders_tag_pos > -1 | encoders_tag_pos > -1) {
 			if (decoders_tag_pos > -1) {
-				int decoders_tag_end_pos = raw_long_name.indexOf(")", decoders_tag_pos);
+				final int decoders_tag_end_pos = raw_long_name.indexOf(")", decoders_tag_pos);
 				if (decoders_tag_end_pos == -1) {
 					throw new IndexOutOfBoundsException("Can't found \")\" in \"" + raw_long_name + "\"");
 				}
-				decoders = Collections.unmodifiableSet(Arrays.stream(raw_long_name.substring(decoders_tag_pos + "(decoders:".length(), decoders_tag_end_pos).trim().split(" ")).distinct().collect(Collectors.toSet()));
+				decoders = Collections.unmodifiableSet(Arrays.stream(raw_long_name.substring(decoders_tag_pos
+				                                                                             + "(decoders:".length(),
+				        decoders_tag_end_pos).trim().split(" ")).distinct().collect(Collectors.toSet()));
 			} else {
 				decoders = Collections.emptySet();
 			}
 
 			if (encoders_tag_pos > -1) {
-				int encoders_tag_end_pos = raw_long_name.indexOf(")", encoders_tag_pos);
+				final int encoders_tag_end_pos = raw_long_name.indexOf(")", encoders_tag_pos);
 				if (encoders_tag_end_pos == -1) {
 					throw new IndexOutOfBoundsException("Can't found \")\" in \"" + raw_long_name + "\"");
 				}
-				encoders = Collections.unmodifiableSet(Arrays.stream(raw_long_name.substring(encoders_tag_pos + "(decoders:".length(), encoders_tag_end_pos).trim().split(" ")).distinct().collect(Collectors.toSet()));
+				encoders = Collections.unmodifiableSet(Arrays.stream(raw_long_name.substring(encoders_tag_pos
+				                                                                             + "(decoders:".length(),
+				        encoders_tag_end_pos).trim().split(" ")).distinct().collect(Collectors.toSet()));
 			} else {
 				encoders = Collections.emptySet();
 			}
@@ -139,8 +145,9 @@ public class FFCodec {
 		}
 	}
 
+	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 
 		sb.append(long_name);
 		sb.append(" [");

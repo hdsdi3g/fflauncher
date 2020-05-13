@@ -51,9 +51,8 @@ public class GenerateVideoFile extends Recipe {
 
 		ffmpeg.setOverwriteOutputFiles();
 		ffmpeg.setOnErrorDeleteOutFiles(true);
-		ffmpeg.setFilterForLinesEventsToDisplay(l -> {
-			return l.isStdErr() == false || l.isStdErr() && ffmpeg.filterOutErrorLines().test(l.getLine());
-		});
+		ffmpeg.setFilterForLinesEventsToDisplay(l -> (l.isStdErr() == false || l.isStdErr() && ffmpeg
+		        .filterOutErrorLines().test(l.getLine())));
 
 		parameters.addBulkParameters("-f lavfi -i smptehdbars=duration=" + duration_in_sec + ":size=" + resolution.x
 		                             + "x" + resolution.y + ":rate=25");
@@ -71,7 +70,7 @@ public class GenerateVideoFile extends Recipe {
 			ffmpeg.addAudioCodecName("opus", -1);
 		}
 
-		return ffmpeg; /*.addFastStartMovMp4File()*/
+		return ffmpeg;
 	}
 
 	/**

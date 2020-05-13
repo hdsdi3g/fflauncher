@@ -120,27 +120,22 @@ public class FFbaseTest extends TestCase {
 	public void testCodecs() {
 		final List<FFCodec> list = FFCodec.parse(readLinesFromResource("test-codecs.txt"));
 
-		final List<FFCodec> test1 = list.stream().filter(c -> {
-			return c.type == CodecType.AUDIO & c.encoding_supported & c.decoding_supported & c.lossy_compression
-			       & c.name.equals("adpcm_g722");
-		}).collect(Collectors.toUnmodifiableList());
+		final List<FFCodec> test1 = list.stream().filter(c -> (c.type == CodecType.AUDIO & c.encoding_supported
+		                                                       & c.decoding_supported & c.lossy_compression
+		                                                       & c.name.equals("adpcm_g722"))).collect(Collectors
+		                                                               .toUnmodifiableList());
 
 		assertEquals(1, test1.size());
 		assertTrue(test1.get(0).long_name.equals("G.722 ADPCM"));
 		assertTrue(test1.get(0).toString().startsWith(test1.get(0).long_name));
 
-		assertEquals(7, list.stream().filter(c -> {
-			return c.type == CodecType.DATA;
-		}).count());
+		assertEquals(7, list.stream().filter(c -> (c.type == CodecType.DATA)).count());
 
-		assertEquals(10, list.stream().filter(c -> {
-			return c.encoding_supported == false & c.decoding_supported == false & c.lossless_compression == false
-			       && c.lossy_compression == false;
-		}).count());
+		assertEquals(10, list.stream().filter(c -> (c.encoding_supported == false & c.decoding_supported == false
+		                                            & c.lossless_compression == false
+		                                            && c.lossy_compression == false)).count());
 
-		final FFCodec t = list.stream().filter(c -> {
-			return c.name.equals("dirac");
-		}).findFirst().get();
+		final FFCodec t = list.stream().filter(c -> c.name.equals("dirac")).findFirst().get();
 
 		assertTrue(t.long_name.equals("Dirac"));
 		assertTrue(t.decoders.contains("dirac"));
@@ -158,20 +153,15 @@ public class FFbaseTest extends TestCase {
 
 		assertEquals(326, list.size());
 
-		final List<FFFormat> test1 = list.stream().filter(f -> {
-			return f.muxing == false & f.demuxing == true & f.name.equals("bfi");
-		}).collect(Collectors.toUnmodifiableList());
+		final List<FFFormat> test1 = list.stream().filter(f -> (f.muxing == false & f.demuxing == true & f.name.equals(
+		        "bfi"))).collect(Collectors.toUnmodifiableList());
 
 		assertEquals(1, test1.size());
 		assertTrue(test1.get(0).long_name.equals("Brute Force & Ignorance"));
 
-		assertEquals(2, list.stream().filter(f -> {
-			return f.name.equals("hls");
-		}).count());
+		assertEquals(2, list.stream().filter(f -> f.name.equals("hls")).count());
 
-		assertEquals(2, list.stream().filter(f -> {
-			return f.alternate_tags.contains("mp4");
-		}).count());
+		assertEquals(2, list.stream().filter(f -> f.alternate_tags.contains("mp4")).count());
 
 	}
 
@@ -219,23 +209,18 @@ public class FFbaseTest extends TestCase {
 
 		assertEquals(299, list.size());
 
-		assertTrue(list.stream().anyMatch(f -> {
-			return f.tag.equals("afftfilt");
-		}));
+		assertTrue(list.stream().anyMatch(f -> f.tag.equals("afftfilt")));
 
-		assertEquals(3, list.stream().filter(f -> {
-			return f.source_connectors_count == 2 && f.source_connector == ConnectorType.AUDIO;
-		}).count());
+		assertEquals(3, list.stream().filter(f -> (f.source_connectors_count == 2
+		                                           && f.source_connector == ConnectorType.AUDIO)).count());
 
-		assertEquals(1, list.stream().filter(f -> {
-			return f.source_connectors_count == 2 && f.source_connector == ConnectorType.VIDEO
-			       && f.dest_connectors_count == 2 && f.dest_connector == ConnectorType.VIDEO;
-		}).filter(f -> {
-			return f.tag.equals("scale2ref");
-		}).filter(f -> {
-			return f.long_name.equals(
-			        "Scale the input video size and/or convert the image format to the given reference.");
-		}).count());
+		assertEquals(1, list.stream().filter(f -> (f.source_connectors_count == 2
+		                                           && f.source_connector == ConnectorType.VIDEO
+		                                           && f.dest_connectors_count == 2
+		                                           && f.dest_connector == ConnectorType.VIDEO)).filter(f -> f.tag
+		                                                   .equals("scale2ref")).filter(f -> f.long_name.equals(
+		                                                           "Scale the input video size and/or convert the image format to the given reference."))
+		        .count());
 
 		assertTrue(list.get(0).toString().startsWith(list.get(0).long_name));
 
@@ -247,15 +232,14 @@ public class FFbaseTest extends TestCase {
 
 		assertEquals(183, list.size());
 
-		assertEquals(1, list.stream().filter(pf -> {
-			return pf.tag.equals("pal8") && pf.supported_input && pf.supported_output == false && pf.paletted
-			       && pf.nb_components == 1 && pf.bits_per_pixel == 8;
-		}).count());
+		assertEquals(1, list.stream().filter(pf -> (pf.tag.equals("pal8") && pf.supported_input
+		                                            && pf.supported_output == false && pf.paletted
+		                                            && pf.nb_components == 1 && pf.bits_per_pixel == 8)).count());
 
-		assertEquals(1, list.stream().filter(pf -> {
-			return pf.tag.equals("yuv444p16le") && pf.supported_input && pf.supported_output && pf.paletted == false
-			       && pf.hardware_accelerated == false && pf.nb_components == 3 && pf.bits_per_pixel == 48;
-		}).count());
+		assertEquals(1, list.stream().filter(pf -> (pf.tag.equals("yuv444p16le") && pf.supported_input
+		                                            && pf.supported_output && pf.paletted == false
+		                                            && pf.hardware_accelerated == false && pf.nb_components == 3
+		                                            && pf.bits_per_pixel == 48)).count());
 	}
 
 	public void testHwaccels() {

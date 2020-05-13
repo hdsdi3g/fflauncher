@@ -8,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * Copyright (C) hdsdi3g for hd3g.tv 2019
  *
-*/
+ */
 package tv.hd3g.fflauncher;
 
 import java.io.File;
@@ -50,11 +50,16 @@ class ConversionToolParameterReference {
 	 * @param parametersBeforeRef can be null
 	 * @param parametersAfterRef can be null
 	 */
-	ConversionToolParameterReference(final String reference, final String varNameInParameters, final Collection<String> parametersBeforeRef, final Collection<String> parametersAfterRef) {
+	ConversionToolParameterReference(final String reference, final String varNameInParameters,
+	                                 final Collection<String> parametersBeforeRef,
+	                                 final Collection<String> parametersAfterRef) {
 		ressource = Objects.requireNonNull(reference, "\"reference\" can't to be null");
-		this.varNameInParameters = Objects.requireNonNull(varNameInParameters, "\"var_name_in_parameters\" can't to be null");
-		this.parametersBeforeRef = Optional.ofNullable(parametersBeforeRef).map(p -> new Parameters(p)).orElseGet(() -> new Parameters());
-		this.parametersAfterRef = Optional.ofNullable(parametersAfterRef).map(p -> new Parameters(p)).orElseGet(() -> new Parameters());
+		this.varNameInParameters = Objects.requireNonNull(varNameInParameters,
+		        "\"var_name_in_parameters\" can't to be null");
+		this.parametersBeforeRef = Optional.ofNullable(parametersBeforeRef).map(Parameters::new).orElseGet(
+		        Parameters::new);
+		this.parametersAfterRef = Optional.ofNullable(parametersAfterRef).map(Parameters::new).orElseGet(
+		        Parameters::new);
 		ressourceAsFile = false;
 	}
 
@@ -62,11 +67,16 @@ class ConversionToolParameterReference {
 	 * @param parametersBeforeRef can be null
 	 * @param parametersAfterRef can be null
 	 */
-	ConversionToolParameterReference(final File reference, final String varNameInParameters, final Collection<String> parametersBeforeRef, final Collection<String> parametersAfterRef) {
+	ConversionToolParameterReference(final File reference, final String varNameInParameters,
+	                                 final Collection<String> parametersBeforeRef,
+	                                 final Collection<String> parametersAfterRef) {
 		ressource = Objects.requireNonNull(reference, "\"reference\" can't to be null").getPath();
-		this.varNameInParameters = Objects.requireNonNull(varNameInParameters, "\"var_name_in_parameters\" can't to be null");
-		this.parametersBeforeRef = Optional.ofNullable(parametersBeforeRef).map(p -> new Parameters(p)).orElseGet(() -> new Parameters());
-		this.parametersAfterRef = Optional.ofNullable(parametersAfterRef).map(p -> new Parameters(p)).orElseGet(() -> new Parameters());
+		this.varNameInParameters = Objects.requireNonNull(varNameInParameters,
+		        "\"var_name_in_parameters\" can't to be null");
+		this.parametersBeforeRef = Optional.ofNullable(parametersBeforeRef).map(Parameters::new).orElseGet(
+		        Parameters::new);
+		this.parametersAfterRef = Optional.ofNullable(parametersAfterRef).map(Parameters::new).orElseGet(
+		        Parameters::new);
 		ressourceAsFile = true;
 	}
 

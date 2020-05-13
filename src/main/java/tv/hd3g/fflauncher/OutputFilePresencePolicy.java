@@ -8,17 +8,18 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * Copyright (C) hdsdi3g for hd3g.tv 2019
  *
-*/
+ */
 package tv.hd3g.fflauncher;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.function.Predicate;
 
 public enum OutputFilePresencePolicy {
@@ -49,7 +50,8 @@ public enum OutputFilePresencePolicy {
 	NOT_EMPTY {
 		@Override
 		Predicate<File> filter() {
-			return TEST_EXISTS.and(TEST_REGULAR_DIR.and(TEST_NOT_EMPTY_DIR)).or(TEST_REGULAR_FILE.and(TEST_NOT_EMPTY_FILE));
+			return TEST_EXISTS.and(TEST_REGULAR_DIR.and(TEST_NOT_EMPTY_DIR)).or(TEST_REGULAR_FILE.and(
+			        TEST_NOT_EMPTY_FILE));
 		}
 	};
 
@@ -61,7 +63,7 @@ public enum OutputFilePresencePolicy {
 	private final static Predicate<File> TEST_NOT_DOTFILE = f -> f.getName().startsWith(".") == false;
 	private final static Predicate<File> TEST_NOT_EMPTY_DIR = d -> {
 		try {
-			return Files.list(d.toPath()).map(p -> p.toFile()).anyMatch(TEST_NOT_HIDDEN.and(TEST_NOT_DOTFILE));
+			return Files.list(d.toPath()).map(Path::toFile).anyMatch(TEST_NOT_HIDDEN.and(TEST_NOT_DOTFILE));
 		} catch (final IOException e) {
 			return false;
 		}
