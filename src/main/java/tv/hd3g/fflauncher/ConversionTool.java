@@ -566,7 +566,7 @@ public class ConversionTool implements ExecutableTool {
 		}
 		final HashMap<String, String> all_vars_to_inject = new HashMap<>(parametersVariables);
 
-		final Parameters newer_parameters = parameters.clone();
+		final Parameters newer_parameters = parameters.duplicate();
 
 		Stream.concat(input_sources.stream(), output_expected_destinations.stream()).forEach(param_ref -> {
 			final String var_name = param_ref.getVarNameInParameters();

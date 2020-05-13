@@ -177,7 +177,7 @@ public class FFbaseTest extends TestCase {
 
 	public void testDevices() {
 		final List<FFDevice> list = FFDevice.parseDevices(readLinesFromResource("test-devices.txt"));
-		assertEquals(6, list.size());
+		assertEquals(7, list.size());
 
 		int i = 0;
 		assertEquals("DV1394 A/V grab [dv1394] demuxing only supported", list.get(i++).toString());
@@ -186,6 +186,7 @@ public class FFbaseTest extends TestCase {
 		assertEquals("OSS (Open Sound System) playback [oss] muxing and demuxing supported", list.get(i++).toString());
 		assertEquals("Video4Linux2 output device [v4l2] muxing only supported", list.get(i++).toString());
 		assertEquals("Video4Linux2 device grab [video4linux2, v4l2] demuxing only supported", list.get(i++).toString());
+		assertEquals("[libcdio] demuxing only supported", list.get(i++).toString());
 	}
 
 	public void testBSFS() {

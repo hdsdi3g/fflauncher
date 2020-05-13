@@ -8,3 +8,4 @@ Devices:
  DE oss             OSS (Open Sound System) playback
   E v4l2            Video4Linux2 output device
  D  video4linux2,v4l2 Video4Linux2 device grab
+ D  libcdio
