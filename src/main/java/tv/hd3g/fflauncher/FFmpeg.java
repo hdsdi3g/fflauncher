@@ -87,8 +87,8 @@ public class FFmpeg extends FFbase {
 	 * NVIDIA Performance Primitives via libnpp.
 	 * Via -vf ffmpeg's option.
 	 * @param newSize like 1280x720 or -1x720
-	 * @param pixel_format can be null (== same) or nv12, yuv444p16...
-	 * @param interp_algo can be null or nn (Nearest neighbour), linear (2-parameter cubic (B=1, C=0)), cubic2p_catmullrom (2-parameter cubic (B=0, C=1/2)), cubic2p_b05c03 (2-parameter cubic (B=1/2,
+	 * @param pixelFormat can be null (== same) or nv12, yuv444p16...
+	 * @param interpAlgo can be null or nn (Nearest neighbour), linear (2-parameter cubic (B=1, C=0)), cubic2p_catmullrom (2-parameter cubic (B=0, C=1/2)), cubic2p_b05c03 (2-parameter cubic (B=1/2,
 	 *        C=3/10)), super (Supersampling), lanczos ...
 	 */
 	public FFmpeg addHardwareNVScalerFilter(final Point newSize, final String pixelFormat, final String interpAlgo) {
@@ -327,7 +327,7 @@ public class FFmpeg extends FFbase {
 	}
 
 	/**
-	 * @param min_rate set -1 for default
+	 * @param minRate set -1 for default
 	 * @param maxRate set -1 for default
 	 * @param bufsize set -1 for default
 	 */
