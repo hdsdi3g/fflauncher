@@ -42,7 +42,7 @@
 		<dependency>
 			<groupId>tv.hd3g</groupId>
 			<artifactId>processlauncher</artifactId>
-			<version>2.1.0</version>
+			<version>2.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>tv.hd3g.commons</groupId>
