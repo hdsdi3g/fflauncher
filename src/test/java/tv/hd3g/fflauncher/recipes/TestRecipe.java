@@ -30,8 +30,8 @@ public class TestRecipe {
 		final ToolRunner run = new ToolRunner(new ExecutableFinder());
 
 		final Recipe r = new Recipe(run, "java") {};
-		assertEquals(r.getExecName(), "java");
-		assertEquals(r.toolRun, run);
+		assertEquals("java", r.getExecName());
+		assertEquals(run, r.toolRun);
 	}
 
 }

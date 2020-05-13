@@ -115,14 +115,14 @@ public class FFbaseTest {
 		assertEquals(
 		        "--enable-gpl --enable-version3 --enable-nonfree --as=yasm --enable-libmp3lame --enable-libbluray --enable-libopenjpeg --enable-libtheora --enable-libvorbis --enable-libtwolame --enable-libvpx --enable-libxvid --enable-libgsm --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopus --enable-librtmp --enable-libschroedinger --enable-libsmbclient --enable-libspeex --enable-libssh --enable-libvo-amrwbenc --enable-libwavpack --enable-libwebp --enable-libzvbi --enable-libx264 --enable-libx265 --enable-libsmbclient --enable-libssh",
 		        v.rawConfiguration);
-		assertEquals(v.libavutilVersion, "55. 58.100 / 55. 58.100");
-		assertEquals(v.libavcodecVersion, "57. 89.100 / 57. 89.100");
-		assertEquals(v.libavformatVersion, "57. 71.100 / 57. 71.100");
-		assertEquals(v.libavdeviceVersion, "57.  6.100 / 57.  6.100");
-		assertEquals(v.libavfilterVersion, "6. 82.100 /  6. 82.100");
-		assertEquals(v.libswscaleVersion, "4.  6.100 /  4.  6.100");
-		assertEquals(v.libswresampleVersion, "2.  7.100 /  2.  7.100");
-		assertEquals(v.libpostprocVersion, "54.  5.100 / 54.  5.100");
+		assertEquals("55. 58.100 / 55. 58.100", v.libavutilVersion);
+		assertEquals("57. 89.100 / 57. 89.100", v.libavcodecVersion);
+		assertEquals("57. 71.100 / 57. 71.100", v.libavformatVersion);
+		assertEquals("57.  6.100 / 57.  6.100", v.libavdeviceVersion);
+		assertEquals("6. 82.100 /  6. 82.100", v.libavfilterVersion);
+		assertEquals("4.  6.100 /  4.  6.100", v.libswscaleVersion);
+		assertEquals("2.  7.100 /  2.  7.100", v.libswresampleVersion);
+		assertEquals("54.  5.100 / 54.  5.100", v.libpostprocVersion);
 	}
 
 	@Test
