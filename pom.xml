@@ -4,7 +4,7 @@
 
 	<groupId>tv.hd3g</groupId>
 	<artifactId>fflauncher</artifactId>
-	<version>1.4.0-SNAPSHOT</version>
+	<version>1.4.0</version>
 	<packaging>jar</packaging>
 
 	<name>fflauncher</name>
@@ -99,7 +99,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
@@ -107,7 +107,7 @@
 							<goal>jar</goal>
 						</goals>
 						<configuration>
-							<additionalparam>-Xdoclint:none</additionalparam>
+							<doclint>none</doclint>
 						</configuration>
 					</execution>
 				</executions>
