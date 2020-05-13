@@ -58,7 +58,7 @@ public class FFFormat {
 
 		List<String> line_blocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(lb -> lb.trim()).collect(Collectors.toUnmodifiableList());
 
-		if (line_blocs.size() < 3) {
+		if (line_blocs.size() < 2) {
 			throw new RuntimeException("Can't parse line: \"" + line + "\"");
 		}
 
@@ -79,8 +79,11 @@ public class FFFormat {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(long_name);
-		sb.append(" [");
+		if (long_name.isBlank() == false) {
+			sb.append(long_name);
+			sb.append(" ");
+		}
+		sb.append("[");
 		sb.append(name);
 		if (alternate_tags.size() > 1) {
 			sb.append(", ");
