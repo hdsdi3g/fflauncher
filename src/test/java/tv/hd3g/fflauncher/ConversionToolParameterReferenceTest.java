@@ -16,15 +16,19 @@
  */
 package tv.hd3g.fflauncher;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ConversionToolParameterReferenceTest extends TestCase {
+public class ConversionToolParameterReferenceTest {
 
 	private final File tempFile;
 
@@ -35,52 +39,60 @@ public class ConversionToolParameterReferenceTest extends TestCase {
 	private ConversionToolParameterReference ctprS;
 	private ConversionToolParameterReference ctprF;
 
-	@Override
-	protected void setUp() throws Exception {
+	@BeforeEach
+	public void setUp() throws Exception {
 		ctprS = new ConversionToolParameterReference("reference", "var", Arrays.asList("before1", "before2"), Arrays
 		        .asList("after1", "after2"));
 		ctprF = new ConversionToolParameterReference(tempFile, "var", Arrays.asList("before1", "before2"), Arrays
 		        .asList("after1", "after2"));
 	}
 
+	@Test
 	public void testNullConstructor() {
 		final ConversionToolParameterReference ctprS = new ConversionToolParameterReference("reference", "var", null,
 		        null);
 		final ConversionToolParameterReference ctprF = new ConversionToolParameterReference(tempFile, "var", null,
 		        null);
 
-		Assert.assertEquals(Collections.emptyList(), ctprS.getParametersListBeforeRef());
-		Assert.assertEquals(Collections.emptyList(), ctprS.getParametersListAfterRef());
-		Assert.assertEquals(Collections.emptyList(), ctprF.getParametersListBeforeRef());
-		Assert.assertEquals(Collections.emptyList(), ctprF.getParametersListAfterRef());
+		assertEquals(Collections.emptyList(), ctprS.getParametersListBeforeRef());
+		assertEquals(Collections.emptyList(), ctprS.getParametersListAfterRef());
+		assertEquals(Collections.emptyList(), ctprF.getParametersListBeforeRef());
+		assertEquals(Collections.emptyList(), ctprF.getParametersListAfterRef());
 	}
 
+	@Test
 	public void testGetRessource() {
-		Assert.assertEquals("reference", ctprS.getRessource());
-		Assert.assertEquals(tempFile.getPath(), ctprF.getRessource());
+		assertEquals("reference", ctprS.getRessource());
+		assertEquals(tempFile.getPath(), ctprF.getRessource());
 	}
 
+	@Test
 	public void testGetParametersListAfterRef() {
-		Assert.assertEquals(Arrays.asList("after1", "after2"), ctprS.getParametersListAfterRef());
+		assertEquals(Arrays.asList("after1", "after2"), ctprS.getParametersListAfterRef());
 	}
 
+	@Test
 	public void testGetParametersListBeforeRef() {
-		Assert.assertEquals(Arrays.asList("before1", "before2"), ctprS.getParametersListBeforeRef());
+		assertEquals(Arrays.asList("before1", "before2"), ctprS.getParametersListBeforeRef());
 	}
 
+	@Test
 	public void testGetVarNameInParameters() {
-		Assert.assertEquals("var", ctprS.getVarNameInParameters());
+		assertEquals("var", ctprS.getVarNameInParameters());
 	}
 
+	@Test
 	public void testIsVarNameInParametersEquals() {
-		Assert.assertTrue(ctprS.isVarNameInParametersEquals("var"));
+		assertTrue(ctprS.isVarNameInParametersEquals("var"));
 	}
 
+	@Test
 	public void testToString() {
-		Assert.assertEquals(ctprS.getRessource(), ctprS.toString());
-		Assert.assertEquals(ctprF.getRessource(), ctprF.toString());
+		assertEquals(ctprS.getRessource(), ctprS.toString());
+		assertEquals(ctprF.getRessource(), ctprF.toString());
 	}
 
+	@Test
 	public void testCheckOpenRessourceAsFile() {
 		try {
 			ctprS.checkOpenRessourceAsFile();
@@ -96,7 +108,7 @@ public class ConversionToolParameterReferenceTest extends TestCase {
 
 		try {
 			new ConversionToolParameterReference(new File("nope"), "var", null, null).checkOpenRessourceAsFile();
-			Assert.fail("Expected exception from here: file not exists");
+			fail("Expected exception from here: file not exists");
 		} catch (IOException | InterruptedException e) {
 		}
 	}

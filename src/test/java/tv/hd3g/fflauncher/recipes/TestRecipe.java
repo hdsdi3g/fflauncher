@@ -16,12 +16,16 @@
  */
 package tv.hd3g.fflauncher.recipes;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.tool.ToolRunner;
 
-public class TestRecipe extends TestCase {
+public class TestRecipe {
 
+	@Test
 	public void test() {
 		final ToolRunner run = new ToolRunner(new ExecutableFinder());
 

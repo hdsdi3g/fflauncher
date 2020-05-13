@@ -16,6 +16,9 @@
  */
 package tv.hd3g.fflauncher;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,8 +27,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.ffmpeg.ffprobe.StreamType;
+import org.junit.jupiter.api.Test;
 
-import junit.framework.TestCase;
 import tv.hd3g.fflauncher.FFmpeg.FFHardwareCodec;
 import tv.hd3g.fflauncher.FFmpeg.Preset;
 import tv.hd3g.fflauncher.FFmpeg.Tune;
@@ -34,7 +37,7 @@ import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 import tv.hd3g.processlauncher.tool.ToolRunner;
 
-public class FFmpegTest extends TestCase {
+public class FFmpegTest {
 
 	private final ToolRunner toolRun;
 	private final ScheduledExecutorService maxExecTimeScheduler;
@@ -50,6 +53,7 @@ public class FFmpegTest extends TestCase {
 		return new FFmpeg("ffmpeg", new Parameters());
 	}
 
+	@Test
 	public void testSimpleOutputDestination() {
 		final FFmpeg ffmpeg = create();
 		ffmpeg.addSimpleOutputDestination("dest", "container");
@@ -57,6 +61,7 @@ public class FFmpegTest extends TestCase {
 		assertTrue(ffmpeg.getReadyToRunParameters().toString().endsWith("-f container dest"));
 	}
 
+	@Test
 	public void testParameters() throws FileNotFoundException {
 		final FFmpeg ffmpeg = create();
 		final int header = ffmpeg.getInternalParameters().toString().length();
@@ -71,6 +76,7 @@ public class FFmpegTest extends TestCase {
 		        ffmpeg.getInternalParameters().toString().substring(header));
 	}
 
+	@Test
 	public void testNV() throws IOException, MediaException {
 		if (System.getProperty("ffmpeg.test.nvidia", "").equals("1") == false) {
 			return;
@@ -119,6 +125,7 @@ public class FFmpegTest extends TestCase {
 		assertTrue(test_file2.delete());
 	}
 
+	@Test
 	public void testGetFirstVideoStream() throws IOException, InterruptedException, ExecutionException, MediaException {
 		if (System.getProperty("ffmpeg.test.nvidia", "").equals("1") == false) {
 			return;

@@ -16,6 +16,12 @@
  */
 package tv.hd3g.fflauncher;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -25,12 +31,13 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
-public class ConversionToolTest extends TestCase {
+public class ConversionToolTest {
 
+	@Test
 	public void test() throws IOException {
 		final ConversionTool ct = new ConversionTool("java");
 		ct.getInternalParameters().addParameters("-firstparam");
@@ -43,7 +50,7 @@ public class ConversionToolTest extends TestCase {
 
 		assertNotNull(ct.getExecutableName());
 
-		Assert.assertNull(ct.getMaxExecTimeScheduler());
+		assertNull(ct.getMaxExecTimeScheduler());
 		final ScheduledThreadPoolExecutor max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1);
 		ct.setMaxExecTimeScheduler(max_exec_time_scheduler);
 		assertEquals(max_exec_time_scheduler, ct.getMaxExecTimeScheduler());
@@ -96,6 +103,7 @@ public class ConversionToolTest extends TestCase {
 		assertEquals("dest2", ct.getDeclaredDestinationByVarName("vardest2").orElse("nope"));
 	}
 
+	@Test
 	public void testCatchMissingOutVar() {
 		final LinkedHashMap<String, String> catchs = new LinkedHashMap<>();
 
@@ -130,6 +138,7 @@ public class ConversionToolTest extends TestCase {
 		assertEquals("source", catchs.get("found_var"));
 	}
 
+	@Test
 	public void testManageOutFiles() throws IOException {
 		final File f1 = File.createTempFile("test", ".txt");
 		final File d1 = new File(f1.getParent() + File.separator + "sub1-" + f1.getName() + File.separator + "sub2");

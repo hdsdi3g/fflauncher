@@ -16,20 +16,23 @@
  */
 package tv.hd3g.fflauncher.recipes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+
 import java.awt.Point;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+
 import tv.hd3g.fflauncher.FFmpeg;
 import tv.hd3g.fflauncher.OutputFilePresencePolicy;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.tool.ToolRunner;
 
-public class ProbeMediaTest extends TestCase {
+public class ProbeMediaTest {
 
 	private final ToolRunner run;
 
@@ -37,6 +40,7 @@ public class ProbeMediaTest extends TestCase {
 		run = new ToolRunner(new ExecutableFinder());
 	}
 
+	@Test
 	public void test() throws Exception {
 		final GenerateVideoFile gvf = new GenerateVideoFile(run);
 
@@ -47,15 +51,15 @@ public class ProbeMediaTest extends TestCase {
 
 		ffmpeg.checkDestinations();
 		final List<File> outputFiles = ffmpeg.getOutputFiles(OutputFilePresencePolicy.ALL);
-		Assert.assertEquals(test_file_to_create, outputFiles.get(0));
-		Assert.assertEquals(1, outputFiles.size());
-		Assert.assertNotSame(0, test_file_to_create.length());
+		assertEquals(test_file_to_create, outputFiles.get(0));
+		assertEquals(1, outputFiles.size());
+		assertNotSame(0, test_file_to_create.length());
 
 		final ProbeMedia probe = new ProbeMedia(run, Executors.newSingleThreadScheduledExecutor());
 		final FFprobeJAXB result = probe.doAnalysing(test_file_to_create);
 
-		Assert.assertEquals(1, result.getFormat().getDuration().intValue());
-		Assert.assertEquals(432, result.getVideoStreams().findFirst().get().getHeight().intValue());
+		assertEquals(1, result.getFormat().getDuration().intValue());
+		assertEquals(432, result.getVideoStreams().findFirst().get().getHeight().intValue());
 
 		ffmpeg.cleanUpOutputFiles(true, false);
 	}

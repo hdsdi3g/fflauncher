@@ -17,6 +17,10 @@
 package tv.hd3g.fflauncher;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,13 +30,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+
 import tv.hd3g.fflauncher.FFCodec.CodecType;
 import tv.hd3g.fflauncher.FFFilter.ConnectorType;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
-public class FFbaseTest extends TestCase {
+public class FFbaseTest {
 
 	private final ExecutableFinder executableFinder;
 
@@ -49,38 +54,40 @@ public class FFbaseTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBase() throws Exception {
 		final FFbaseImpl b = new FFbaseImpl(new Parameters());
 		final var about = b.getAbout(executableFinder);
 
-		assertNotNull("version", about.getVersion());
-		assertFalse("codecs empty", about.getCodecs().isEmpty());
-		assertFalse("formats empty", about.getFormats().isEmpty());
-		assertFalse("devices empty", about.getDevices().isEmpty());
-		assertFalse("bitstream empty", about.getBitStreamFilters().isEmpty());
-		assertNotNull("protocols", about.getProtocols());
-		assertFalse("filters empty", about.getFilters().isEmpty());
-		assertFalse("pixelFormats empty", about.getPixelFormats().isEmpty());
+		assertNotNull(about.getVersion(), "version");
+		assertFalse(about.getCodecs().isEmpty(), "codecs empty");
+		assertFalse(about.getFormats().isEmpty(), "formats empty");
+		assertFalse(about.getDevices().isEmpty(), "devices empty");
+		assertFalse(about.getBitStreamFilters().isEmpty(), "bitstream empty");
+		assertNotNull(about.getProtocols(), "protocols");
+		assertFalse(about.getFilters().isEmpty(), "filters empty");
+		assertFalse(about.getPixelFormats().isEmpty(), "pixelFormats empty");
 
-		assertTrue("Coder Avaliable", about.isCoderIsAvaliable("ffv1"));
-		assertFalse("Coder notAvaliable", about.isCoderIsAvaliable("nonono"));
-		assertTrue("Decoder Avaliable", about.isDecoderIsAvaliable("rl2"));
-		assertFalse("Decoder notAvaliable", about.isDecoderIsAvaliable("nonono"));
-		assertTrue("Filter Avaliable", about.isFilterIsAvaliable("color"));
-		assertFalse("Filter notAvaliable", about.isFilterIsAvaliable("nonono"));
-		assertTrue("Format Avaliable", about.isToFormatIsAvaliable("wav"));
-		assertFalse("Format notAvaliable", about.isToFormatIsAvaliable("nonono"));
+		assertTrue(about.isCoderIsAvaliable("ffv1"), "Coder Avaliable");
+		assertFalse(about.isCoderIsAvaliable("nonono"), "Coder notAvaliable");
+		assertTrue(about.isDecoderIsAvaliable("rl2"), "Decoder Avaliable");
+		assertFalse(about.isDecoderIsAvaliable("nonono"), "Decoder notAvaliable");
+		assertTrue(about.isFilterIsAvaliable("color"), "Filter Avaliable");
+		assertFalse(about.isFilterIsAvaliable("nonono"), "Filter notAvaliable");
+		assertTrue(about.isToFormatIsAvaliable("wav"), "Format Avaliable");
+		assertFalse(about.isToFormatIsAvaliable("nonono"), "Format notAvaliable");
 	}
 
+	@Test
 	public void testNVPresence() throws Exception {
 		final FFbaseImpl b = new FFbaseImpl(new Parameters());
 
 		if (System.getProperty("ffmpeg.test.nvidia", "").equals("1")) {
-			assertTrue("Can't found NV lib like cuda, cuvid and nvenc", b.getAbout(executableFinder)
-			        .isNVToolkitIsAvaliable());
+			assertTrue(b.getAbout(executableFinder)
+			        .isNVToolkitIsAvaliable(), "Can't found NV lib like cuda, cuvid and nvenc");
 		}
 		if (System.getProperty("ffmpeg.test.libnpp", "").equals("1")) {
-			assertTrue("Can't found libnpp", b.getAbout(executableFinder).isHardwareNVScalerFilterIsAvaliable());
+			assertTrue(b.getAbout(executableFinder).isHardwareNVScalerFilterIsAvaliable(), "Can't found libnpp");
 		}
 	}
 
@@ -92,6 +99,7 @@ public class FFbaseTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testVersion() {
 		final FFVersion v = new FFVersion(readLinesFromResource("test-version.txt"));
 
@@ -101,7 +109,7 @@ public class FFbaseTest extends TestCase {
 		Arrays.stream(
 		        "gpl version3 nonfree yasm libmp3lame libbluray libopenjpeg libtheora libvorbis libtwolame libvpx libxvid libgsm libopencore-amrnb libopencore-amrwb libopus librtmp libschroedinger libsmbclient libspeex libssh libvo-amrwbenc libwavpack libwebp libzvbi libx264 libx265 libsmbclient libssh"
 		                .split(" ")).forEach(cf -> {
-			                assertTrue("Missing " + cf, v.configuration.contains(cf));
+			                assertTrue(v.configuration.contains(cf), "Missing " + cf);
 		                });
 
 		assertEquals(
@@ -117,6 +125,7 @@ public class FFbaseTest extends TestCase {
 		assertEquals(v.libpostprocVersion, "54.  5.100 / 54.  5.100");
 	}
 
+	@Test
 	public void testCodecs() {
 		final List<FFCodec> list = FFCodec.parse(readLinesFromResource("test-codecs.txt"));
 
@@ -148,6 +157,7 @@ public class FFbaseTest extends TestCase {
 		assertEquals(2, t.decoders.size());
 	}
 
+	@Test
 	public void testFormats() {
 		final List<FFFormat> list = FFFormat.parseFormats(readLinesFromResource("test-formats.txt"));
 
@@ -165,6 +175,7 @@ public class FFbaseTest extends TestCase {
 
 	}
 
+	@Test
 	public void testDevices() {
 		final List<FFDevice> list = FFDevice.parseDevices(readLinesFromResource("test-devices.txt"));
 		assertEquals(7, list.size());
@@ -179,6 +190,7 @@ public class FFbaseTest extends TestCase {
 		assertEquals("[libcdio] demuxing only supported", list.get(i++).toString());
 	}
 
+	@Test
 	public void testBSFS() {
 		final Set<String> filters = FFAbout.parseBSFS(readLinesFromResource("test-bsfs.txt").stream());
 
@@ -186,6 +198,7 @@ public class FFbaseTest extends TestCase {
 		assertEquals(17, filters.size());
 	}
 
+	@Test
 	public void testProtocols() {
 		final FFProtocols p = new FFProtocols(readLinesFromResource("test-protocols.txt"));
 
@@ -204,6 +217,7 @@ public class FFbaseTest extends TestCase {
 		assertTrue(p.output.contains("icecast"));
 	}
 
+	@Test
 	public void testFilters() {
 		final List<FFFilter> list = FFFilter.parseFilters(readLinesFromResource("test-filters.txt"));
 
@@ -226,6 +240,7 @@ public class FFbaseTest extends TestCase {
 
 	}
 
+	@Test
 	public void testPixelFormats() {
 		final List<FFPixelFormat> list = FFPixelFormat.parsePixelsFormats(readLinesFromResource(
 		        "test-pixelsformats.txt"));
@@ -242,6 +257,7 @@ public class FFbaseTest extends TestCase {
 		                                            && pf.bitsPerPixel == 48)).count());
 	}
 
+	@Test
 	public void testHwaccels() {
 		final Set<String> list = FFAbout.parseBSFS(readLinesFromResource("test-hwaccels.txt").stream());
 		assertEquals(6, list.size());
@@ -254,6 +270,7 @@ public class FFbaseTest extends TestCase {
 		assertTrue(list.contains("qsv"));
 	}
 
+	@Test
 	public void testParams() throws IOException {
 		final FFbaseImpl b = new FFbaseImpl(new Parameters());
 		assertFalse(b.isLogLevelSet());

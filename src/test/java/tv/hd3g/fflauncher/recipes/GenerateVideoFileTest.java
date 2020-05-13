@@ -16,18 +16,23 @@
  */
 package tv.hd3g.fflauncher.recipes;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+
 import tv.hd3g.fflauncher.FFmpeg;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.tool.ToolRunner;
 
-public class GenerateVideoFileTest extends TestCase {
+public class GenerateVideoFileTest {
 
+	@Test
 	public void test() throws InterruptedException, ExecutionException, IOException {
 		final ToolRunner run = new ToolRunner(new ExecutableFinder());
 		final GenerateVideoFile gvf = new GenerateVideoFile(run);
