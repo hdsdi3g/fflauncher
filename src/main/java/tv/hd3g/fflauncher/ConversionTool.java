@@ -482,7 +482,7 @@ public class ConversionTool implements ExecutableTool {
 			if (file.isFile()) {
 				log.info("Delete file \"{}\"", file);
 				if (file.delete() == false) {
-					throw new RuntimeException("Can't delete file \"" + file + "\"");
+					throw new IORuntimeException("Can't delete file \"" + file + "\"");
 				}
 				return false;
 			}
@@ -497,7 +497,7 @@ public class ConversionTool implements ExecutableTool {
 		}).forEach(file -> {
 			log.info("Delete \"{}\"", file);
 			if (file.delete() == false) {
-				throw new RuntimeException("Can't delete \"" + file + "\"");
+				throw new IORuntimeException("Can't delete \"" + file + "\"");
 			}
 		});
 
@@ -535,8 +535,10 @@ public class ConversionTool implements ExecutableTool {
 		inputSources.forEach(s -> {
 			try {
 				s.checkOpenRessourceAsFile();
-			} catch (IOException | InterruptedException e) {// NOSONAR
-				throw new RuntimeException("Can't open file \"" + s + "\" for check reading", e);
+			} catch (final IOException e) {
+				throw new IORuntimeException("Can't open file \"" + s + "\" for check reading", e);
+			} catch (final InterruptedException e) {// NOSONAR
+				throw new IllegalStateException(e);
 			}
 		});
 		return this;
@@ -550,8 +552,10 @@ public class ConversionTool implements ExecutableTool {
 		outputExpectedDestinations.forEach(s -> {
 			try {
 				s.checkOpenRessourceAsFile();
-			} catch (IOException | InterruptedException e) {// NOSONAR
-				throw new RuntimeException("Can't open file \"" + s + "\" for check reading", e);
+			} catch (final IOException e) {
+				throw new IORuntimeException("Can't open file \"" + s + "\" for check reading", e);
+			} catch (final InterruptedException e) {// NOSONAR
+				throw new IllegalStateException(e);
 			}
 		});
 		return this;
@@ -577,8 +581,8 @@ public class ConversionTool implements ExecutableTool {
 
 			if (done) {
 				if (allVarsToInject.containsKey(var_name)) {
-					throw new RuntimeException("Variable collision: \"" + var_name + "\" was already set to \""
-					                           + allVarsToInject.get(var_name) + "\" in " + newerParameters);
+					throw new IllegalStateException("Variable collision: \"" + var_name + "\" was already set to \""
+					                                + allVarsToInject.get(var_name) + "\" in " + newerParameters);
 				}
 				allVarsToInject.put(var_name, paramRef.getRessource());
 			} else {

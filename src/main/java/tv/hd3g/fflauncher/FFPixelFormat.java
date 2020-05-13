@@ -48,7 +48,7 @@ public class FFPixelFormat {
 		        String::trim).collect(Collectors.toUnmodifiableList());
 
 		if (lineBlocs.size() != 4) {
-			throw new RuntimeException("Can't parse line: \"" + line + "\"");
+			throw new UnknownFormatException("Can't parse line: \"" + line + "\"");
 		}
 
 		supportedInput = lineBlocs.get(0).contains("I");

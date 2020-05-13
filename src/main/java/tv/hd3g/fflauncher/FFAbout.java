@@ -93,7 +93,7 @@ public class FFAbout {
 			}
 			throw e;
 		} catch (final IOException e) {
-			throw new RuntimeException("Can't execute " + execName, e);
+			throw new IORuntimeException("Can't execute " + execName, e);
 		}
 	}
 

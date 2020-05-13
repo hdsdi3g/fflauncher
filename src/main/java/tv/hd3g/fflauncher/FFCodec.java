@@ -72,7 +72,7 @@ public class FFCodec {
 		} else if (letter == 'D') {
 			return CodecType.DATA;
 		} else {
-			throw new RuntimeException(CAN_T_PARSE_LINE + line + "\" (missing codec type)");
+			throw new UnknownFormatException(CAN_T_PARSE_LINE + line + "\" (missing codec type)");
 		}
 	}
 
@@ -86,7 +86,7 @@ public class FFCodec {
 		final String[] lineBlocs = line.split(" ");
 
 		if (lineBlocs.length < 3) {
-			throw new RuntimeException(CAN_T_PARSE_LINE + line + "\"");
+			throw new UnknownFormatException(CAN_T_PARSE_LINE + line + "\"");
 		}
 
 		/**
@@ -101,7 +101,7 @@ public class FFCodec {
 		losslessCompression = lineBlocs[0].charAt(5) == 'S';
 
 		if (lineBlocs[0].substring(3).chars().noneMatch(i -> (i == 'I' || i == 'L' || i == 'S' || i == '.'))) {
-			throw new RuntimeException(CAN_T_PARSE_LINE + line + "\" (invalid ends for codec type)");
+			throw new UnknownFormatException(CAN_T_PARSE_LINE + line + "\" (invalid ends for codec type)");
 		}
 
 		name = lineBlocs[1].trim();

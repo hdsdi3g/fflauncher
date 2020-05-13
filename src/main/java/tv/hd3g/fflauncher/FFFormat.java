@@ -65,7 +65,7 @@ public class FFFormat {
 		        .collect(Collectors.toUnmodifiableList());
 
 		if (lineBlocs.size() < 2) {
-			throw new RuntimeException("Can't parse line: \"" + line + "\"");
+			throw new UnknownFormatException("Can't parse line: \"" + line + "\"");
 		}
 
 		demuxing = lineBlocs.get(0).trim().contains("D");

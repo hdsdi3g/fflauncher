@@ -70,7 +70,7 @@ public class FFFilter {
 		        .collect(Collectors.toUnmodifiableList());
 
 		if (lineBlocs.size() < 4) {
-			throw new RuntimeException("Can't parse line: \"" + line + "\"");
+			throw new UnknownFormatException("Can't parse line: \"" + line + "\"");
 		}
 
 		tag = lineBlocs.get(1);
@@ -98,7 +98,7 @@ public class FFFilter {
 		} else if (s_source_connector.contains("|")) {
 			sourceConnector = ConnectorType.SOURCE_SINK;
 		} else {
-			throw new RuntimeException("Invalid line : \"" + line + "\", invalid filter_graph sourceConnector");
+			throw new UnknownFormatException("Invalid line : \"" + line + "\", invalid filter_graph sourceConnector");
 		}
 
 		if (s_dest_connector.contains("A")) {
@@ -110,7 +110,7 @@ public class FFFilter {
 		} else if (s_dest_connector.contains("|")) {
 			destConnector = ConnectorType.SOURCE_SINK;
 		} else {
-			throw new RuntimeException("Invalid line : \"" + line + "\", invalid filter_graph sourceConnector");
+			throw new UnknownFormatException("Invalid line : \"" + line + "\", invalid filter_graph sourceConnector");
 		}
 
 		sourceConnectorsCount = s_source_connector.length();
