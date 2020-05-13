@@ -104,7 +104,7 @@ public class FFmpeg extends FFbase {
 			scale.append("interp_algo=" + interp_algo);
 		}
 
-		log.debug("Add vf: " + scale.toString());
+		log.debug("Add vf: {}", scale);
 		getInternalParameters().addParameters("-vf", scale.toString());
 
 		return this;
@@ -134,7 +134,7 @@ public class FFmpeg extends FFbase {
 		nvresize.append("readback=0" + configuration.keySet().stream().map(resolution -> configuration.get(resolution))
 		        .collect(Collectors.joining("", "[", "]")));
 
-		log.debug("Add filter_complex: " + nvresize.toString());
+		log.debug("Add filter_complex: {}", nvresize);
 		getInternalParameters().addParameters("-filter_complex", nvresize.toString());
 		return this;
 	}
@@ -142,10 +142,8 @@ public class FFmpeg extends FFbase {
 	public static Optional<StreamType> getFirstVideoStream(final FFprobeJAXB analysing_result) {
 		final Optional<StreamType> o_video_stream = analysing_result.getVideoStreams().findFirst();
 
-		if (o_video_stream.isPresent()) {
-			if (o_video_stream.get().getDisposition().getAttachedPic() == 0) {
-				return o_video_stream;
-			}
+		if (o_video_stream.isPresent() && o_video_stream.get().getDisposition().getAttachedPic() == 0) {
+			return o_video_stream;
 		}
 		return Optional.empty();
 	}
@@ -191,12 +189,13 @@ public class FFmpeg extends FFbase {
 
 		final StreamType video_stream = o_video_stream.get();
 
-		final FFCodec codec = about.getCodecs().stream().filter(c -> (c.decoding_supported & c.name.equals(video_stream
-		        .getCodecName()))).findFirst().orElseThrow(() -> new MediaException(
-		                "Can't found a valid decoder codec for " + video_stream
-		                        .getCodecName() + " in \"" + source + "\""));
+		final FFCodec codec = about.getCodecs().stream()
+		        .filter(c -> (c.decoding_supported && c.name.equals(video_stream.getCodecName())))
+		        .findFirst()
+		        .orElseThrow(() -> new MediaException("Can't found a valid decoder codec for " + video_stream
+		                .getCodecName() + " in \"" + source + "\""));
 
-		if (hardware_codec == FFHardwareCodec.NV & about.isNVToolkitIsAvaliable()) {
+		if (hardware_codec == FFHardwareCodec.NV && about.isNVToolkitIsAvaliable()) {
 			final Optional<String> o_source_cuvid_codec_engine = codec.decoders.stream().filter(decoder -> decoder
 			        .endsWith("_cuvid")).findFirst();
 
@@ -216,8 +215,8 @@ public class FFmpeg extends FFbase {
 				source_options.add("-c:v");
 				source_options.add(o_source_cuvid_codec_engine.get());
 
-				log.debug("Add hardware decoded source " + source_options.stream().collect(Collectors.joining(" "))
-				          + " -i " + source);
+				log.debug("Add hardware decoded source {} -i {}",
+				        source_options.stream().collect(Collectors.joining(" ")), source);
 				addSimpleInputSource(source, source_options);
 				return this;
 			}
@@ -236,24 +235,24 @@ public class FFmpeg extends FFbase {
 	                                       final int output_video_stream_index,
 	                                       final FFHardwareCodec hardware_codec,
 	                                       final FFAbout about) throws MediaException {
-		String coder = dest_codec_name;
 
 		if (dest_codec_name.equals("copy")) {
 			new MediaException("\"copy\" codec can't be handled by hardware !");
 		}
 
-		final FFCodec codec = about.getCodecs().stream().filter(c -> (c.encoding_supported & c.name.equals(
+		final FFCodec codec = about.getCodecs().stream().filter(c -> (c.encoding_supported && c.name.equals(
 		        dest_codec_name))).findFirst().orElseThrow(() -> new MediaException("Can't found a valid codec for "
 		                                                                            + dest_codec_name));
 
-		if (hardware_codec == FFHardwareCodec.NV & about.isNVToolkitIsAvaliable()) {
-			coder = codec.encoders.stream().filter(encoder -> (encoder.endsWith("_nvenc") | encoder.startsWith("nvenc_")
-			                                                   | encoder.equals("nvenc"))).findFirst().orElseThrow(
-			                                                           () -> new MediaException(
-			                                                                   "Can't found a valid hardware "
-			                                                                                    + hardware_codec
-			                                                                                    + " codec for "
-			                                                                                    + dest_codec_name));
+		String coder;
+		if (hardware_codec == FFHardwareCodec.NV && about.isNVToolkitIsAvaliable()) {
+			coder = codec.encoders.stream()
+			        .filter(encoder -> (encoder.endsWith("_nvenc")
+			                            || encoder.startsWith("nvenc_")
+			                            || encoder.equals("nvenc")))
+			        .findFirst()
+			        .orElseThrow(() -> new MediaException("Can't found a valid hardware " + hardware_codec
+			                                              + " codec for " + dest_codec_name));
 
 		} else {
 			throw new MediaException("Can't found a valid hardware coder to \"" + dest_codec_name + "\"");
@@ -269,36 +268,46 @@ public class FFmpeg extends FFbase {
 	}
 
 	public enum Preset {
-		ultrafast,
-		superfast,
-		veryfast,
-		faster,
-		fast,
-		medium,
-		slow,
-		slower,
-		veryslow,
-		placebo
+		ULTRAFAST,
+		SUPERFAST,
+		VERYFAST,
+		FASTER,
+		FAST,
+		MEDIUM,
+		SLOW,
+		SLOWER,
+		VERYSLOW,
+		PLACEBO;
+
+		@Override
+		public String toString() {
+			return name().toLowerCase();
+		}
 	}
 
 	public enum Tune {
-		film,
-		animation,
-		grain,
-		stillimage,
-		psnr,
-		ssim,
-		fastdecode,
-		zerolatency
+		FILM,
+		ANIMATION,
+		GRAIN,
+		STILLIMAGE,
+		PSNR,
+		SSIM,
+		FASTDECODE,
+		ZEROLATENCY;
+
+		@Override
+		public String toString() {
+			return name().toLowerCase();
+		}
 	}
 
 	public FFmpeg addPreset(final Preset preset) {
-		getInternalParameters().addParameters("-preset", preset.name());
+		getInternalParameters().addParameters("-preset", preset.toString());
 		return this;
 	}
 
 	public FFmpeg addTune(final Tune tune) {
-		getInternalParameters().addParameters("-tune", tune.name());
+		getInternalParameters().addParameters("-tune", tune.toString());
 		return this;
 	}
 
@@ -431,11 +440,8 @@ public class FFmpeg extends FFbase {
 	 * like -map source_index:stream_index_in_source ; 0 is the first.
 	 */
 	public FFmpeg addMap(final int source_index, final int stream_index_in_source) {
-		getInternalParameters().addParameters("-map", String.valueOf(source_index) + ":" + String.valueOf(
-		        stream_index_in_source));
+		getInternalParameters().addParameters("-map", source_index + ":" + stream_index_in_source);
 		return this;
 	}
-
-	// TODO ffmetadata import/export: ffmpeg -i INPUT -f ffmetadata FFMETADATAFILE / ffmpeg -i INPUT -i FFMETADATAFILE -map_metadata 1 -codec copy OUTPUT
 
 }

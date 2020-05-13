@@ -24,12 +24,14 @@ import java.util.stream.Collectors;
 
 public class FFCodec {
 
+	private static final String CAN_T_PARSE_LINE = "Can't parse line: \"";
+
 	static List<FFCodec> parse(final List<String> lines) {
 		return lines.stream()
 		        .map(String::trim)
 		        .filter(line -> (line.toLowerCase().startsWith("codecs:") == false))
 		        .filter(line -> (line.startsWith("-------") == false))
-		        .filter(line -> (line.indexOf("=") == -1)).map(FFCodec::new)
+		        .filter(line -> (line.indexOf('=') == -1)).map(FFCodec::new)
 		        .collect(Collectors.toUnmodifiableList());
 	}
 
@@ -64,7 +66,7 @@ public class FFCodec {
 		final String[] line_blocs = line.split(" ");
 
 		if (line_blocs.length < 3) {
-			throw new RuntimeException("Can't parse line: \"" + line + "\"");
+			throw new RuntimeException(CAN_T_PARSE_LINE + line + "\"");
 		}
 
 		/**
@@ -83,15 +85,15 @@ public class FFCodec {
 		} else if (line_blocs[0].charAt(2) == 'D') {
 			type = CodecType.DATA;
 		} else {
-			throw new RuntimeException("Can't parse line: \"" + line + "\" (missing codec type)");
+			throw new RuntimeException(CAN_T_PARSE_LINE + line + "\" (missing codec type)");
 		}
 
 		intra_frame_only = line_blocs[0].charAt(3) == 'I';
 		lossy_compression = line_blocs[0].charAt(4) == 'L';
 		lossless_compression = line_blocs[0].charAt(5) == 'S';
 
-		if (line_blocs[0].substring(3).chars().noneMatch(i -> (i == 'I' | i == 'L' | i == 'S' | i == '.'))) {
-			throw new RuntimeException("Can't parse line: \"" + line + "\" (invalid ends for codec type)");
+		if (line_blocs[0].substring(3).chars().noneMatch(i -> (i == 'I' || i == 'L' || i == 'S' || i == '.'))) {
+			throw new RuntimeException(CAN_T_PARSE_LINE + line + "\" (invalid ends for codec type)");
 		}
 
 		name = line_blocs[1].trim();
@@ -103,35 +105,36 @@ public class FFCodec {
 		        .collect(
 		                Collectors.joining(" "));
 
-		final int decoders_tag_pos = raw_long_name.indexOf("(decoders:");
+		final var parDecoders = "(decoders:";
+		final int decoders_tag_pos = raw_long_name.indexOf(parDecoders);
 		final int encoders_tag_pos = raw_long_name.indexOf("(encoders:");
 
-		if (decoders_tag_pos > -1 | encoders_tag_pos > -1) {
+		if (decoders_tag_pos > -1 || encoders_tag_pos > -1) {
 			if (decoders_tag_pos > -1) {
-				final int decoders_tag_end_pos = raw_long_name.indexOf(")", decoders_tag_pos);
+				final int decoders_tag_end_pos = raw_long_name.indexOf(')', decoders_tag_pos);
 				if (decoders_tag_end_pos == -1) {
 					throw new IndexOutOfBoundsException("Can't found \")\" in \"" + raw_long_name + "\"");
 				}
 				decoders = Collections.unmodifiableSet(Arrays.stream(raw_long_name.substring(decoders_tag_pos
-				                                                                             + "(decoders:".length(),
+				                                                                             + parDecoders.length(),
 				        decoders_tag_end_pos).trim().split(" ")).distinct().collect(Collectors.toSet()));
 			} else {
 				decoders = Collections.emptySet();
 			}
 
 			if (encoders_tag_pos > -1) {
-				final int encoders_tag_end_pos = raw_long_name.indexOf(")", encoders_tag_pos);
+				final int encoders_tag_end_pos = raw_long_name.indexOf(')', encoders_tag_pos);
 				if (encoders_tag_end_pos == -1) {
 					throw new IndexOutOfBoundsException("Can't found \")\" in \"" + raw_long_name + "\"");
 				}
 				encoders = Collections.unmodifiableSet(Arrays.stream(raw_long_name.substring(encoders_tag_pos
-				                                                                             + "(decoders:".length(),
+				                                                                             + parDecoders.length(),
 				        encoders_tag_end_pos).trim().split(" ")).distinct().collect(Collectors.toSet()));
 			} else {
 				encoders = Collections.emptySet();
 			}
 
-			if (decoders_tag_pos > -1 & encoders_tag_pos > -1) {
+			if (decoders_tag_pos > -1 && encoders_tag_pos > -1) {
 				long_name = raw_long_name.substring(0, Math.min(decoders_tag_pos - 1, encoders_tag_pos - 1));
 			} else if (decoders_tag_pos > -1) {
 				long_name = raw_long_name.substring(0, decoders_tag_pos - 1);
@@ -156,7 +159,7 @@ public class FFCodec {
 
 		sb.append(type.toString().toLowerCase());
 
-		if (decoding_supported & encoding_supported) {
+		if (decoding_supported && encoding_supported) {
 			sb.append(" encoding and decoding supported");
 		} else if (decoding_supported) {
 			sb.append(" decoding only supported");

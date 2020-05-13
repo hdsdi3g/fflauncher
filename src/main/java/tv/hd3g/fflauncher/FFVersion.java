@@ -27,6 +27,8 @@ import org.apache.logging.log4j.Logger;
 
 public class FFVersion {
 
+	private static final String HEADER_CONFIGURATION = "configuration:";
+
 	private static final Logger log = LogManager.getLogger();
 
 	/**
@@ -83,19 +85,14 @@ public class FFVersion {
 	public final String libpostproc_version;
 
 	FFVersion(final List<String> process_result) {
-		/*this.base = base;
-		if (base == null) {
-			throw new NullPointerException("\"base\" can't to be null");
-		}*/
-
 		header_version = process_result.stream().filter(l -> l.startsWith("ffmpeg version ")).findFirst().orElse(
 		        "ffmpeg version ?").substring("ffmpeg version ".length()).trim();
 
 		built_with = process_result.stream().filter(l -> l.startsWith("built with ")).findFirst().orElse("built with ?")
 		        .substring("built with ".length()).trim();
 
-		raw_configuration = process_result.stream().filter(l -> l.startsWith("configuration:")).findFirst().orElse(
-		        "configuration:").substring("configuration:".length()).trim();
+		raw_configuration = process_result.stream().filter(l -> l.startsWith(HEADER_CONFIGURATION)).findFirst().orElse(
+		        HEADER_CONFIGURATION).substring(HEADER_CONFIGURATION.length()).trim();
 
 		configuration = Collections.unmodifiableSet(Arrays.stream(raw_configuration.split(" ")).map(c -> {
 			if (c.startsWith("--enable-")) {

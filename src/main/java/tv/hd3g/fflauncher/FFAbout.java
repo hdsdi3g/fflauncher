@@ -66,6 +66,8 @@ import tv.hd3g.processlauncher.cmdline.Parameters;
  */
 public class FFAbout {
 
+	private static final String CUVID = "cuvid";
+
 	private static final Logger log = LogManager.getLogger();
 
 	private final String execName;
@@ -87,7 +89,7 @@ public class FFAbout {
 			return new Exec(referer, executableFinder).runWaitGetText(null);
 		} catch (final InvalidExecution e) {
 			if (log.isDebugEnabled()) {
-				log.debug("Can't execute " + execName + ", it return: {}", e.getStdErr());
+				log.debug("Can't execute {}, it return: {}", execName, e.getStdErr());
 			}
 			throw e;
 		} catch (final IOException e) {
@@ -272,22 +274,22 @@ public class FFAbout {
 
 	public boolean isCoderIsAvaliable(final String codec_name) {
 		return getCodecs().stream().anyMatch(codec -> (codec.name.equals(codec_name.toLowerCase())
-		                                               & codec.encoding_supported == true));
+		                                               && codec.encoding_supported == true));
 	}
 
 	public boolean isDecoderIsAvaliable(final String codec_name) {
 		return getCodecs().stream().anyMatch(codec -> (codec.name.equals(codec_name.toLowerCase())
-		                                               & codec.decoding_supported == true));
+		                                               && codec.decoding_supported == true));
 	}
 
 	public boolean isFromFormatIsAvaliable(final String demuxer_name) {
 		return getFormats().stream().anyMatch(format -> (format.name.equals(demuxer_name.toLowerCase())
-		                                                 & format.demuxing == true));
+		                                                 && format.demuxing == true));
 	}
 
 	public boolean isToFormatIsAvaliable(final String muxer_name) {
 		return getFormats().stream().anyMatch(format -> (format.name.equals(muxer_name.toLowerCase())
-		                                                 & format.muxing == true));
+		                                                 && format.muxing == true));
 	}
 
 	public boolean isFilterIsAvaliable(final String filter_name) {
@@ -299,8 +301,9 @@ public class FFAbout {
 	 *        ALL CODECS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
 	 */
 	public boolean isCoderEngineIsAvaliable(final String engine_name) {
-		return getCodecs().stream().anyMatch(codec -> (codec.encoding_supported == true & codec.encoders.contains(
-		        engine_name)));
+		return getCodecs().stream()
+		        .anyMatch(codec -> (codec.encoding_supported == true
+		                            && codec.encoders.contains(engine_name)));
 	}
 
 	/**
@@ -308,7 +311,7 @@ public class FFAbout {
 	 *        ALL CODECS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
 	 */
 	public boolean isDecoderEngineIsAvaliable(final String engine_name) {
-		return getCodecs().stream().anyMatch(codec -> (codec.decoding_supported == true & codec.decoders.contains(
+		return getCodecs().stream().anyMatch(codec -> (codec.decoding_supported == true && codec.decoders.contains(
 		        engine_name)));
 	}
 
@@ -320,19 +323,21 @@ public class FFAbout {
 		if (getAvailableHWAccelerationMethods().contains("cuda") == false) {
 			log.debug("(NVIDIA) Cuda is not available in hardware acceleration methods");
 			return false;
-		} else if (getAvailableHWAccelerationMethods().contains("cuvid") == false) {
+		} else if (getAvailableHWAccelerationMethods().contains(CUVID) == false) {
 			log.debug("(NVIDIA) Cuvid is not available in hardware acceleration methods");
 			return false;
 		}
-		final List<String> all_nv_related_codecs = getCodecs().stream().filter(c -> c.decoders.isEmpty() == false
-		                                                                            | c.encoders.isEmpty() == false)
-		        .flatMap(c -> Stream.concat(c.decoders.stream(), c.encoders.stream())).distinct().filter(c -> c
-		                .contains("nvenc") | c.contains("cuvid")).collect(Collectors.toList());
+		final List<String> all_nv_related_codecs = getCodecs().stream()
+		        .filter(c -> c.decoders.isEmpty() == false || c.encoders.isEmpty() == false)
+		        .flatMap(c -> Stream.concat(c.decoders.stream(), c.encoders.stream()))
+		        .distinct()
+		        .filter(c -> c.contains("nvenc") || c.contains(CUVID))
+		        .collect(Collectors.toList());
 
 		if (all_nv_related_codecs.stream().noneMatch(c -> c.contains("nvenc"))) {
 			log.debug("(NVIDIA) nvenc is not available in codec list");
 			return false;
-		} else if (all_nv_related_codecs.stream().noneMatch(c -> c.contains("cuvid"))) {
+		} else if (all_nv_related_codecs.stream().noneMatch(c -> c.contains(CUVID))) {
 			log.debug("(NVIDIA) cuvid is not available in codec list");
 			return false;
 		}

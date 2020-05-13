@@ -16,6 +16,10 @@
  */
 package tv.hd3g.fflauncher;
 
+import static java.util.Collections.unmodifiableSet;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toSet;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -66,16 +70,14 @@ public class FFFormat {
 		muxing = line_blocs.get(0).trim().contains("E");
 
 		if (line_blocs.get(1).contains(",")) {
-			name = Arrays.stream(line_blocs.get(1).trim().split(",")).findFirst().get();
-			alternate_tags = Collections.unmodifiableSet(Arrays.stream(line_blocs.get(1).trim().split(",")).collect(
-			        Collectors.toSet()));
+			name = Arrays.stream(line_blocs.get(1).trim().split(",")).findFirst().orElse("");
+			alternate_tags = unmodifiableSet(Arrays.stream(line_blocs.get(1).trim().split(",")).collect(toSet()));
 		} else {
 			name = line_blocs.get(1);
 			alternate_tags = Collections.singleton(name);
 		}
 
-		long_name = line_blocs.stream().filter(lb -> lb.trim().equals("") == false).skip(2).collect(Collectors.joining(
-		        " "));
+		long_name = line_blocs.stream().filter(lb -> lb.trim().equals("") == false).skip(2).collect(joining(" "));
 	}
 
 	@Override
@@ -94,7 +96,7 @@ public class FFFormat {
 		}
 		sb.append("] ");
 
-		if (muxing & demuxing) {
+		if (muxing && demuxing) {
 			sb.append("muxing and demuxing supported");
 		} else if (muxing) {
 			sb.append("muxing only supported");

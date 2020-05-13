@@ -18,19 +18,19 @@ package tv.hd3g.fflauncher;
 
 public enum FFUnit {
 
-	kilo {
+	KILO {
 		@Override
 		public String toString() {
 			return "k";
 		}
 	},
-	mega {
+	MEGA {
 		@Override
 		public String toString() {
 			return "M";
 		}
 	},
-	giga {
+	GIGA {
 		@Override
 		public String toString() {
 			return "G";
@@ -40,15 +40,18 @@ public enum FFUnit {
 	public static FFUnit fromString(final String u) {
 		switch (u.toLowerCase()) {
 		case "k":
-			return kilo;
+			return KILO;
 		case "m":
-			return mega;
+			return MEGA;
 		case "g":
-			return giga;
+			return GIGA;
 		default:
 			throw new IndexOutOfBoundsException("Unknow " + u);
 		}
-
 	}
 
+	@Override
+	public String toString() {
+		return name().toLowerCase();
+	}
 }

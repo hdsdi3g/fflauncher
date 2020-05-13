@@ -112,19 +112,19 @@ class ConversionToolParameterReference {
 		for (int pos = 0; pos < TRY_COUNT_TO_OPEN_FILE; ++pos) {
 			if (file.canRead()) {
 				try (SeekableByteChannel sbc = Files.newByteChannel(file.toPath(), openOptionsReadOnly)) {
-					log.debug("Successfully open file \"" + file + "\" for check access");
+					log.debug("Successfully open file \"{}\" for check access", file);
 					return;
 				} catch (final IOException e) {
 					if (pos + 1 == TRY_COUNT_TO_OPEN_FILE) {
 						throw e;
 					}
-					Thread.sleep(10 + 100 * pos);
+					Thread.sleep(10l + 100 * pos);
 				}
 			} else {
 				if (pos + 1 == TRY_COUNT_TO_OPEN_FILE) {
 					throw new IOException("Can't read file \"" + file + "\" for check access");
 				}
-				Thread.sleep(10 + 100 * pos);
+				Thread.sleep(10l + 100 * pos);
 			}
 		}
 	}

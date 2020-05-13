@@ -27,7 +27,7 @@ public class FFFilter {
 		        .map(String::trim)
 		        .filter(line -> (line.toLowerCase().startsWith("Filters:".toLowerCase()) == false))
 		        .filter(line -> (line.startsWith("---") == false))
-		        .filter(line -> (line.indexOf("=") == -1))
+		        .filter(line -> (line.indexOf('=') == -1))
 		        .map(FFFilter::new)
 		        .collect(Collectors.toUnmodifiableList());
 	}

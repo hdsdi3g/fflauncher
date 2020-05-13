@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
 
 public class FFProtocols {
 
+	private static final String INPUT2 = "Input:";
+	private static final String OUTPUT2 = "Output:";
+
 	/**
 	 * Like async, bluray, httpproxy, unix...
 	 */
@@ -35,14 +38,14 @@ public class FFProtocols {
 	FFProtocols(final List<String> process_result) {
 		input = process_result.stream()
 		        .map(String::trim)
-		        .filter(line -> (line.toLowerCase().startsWith("Input:".toLowerCase()) == false))
-		        .takeWhile(line -> (line.toLowerCase().startsWith("Output:".toLowerCase()) == false))
+		        .filter(line -> (line.toLowerCase().startsWith(INPUT2.toLowerCase()) == false))
+		        .takeWhile(line -> (line.toLowerCase().startsWith(OUTPUT2.toLowerCase()) == false))
 		        .collect(Collectors.toSet());
 
 		output = process_result.stream()
 		        .map(String::trim)
-		        .dropWhile(line -> (line.toLowerCase().startsWith("Output:".toLowerCase()) == false))
-		        .filter(line -> (line.toLowerCase().startsWith("Output:".toLowerCase()) == false))
+		        .dropWhile(line -> (line.toLowerCase().startsWith(OUTPUT2.toLowerCase()) == false))
+		        .filter(line -> (line.toLowerCase().startsWith(OUTPUT2.toLowerCase()) == false))
 		        .collect(Collectors.toSet());
 	}
 

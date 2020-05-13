@@ -50,13 +50,13 @@ public class ProbeMedia extends Recipe {
 		        "\"maxExecTimeScheduler\" can't to be null");
 	}
 
-	private FFprobe internal() throws IOException {
+	private FFprobe internal() {
 		final Parameters parameters = new Parameters();
 		final FFprobe ffprobe = new FFprobe(execName, parameters);
 
-		ffprobe.setPrintFormat(FFPrintFormat.xml).setShowStreams().setShowFormat().setShowChapters().isHidebanner();
+		ffprobe.setPrintFormat(FFPrintFormat.XML).setShowStreams().setShowFormat().setShowChapters().isHidebanner();
 		ffprobe.setMaxExecTimeScheduler(maxExecTimeScheduler);
-		ffprobe.setLogLevel(FFLogLevel.error, false, false);
+		ffprobe.setLogLevel(FFLogLevel.ERROR, false, false);
 		ffprobe.setFilterForLinesEventsToDisplay(l -> (l.isStdErr() && ffprobe.filterOutErrorLines().test(l
 		        .getLine())));
 

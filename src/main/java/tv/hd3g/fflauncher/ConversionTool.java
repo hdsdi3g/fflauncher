@@ -141,8 +141,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an input reference, like:
 	 * [parameters_before_input_source] {var_name_in_parameters replaced by source}
 	 * For example, set source = "myfile", var_name_in_parameters = "IN", parameters_before_input_source = [-i],
-	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
-	 * "exec -verbose -i myfile -send &lt;%OUT%&gt;"
+	 * For an parameters = "exec -VERBOSE &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -VERBOSE -i myfile -send &lt;%OUT%&gt;"
 	 * @param source can be another var name (mindfuck)
 	 */
 	public ConversionTool addInputSource(final String source,
@@ -159,8 +159,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an input reference, like:
 	 * [parameters_before_input_source] {var_name_in_parameters replaced by source}
 	 * For example, set source = "/myfile", var_name_in_parameters = "IN", parameters_before_input_source = [-i],
-	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
-	 * "exec -verbose -i /myfile -send &lt;%OUT%&gt;"
+	 * For an parameters = "exec -VERBOSE &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -VERBOSE -i /myfile -send &lt;%OUT%&gt;"
 	 */
 	public ConversionTool addInputSource(final File source,
 	                                     final String var_name_in_parameters,
@@ -176,8 +176,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an input reference, like:
 	 * [parameters_before_input_source] {var_name_in_parameters replaced by source} [parameters_after_input_source]
 	 * For example, set source = "myfile", var_name_in_parameters = "IN", parameters_before_input_source = [-i], parameters_after_input_source = [-w],
-	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
-	 * "exec -verbose -i myfile -w -send &lt;%OUT%&gt;"
+	 * For an parameters = "exec -VERBOSE &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -VERBOSE -i myfile -w -send &lt;%OUT%&gt;"
 	 * @param source can be another var name (mindfuck)
 	 * @param parameters_before_input_source can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_input_source can be null, and can be another var name (mindfuck)
@@ -195,8 +195,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an input reference, like:
 	 * [parameters_before_input_source] {var_name_in_parameters replaced by source} [parameters_after_input_source]
 	 * For example, set source = "/myfile", var_name_in_parameters = "IN", parameters_before_input_source = [-i], parameters_after_input_source = [-w],
-	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
-	 * "exec -verbose -i /myfile -w -send &lt;%OUT%&gt;"
+	 * For an parameters = "exec -VERBOSE &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -VERBOSE -i /myfile -w -send &lt;%OUT%&gt;"
 	 * @param parameters_before_input_source can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_input_source can be null, and can be another var name (mindfuck)
 	 */
@@ -213,8 +213,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an output reference, like:
 	 * [parameters_before_output_destination] {var_name_in_parameters replaced by destination}
 	 * For example, set destination = "myfile", var_name_in_parameters = "OUT", parameters_before_output_destination = [-o],
-	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
-	 * "exec -verbose &lt;%IN%&gt; -send -o myfile"
+	 * For an parameters = "exec -VERBOSE &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -VERBOSE &lt;%IN%&gt; -send -o myfile"
 	 * @param destination can be another var name (mindfuck)
 	 */
 	public ConversionTool addOutputDestination(final String destination,
@@ -233,8 +233,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an output reference, like:
 	 * [parameters_before_output_destination] {var_name_in_parameters replaced by destination}
 	 * For example, set destination = "myfile", var_name_in_parameters = "OUT", parameters_before_output_destination = [-o],
-	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
-	 * "exec -verbose &lt;%IN%&gt; -send -o myfile"
+	 * For an parameters = "exec -VERBOSE &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -VERBOSE &lt;%IN%&gt; -send -o myfile"
 	 */
 	public ConversionTool addOutputDestination(final File destination,
 	                                           final String var_name_in_parameters,
@@ -252,8 +252,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an output reference, like:
 	 * [parameters_before_output_destination] {var_name_in_parameters replaced by destination} [parameters_after_output_destination]
 	 * For example, set destination = "myfile", var_name_in_parameters = "OUT", parameters_before_output_destination = [-o], parameters_after_output_destination = [-w],
-	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
-	 * "exec -verbose &lt;%IN%&gt; -send -o myfile -w"
+	 * For an parameters = "exec -VERBOSE &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -VERBOSE &lt;%IN%&gt; -send -o myfile -w"
 	 * @param destination can be another var name (mindfuck)
 	 * @param parameters_before_output_destination can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_output_destination can be null, and can be another var name (mindfuck)
@@ -271,8 +271,8 @@ public class ConversionTool implements ExecutableTool {
 	 * Add a parameters via an output reference, like:
 	 * [parameters_before_output_destination] {var_name_in_parameters replaced by destination} [parameters_after_output_destination]
 	 * For example, set destination = "myfile", var_name_in_parameters = "OUT", parameters_before_output_destination = [-o], parameters_after_output_destination = [-w],
-	 * For an parameters = "exec -verbose &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
-	 * "exec -verbose &lt;%IN%&gt; -send -o myfile -w"
+	 * For an parameters = "exec -VERBOSE &lt;%IN%&gt; -send &lt;%OUT%&gt;", you will get an updated parameters:
+	 * "exec -VERBOSE &lt;%IN%&gt; -send -o myfile -w"
 	 * @param parameters_before_output_destination can be null, and can be another var name (mindfuck)
 	 * @param parameters_after_output_destination can be null, and can be another var name (mindfuck)
 	 */
@@ -286,8 +286,8 @@ public class ConversionTool implements ExecutableTool {
 	}
 
 	protected void onMissingInputOutputVar(final String var_name, final String ressource) {
-		log.warn("Missing I/O variable \"" + var_name + "\" in command line \"" + getInternalParameters()
-		         + "\". Ressource \"" + ressource + "\" will be ignored");
+		log.warn("Missing I/O variable \"{}\" in command line \"{}\". Ressource \"{}\" will be ignored",
+		        var_name, getInternalParameters(), ressource);
 	}
 
 	/**
@@ -328,7 +328,7 @@ public class ConversionTool implements ExecutableTool {
 		if (working_directory != null) {
 			try {
 				processBuilder.setWorkingDirectory(working_directory);
-			} catch (final IOException e) {
+			} catch (final IOException e) {// NOSONAR
 			}
 		}
 		if (onErrorDeleteOutFiles) {
@@ -339,8 +339,7 @@ public class ConversionTool implements ExecutableTool {
 				@Override
 				public void onEndExecution(final ProcesslauncherLifecycle processlauncherLifecycle) {
 					if (processlauncherLifecycle.isCorrectlyDone() == false) {
-						log.warn("Error during execution of \"" + processlauncherLifecycle.toString()
-						         + "\", remove output files");
+						log.warn("Error during execution of \"{}\", remove output files", processlauncherLifecycle);
 						cleanUpOutputFiles(true, true);
 					}
 				}
@@ -450,7 +449,7 @@ public class ConversionTool implements ExecutableTool {
 			        }
 			        return Stream.empty();
 		        }).map(file -> {
-			        if (file.exists() == false & getWorkingDirectory() != null) {
+			        if (file.exists() == false && getWorkingDirectory() != null) {
 				        return new File(getWorkingDirectory().getAbsolutePath() + File.separator + file.getPath());
 			        }
 			        return file;
@@ -464,13 +463,11 @@ public class ConversionTool implements ExecutableTool {
 	public ConversionTool cleanUpOutputFiles(final boolean remove_all, final boolean clean_output_directories) {
 		getOutputFiles(OutputFilePresencePolicy.MUST_EXISTS).stream().filter(file -> {
 			if (file.isFile()) {
-				if (remove_all == false) {
+				if (remove_all == false && file.length() > 0) {
 					/**
 					 * Remove only empty files
 					 */
-					if (file.length() > 0) {
-						return false;
-					}
+					return false;
 				}
 				return true;
 			}
@@ -480,7 +477,7 @@ public class ConversionTool implements ExecutableTool {
 			return clean_output_directories;
 		}).filter(file -> {
 			if (file.isFile()) {
-				log.info("Delete file \"" + file + "\"");
+				log.info("Delete file \"{}\"", file);
 				if (file.delete() == false) {
 					throw new RuntimeException("Can't delete file \"" + file + "\"");
 				}
@@ -491,11 +488,11 @@ public class ConversionTool implements ExecutableTool {
 			try {
 				return Files.walk(dir_path).sorted(Comparator.reverseOrder()).map(Path::toFile);
 			} catch (final IOException e) {
-				log.error("Can't access to " + dir_path, e);
+				log.error("Can't access to {}", dir_path, e);
 				return Stream.empty();
 			}
 		}).forEach(file -> {
-			log.info("Delete \"" + file + "\"");
+			log.info("Delete \"{}\"", file);
 			if (file.delete() == false) {
 				throw new RuntimeException("Can't delete \"" + file + "\"");
 			}
@@ -535,7 +532,7 @@ public class ConversionTool implements ExecutableTool {
 		input_sources.forEach(s -> {
 			try {
 				s.checkOpenRessourceAsFile();
-			} catch (IOException | InterruptedException e) {
+			} catch (IOException | InterruptedException e) {// NOSONAR
 				throw new RuntimeException("Can't open file \"" + s + "\" for check reading", e);
 			}
 		});
@@ -550,7 +547,7 @@ public class ConversionTool implements ExecutableTool {
 		output_expected_destinations.forEach(s -> {
 			try {
 				s.checkOpenRessourceAsFile();
-			} catch (IOException | InterruptedException e) {
+			} catch (IOException | InterruptedException e) {// NOSONAR
 				throw new RuntimeException("Can't open file \"" + s + "\" for check reading", e);
 			}
 		});

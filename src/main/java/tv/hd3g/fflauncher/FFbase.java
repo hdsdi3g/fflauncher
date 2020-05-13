@@ -33,6 +33,8 @@ import tv.hd3g.processlauncher.cmdline.Parameters;
 
 public class FFbase extends ConversionTool {
 
+	private static final String P_LOGLEVEL = "-loglevel";
+	private static final String P_HIDE_BANNER = "-hide_banner";
 	private FFAbout about;
 
 	public FFbase(final String execName, final Parameters parameters) {
@@ -64,32 +66,28 @@ public class FFbase extends ConversionTool {
 			if (display_level) {
 				sb.append("level+");
 			}
-			sb.append(level.name());
-			parameters.prependParameters("-loglevel", sb.toString());
-		}, "-loglevel", "-v");
+			sb.append(level);
+			parameters.prependParameters(P_LOGLEVEL, sb.toString());
+		}, P_LOGLEVEL, "-v");
 
 		return this;
 	}
 
 	public boolean isLogLevelSet() {
-		return parameters.hasParameters("-loglevel", "-v");
+		return parameters.hasParameters(P_LOGLEVEL, "-v");
 	}
 
 	public FFbase setHidebanner() {
-		parameters.ifHasNotParameter(() -> {
-			parameters.prependParameters("-hide_banner");
-		}, "-hide_banner");
+		parameters.ifHasNotParameter(() -> parameters.prependParameters(P_HIDE_BANNER), P_HIDE_BANNER);
 		return this;
 	}
 
 	public boolean isHidebanner() {
-		return parameters.hasParameters("-hide_banner");
+		return parameters.hasParameters(P_HIDE_BANNER);
 	}
 
 	public FFbase setOverwriteOutputFiles() {
-		parameters.ifHasNotParameter(() -> {
-			parameters.prependParameters("-y");
-		}, "-y");
+		parameters.ifHasNotParameter(() -> parameters.prependParameters("-y"), "-y");
 		return this;
 	}
 
@@ -98,9 +96,7 @@ public class FFbase extends ConversionTool {
 	}
 
 	public FFbase setNeverOverwriteOutputFiles() {
-		parameters.ifHasNotParameter(() -> {
-			parameters.prependParameters("-n");
-		}, "-n");
+		parameters.ifHasNotParameter(() -> parameters.prependParameters("-n"), "-n");
 		return this;
 	}
 
@@ -193,12 +189,20 @@ public class FFbase extends ConversionTool {
 		final String l = _l.trim();
 		if (l.startsWith("[")) {
 			return true;
-		} else if (l.startsWith("ffmpeg version") | l.startsWith("ffprobe version") | l.startsWith("built with") | l
-		        .startsWith("configuration:") | l.startsWith("Press [q]")) {
+		} else if (l.startsWith("ffmpeg version")
+		           || l.startsWith("ffprobe version")
+		           || l.startsWith("built with")
+		           || l.startsWith("configuration:")
+		           || l.startsWith("Press [q]")) {
 			return false;
-		} else if (l.startsWith("libavutil") | l.startsWith("libavcodec") | l.startsWith("libavformat") | l.startsWith(
-		        "libavdevice") | l.startsWith("libavfilter") | l.startsWith("libswscale") | l.startsWith(
-		                "libswresample") | l.startsWith("libpostproc")) {
+		} else if (l.startsWith("libavutil")
+		           || l.startsWith("libavcodec")
+		           || l.startsWith("libavformat")
+		           || l.startsWith("libavdevice")
+		           || l.startsWith("libavfilter")
+		           || l.startsWith("libswscale")
+		           || l.startsWith("libswresample")
+		           || l.startsWith("libpostproc")) {
 			return false;
 		}
 		return true;

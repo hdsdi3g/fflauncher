@@ -260,10 +260,10 @@ public class FFbaseTest extends TestCase {
 
 		final int skip_base_cmdline = b.getInternalParameters().toString().length();
 
-		b.setLogLevel(FFLogLevel.fatal, true, true);
+		b.setLogLevel(FFLogLevel.FATAL, true, true);
 		assertEquals("-loglevel repeat+level+fatal", b.getInternalParameters().toString().substring(skip_base_cmdline));
 
-		b.setLogLevel(FFLogLevel.debug, false, false);
+		b.setLogLevel(FFLogLevel.DEBUG, false, false);
 		assertEquals("-loglevel repeat+level+fatal", b.getInternalParameters().toString().substring(skip_base_cmdline));
 
 		assertTrue(b.isLogLevelSet());

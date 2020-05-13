@@ -35,7 +35,7 @@ public abstract class Recipe {
 		if (execName.isEmpty()) {
 			throw new NullPointerException("\"exec_name\" can't to be empty");
 		}
-		log.debug("Init recipe " + getClass().getSimpleName() + " with " + execName);
+		log.debug("Init recipe {} with {}", getClass().getSimpleName(), execName);
 	}
 
 	public String getExecName() {

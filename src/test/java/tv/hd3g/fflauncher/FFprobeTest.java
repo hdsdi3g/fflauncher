@@ -36,7 +36,7 @@ public class FFprobeTest extends TestCase {
 		parameters.clear();
 
 		assertFalse(p.hasPrintFormat());
-		p.setPrintFormat(FFPrintFormat.xml);
+		p.setPrintFormat(FFPrintFormat.XML);
 		assertEquals("-print_format xml", parameters.toString().substring(skip_base_cmdline));
 		assertTrue(p.hasPrintFormat());
 
