@@ -55,13 +55,13 @@ public enum OutputFilePresencePolicy {
 		}
 	};
 
-	private final static Predicate<File> TEST_EXISTS = File::exists;
-	private final static Predicate<File> TEST_REGULAR_FILE = File::isFile;
-	private final static Predicate<File> TEST_REGULAR_DIR = File::isDirectory;
-	private final static Predicate<File> TEST_NOT_EMPTY_FILE = f -> f.length() > 0;
-	private final static Predicate<File> TEST_NOT_HIDDEN = f -> f.isHidden() == false;
-	private final static Predicate<File> TEST_NOT_DOTFILE = f -> f.getName().startsWith(".") == false;
-	private final static Predicate<File> TEST_NOT_EMPTY_DIR = d -> {
+	private static final Predicate<File> TEST_EXISTS = File::exists;
+	private static final Predicate<File> TEST_REGULAR_FILE = File::isFile;
+	private static final Predicate<File> TEST_REGULAR_DIR = File::isDirectory;
+	private static final Predicate<File> TEST_NOT_EMPTY_FILE = f -> f.length() > 0;
+	private static final Predicate<File> TEST_NOT_HIDDEN = f -> f.isHidden() == false;
+	private static final Predicate<File> TEST_NOT_DOTFILE = f -> f.getName().startsWith(".") == false;
+	private static final Predicate<File> TEST_NOT_EMPTY_DIR = d -> {
 		try {
 			return Files.list(d.toPath()).map(Path::toFile).anyMatch(TEST_NOT_HIDDEN.and(TEST_NOT_DOTFILE));
 		} catch (final IOException e) {

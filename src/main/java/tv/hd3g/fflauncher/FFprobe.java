@@ -49,7 +49,7 @@ public class FFprobe extends FFbase {
 	}
 
 	public enum FFPrintFormat {
-		_default {
+		BY_DEFAULT {
 			@Override
 			public String toString() {
 				return "default";
@@ -71,9 +71,9 @@ public class FFprobe extends FFbase {
 	/**
 	 * -print_format format set the output printing format
 	 */
-	public FFprobe setPrintFormat(final FFPrintFormat print_format) {
+	public FFprobe setPrintFormat(final FFPrintFormat printFormat) {
 		getInternalParameters().ifHasNotParameter(() -> getInternalParameters().addParameters(P_PRINT_FORMAT,
-		        print_format.toString().toLowerCase()), P_PRINT_FORMAT, "-of");
+		        printFormat.toString().toLowerCase()), P_PRINT_FORMAT, "-of");
 		return this;
 	}
 

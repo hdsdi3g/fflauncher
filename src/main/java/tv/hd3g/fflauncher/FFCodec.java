@@ -42,12 +42,12 @@ public class FFCodec {
 		DATA;
 	}
 
-	public final boolean decoding_supported;
-	public final boolean encoding_supported;
+	public final boolean decodingSupported;
+	public final boolean encodingSupported;
 	public final CodecType type;
-	public final boolean intra_frame_only;
-	public final boolean lossy_compression;
-	public final boolean lossless_compression;
+	public final boolean intraFrameOnly;
+	public final boolean lossyCompression;
+	public final boolean losslessCompression;
 
 	public final Set<String> encoders;
 	public final Set<String> decoders;
@@ -60,12 +60,32 @@ public class FFCodec {
 	/**
 	 * Like "DPX (Digital Picture Exchange) image"
 	 */
-	public final String long_name;
+	public final String longName;
+
+	private static CodecType letterToCodecType(final String line, final char letter) {
+		if (letter == 'V') {
+			return CodecType.VIDEO;
+		} else if (letter == 'A') {
+			return CodecType.AUDIO;
+		} else if (letter == 'S') {
+			return CodecType.SUBTITLE;
+		} else if (letter == 'D') {
+			return CodecType.DATA;
+		} else {
+			throw new RuntimeException(CAN_T_PARSE_LINE + line + "\" (missing codec type)");
+		}
+	}
+
+	private static void negativeToOutOfBoundException(final int value, final String text) {
+		if (value == -1) {
+			throw new IndexOutOfBoundsException(text);
+		}
+	}
 
 	FFCodec(final String line) {
-		final String[] line_blocs = line.split(" ");
+		final String[] lineBlocs = line.split(" ");
 
-		if (line_blocs.length < 3) {
+		if (lineBlocs.length < 3) {
 			throw new RuntimeException(CAN_T_PARSE_LINE + line + "\"");
 		}
 
@@ -73,37 +93,26 @@ public class FFCodec {
 		 * Parse "codec type zone"
 		 */
 
-		decoding_supported = line_blocs[0].charAt(0) == 'D';
-		encoding_supported = line_blocs[0].charAt(1) == 'E';
+		decodingSupported = lineBlocs[0].charAt(0) == 'D';
+		encodingSupported = lineBlocs[0].charAt(1) == 'E';
+		type = letterToCodecType(line, lineBlocs[0].charAt(2));
+		intraFrameOnly = lineBlocs[0].charAt(3) == 'I';
+		lossyCompression = lineBlocs[0].charAt(4) == 'L';
+		losslessCompression = lineBlocs[0].charAt(5) == 'S';
 
-		if (line_blocs[0].charAt(2) == 'V') {
-			type = CodecType.VIDEO;
-		} else if (line_blocs[0].charAt(2) == 'A') {
-			type = CodecType.AUDIO;
-		} else if (line_blocs[0].charAt(2) == 'S') {
-			type = CodecType.SUBTITLE;
-		} else if (line_blocs[0].charAt(2) == 'D') {
-			type = CodecType.DATA;
-		} else {
-			throw new RuntimeException(CAN_T_PARSE_LINE + line + "\" (missing codec type)");
-		}
-
-		intra_frame_only = line_blocs[0].charAt(3) == 'I';
-		lossy_compression = line_blocs[0].charAt(4) == 'L';
-		lossless_compression = line_blocs[0].charAt(5) == 'S';
-
-		if (line_blocs[0].substring(3).chars().noneMatch(i -> (i == 'I' || i == 'L' || i == 'S' || i == '.'))) {
+		if (lineBlocs[0].substring(3).chars().noneMatch(i -> (i == 'I' || i == 'L' || i == 'S' || i == '.'))) {
 			throw new RuntimeException(CAN_T_PARSE_LINE + line + "\" (invalid ends for codec type)");
 		}
 
-		name = line_blocs[1].trim();
+		name = lineBlocs[1].trim();
 
 		/**
 		 * Like "Dirac (decoders: dirac libschroedinger ) (encoders: vc2 libschroedinger )"
 		 */
-		final String raw_long_name = Arrays.stream(line_blocs).filter(lb -> lb.trim().equals("") == false).skip(2)
-		        .collect(
-		                Collectors.joining(" "));
+		final String raw_long_name = Arrays.stream(lineBlocs)
+		        .filter(lb -> lb.trim().equals("") == false)
+		        .skip(2)
+		        .collect(Collectors.joining(" "));
 
 		final var parDecoders = "(decoders:";
 		final int decoders_tag_pos = raw_long_name.indexOf(parDecoders);
@@ -112,9 +121,7 @@ public class FFCodec {
 		if (decoders_tag_pos > -1 || encoders_tag_pos > -1) {
 			if (decoders_tag_pos > -1) {
 				final int decoders_tag_end_pos = raw_long_name.indexOf(')', decoders_tag_pos);
-				if (decoders_tag_end_pos == -1) {
-					throw new IndexOutOfBoundsException("Can't found \")\" in \"" + raw_long_name + "\"");
-				}
+				negativeToOutOfBoundException(decoders_tag_end_pos, "Can't found \")\" in \"" + raw_long_name + "\"");
 				decoders = Collections.unmodifiableSet(Arrays.stream(raw_long_name.substring(decoders_tag_pos
 				                                                                             + parDecoders.length(),
 				        decoders_tag_end_pos).trim().split(" ")).distinct().collect(Collectors.toSet()));
@@ -124,9 +131,7 @@ public class FFCodec {
 
 			if (encoders_tag_pos > -1) {
 				final int encoders_tag_end_pos = raw_long_name.indexOf(')', encoders_tag_pos);
-				if (encoders_tag_end_pos == -1) {
-					throw new IndexOutOfBoundsException("Can't found \")\" in \"" + raw_long_name + "\"");
-				}
+				negativeToOutOfBoundException(encoders_tag_end_pos, "Can't found \")\" in \"" + raw_long_name + "\"");
 				encoders = Collections.unmodifiableSet(Arrays.stream(raw_long_name.substring(encoders_tag_pos
 				                                                                             + parDecoders.length(),
 				        encoders_tag_end_pos).trim().split(" ")).distinct().collect(Collectors.toSet()));
@@ -134,17 +139,23 @@ public class FFCodec {
 				encoders = Collections.emptySet();
 			}
 
-			if (decoders_tag_pos > -1 && encoders_tag_pos > -1) {
-				long_name = raw_long_name.substring(0, Math.min(decoders_tag_pos - 1, encoders_tag_pos - 1));
-			} else if (decoders_tag_pos > -1) {
-				long_name = raw_long_name.substring(0, decoders_tag_pos - 1);
-			} else {
-				long_name = raw_long_name.substring(0, encoders_tag_pos - 1);
-			}
+			longName = extractLongnameFromRawLongName(raw_long_name, decoders_tag_pos, encoders_tag_pos);
 		} else {
 			encoders = Collections.emptySet();
 			decoders = Collections.emptySet();
-			long_name = raw_long_name;
+			longName = raw_long_name;
+		}
+	}
+
+	private static String extractLongnameFromRawLongName(final String raw_long_name,
+	                                                     final int decoders_tag_pos,
+	                                                     final int encoders_tag_pos) {
+		if (decoders_tag_pos > -1 && encoders_tag_pos > -1) {
+			return raw_long_name.substring(0, Math.min(decoders_tag_pos - 1, encoders_tag_pos - 1));
+		} else if (decoders_tag_pos > -1) {
+			return raw_long_name.substring(0, decoders_tag_pos - 1);
+		} else {
+			return raw_long_name.substring(0, encoders_tag_pos - 1);
 		}
 	}
 
@@ -152,28 +163,28 @@ public class FFCodec {
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
 
-		sb.append(long_name);
+		sb.append(longName);
 		sb.append(" [");
 		sb.append(name);
 		sb.append("] ");
 
 		sb.append(type.toString().toLowerCase());
 
-		if (decoding_supported && encoding_supported) {
+		if (decodingSupported && encodingSupported) {
 			sb.append(" encoding and decoding supported");
-		} else if (decoding_supported) {
+		} else if (decodingSupported) {
 			sb.append(" decoding only supported");
 		} else {
 			sb.append(" encoding only supported");
 		}
 
-		if (intra_frame_only) {
+		if (intraFrameOnly) {
 			sb.append(", intra frame-only codec");
 		}
-		if (lossy_compression) {
+		if (lossyCompression) {
 			sb.append(", lossy compression");
 		}
-		if (lossless_compression) {
+		if (losslessCompression) {
 			sb.append(", lossless compression");
 		}
 

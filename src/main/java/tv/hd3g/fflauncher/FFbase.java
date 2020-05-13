@@ -51,7 +51,7 @@ public class FFbase extends ConversionTool {
 
 	@Override
 	protected PrintStream getStdErrPrintStreamToDisplayLinesEvents() {
-		return System.out;
+		return System.out;// NOSONAR
 	}
 
 	/**
@@ -108,15 +108,15 @@ public class FFbase extends ConversionTool {
 	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
 	 */
-	public FFbase addSimpleInputSource(final String source_name, final String... source_options) {
-		if (source_name == null) {
-			throw new NullPointerException("\"source_name\" can't to be null");
+	public FFbase addSimpleInputSource(final String sourceName, final String... sourceOptions) {
+		if (sourceName == null) {
+			throw new NullPointerException("\"sourceName\" can't to be null");
 		}
 
-		if (source_options == null) {
-			return addSimpleInputSource(source_name, Collections.emptyList());
+		if (sourceOptions == null) {
+			return addSimpleInputSource(sourceName, Collections.emptyList());
 		} else {
-			return addSimpleInputSource(source_name, Arrays.stream(source_options).collect(Collectors
+			return addSimpleInputSource(sourceName, Arrays.stream(sourceOptions).collect(Collectors
 			        .toUnmodifiableList()));
 		}
 	}
@@ -125,15 +125,15 @@ public class FFbase extends ConversionTool {
 	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
 	 */
-	public FFbase addSimpleInputSource(final File file, final String... source_options) {
+	public FFbase addSimpleInputSource(final File file, final String... sourceOptions) {
 		if (file == null) {
 			throw new NullPointerException("\"file\" can't to be null");
 		}
 
-		if (source_options == null) {
+		if (sourceOptions == null) {
 			return addSimpleInputSource(file, Collections.emptyList());
 		} else {
-			return addSimpleInputSource(file, Arrays.stream(source_options).collect(Collectors.toUnmodifiableList()));
+			return addSimpleInputSource(file, Arrays.stream(sourceOptions).collect(Collectors.toUnmodifiableList()));
 		}
 	}
 
@@ -141,15 +141,15 @@ public class FFbase extends ConversionTool {
 	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
 	 */
-	public FFbase addSimpleInputSource(final String source_name, final List<String> source_options) {
-		if (source_name == null) {
-			throw new NullPointerException("\"source_name\" can't to be null");
-		} else if (source_options == null) {
-			throw new NullPointerException("\"source_options\" can't to be null");
+	public FFbase addSimpleInputSource(final String sourceName, final List<String> sourceOptions) {
+		if (sourceName == null) {
+			throw new NullPointerException("\"sourceName\" can't to be null");
+		} else if (sourceOptions == null) {
+			throw new NullPointerException("\"sourceOptions\" can't to be null");
 		}
 
-		final String varname = parameters.addVariable("IN_AUTOMATIC_" + input_sources.size());
-		addInputSource(source_name, varname, Stream.concat(source_options.stream(), Stream.of("-i")).collect(Collectors
+		final String varname = parameters.addVariable("IN_AUTOMATIC_" + inputSources.size());
+		addInputSource(sourceName, varname, Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(Collectors
 		        .toUnmodifiableList()), Collections.emptyList());
 
 		return this;
@@ -159,15 +159,15 @@ public class FFbase extends ConversionTool {
 	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
 	 */
-	public FFbase addSimpleInputSource(final File file, final List<String> source_options) {
+	public FFbase addSimpleInputSource(final File file, final List<String> sourceOptions) {
 		if (file == null) {
 			throw new NullPointerException("\"file\" can't to be null");
-		} else if (source_options == null) {
-			throw new NullPointerException("\"source_options\" can't to be null");
+		} else if (sourceOptions == null) {
+			throw new NullPointerException("\"sourceOptions\" can't to be null");
 		}
 
-		final String varname = parameters.addVariable("IN_AUTOMATIC_" + input_sources.size());
-		addInputSource(file, varname, Stream.concat(source_options.stream(), Stream.of("-i")).collect(Collectors
+		final String varname = parameters.addVariable("IN_AUTOMATIC_" + inputSources.size());
+		addInputSource(file, varname, Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(Collectors
 		        .toUnmodifiableList()), Collections.emptyList());
 
 		return this;
@@ -185,8 +185,8 @@ public class FFbase extends ConversionTool {
 		return about;
 	}
 
-	private static final Predicate<String> filterOutErrorLines = _l -> {
-		final String l = _l.trim();
+	private static final Predicate<String> filterOutErrorLines = rawL -> {
+		final String l = rawL.trim();
 		if (l.startsWith("[")) {
 			return true;
 		} else if (l.startsWith("ffmpeg version")

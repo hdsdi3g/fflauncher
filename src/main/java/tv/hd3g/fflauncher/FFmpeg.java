@@ -19,7 +19,7 @@ package tv.hd3g.fflauncher;
 import java.awt.Point;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -33,7 +33,7 @@ import tv.hd3g.processlauncher.cmdline.Parameters;
 public class FFmpeg extends FFbase {
 
 	private static final Logger log = LogManager.getLogger();
-	private int device_id_to_use = -1;
+	private int deviceIdToUse = -1;
 
 	public FFmpeg(final String execName, final Parameters parameters) {
 		super(execName, parameters);
@@ -43,16 +43,16 @@ public class FFmpeg extends FFbase {
 	 * Define cmd var name like &lt;%OUT_AUTOMATIC_n%&gt; with "n" the # of setted destination.
 	 * Add "-f container destination"
 	 */
-	public FFmpeg addSimpleOutputDestination(final String destination_name, final String destination_container) {
-		if (destination_name == null) {
-			throw new NullPointerException("\"destination_name\" can't to be null");
-		} else if (destination_container == null) {
-			throw new NullPointerException("\"destination_container\" can't to be null");
+	public FFmpeg addSimpleOutputDestination(final String destinationName, final String destinationContainer) {
+		if (destinationName == null) {
+			throw new NullPointerException("\"destinationName\" can't to be null");
+		} else if (destinationContainer == null) {
+			throw new NullPointerException("\"destinationContainer\" can't to be null");
 		}
 
-		final String varname = getInternalParameters().addVariable("OUT_AUTOMATIC_" + output_expected_destinations
+		final String varname = getInternalParameters().addVariable("OUT_AUTOMATIC_" + outputExpectedDestinations
 		        .size());
-		addOutputDestination(destination_name, varname, "-f", destination_container);
+		addOutputDestination(destinationName, varname, "-f", destinationContainer);
 		return this;
 	}
 
@@ -60,16 +60,16 @@ public class FFmpeg extends FFbase {
 	 * Define cmd var name like &lt;%OUT_AUTOMATIC_n%&gt; with "n" the # of setted destination.
 	 * Add "-f container /destination"
 	 */
-	public FFmpeg addSimpleOutputDestination(final File destination_file, final String destination_container) {
-		if (destination_file == null) {
-			throw new NullPointerException("\"destinatdestination_fileion_name\" can't to be null");
-		} else if (destination_container == null) {
-			throw new NullPointerException("\"destination_container\" can't to be null");
+	public FFmpeg addSimpleOutputDestination(final File destinationFile, final String destinationContainer) {
+		if (destinationFile == null) {
+			throw new NullPointerException("\"destinatdestinationFileion_name\" can't to be null");
+		} else if (destinationContainer == null) {
+			throw new NullPointerException("\"destinationContainer\" can't to be null");
 		}
 
-		final String varname = getInternalParameters().addVariable("OUT_AUTOMATIC_" + output_expected_destinations
+		final String varname = getInternalParameters().addVariable("OUT_AUTOMATIC_" + outputExpectedDestinations
 		        .size());
-		addOutputDestination(destination_file, varname, "-f", destination_container);
+		addOutputDestination(destinationFile, varname, "-f", destinationContainer);
 		return this;
 	}
 
@@ -86,22 +86,22 @@ public class FFmpeg extends FFbase {
 	 * Not checks will be done
 	 * NVIDIA Performance Primitives via libnpp.
 	 * Via -vf ffmpeg's option.
-	 * @param new_size like 1280x720 or -1x720
+	 * @param newSize like 1280x720 or -1x720
 	 * @param pixel_format can be null (== same) or nv12, yuv444p16...
 	 * @param interp_algo can be null or nn (Nearest neighbour), linear (2-parameter cubic (B=1, C=0)), cubic2p_catmullrom (2-parameter cubic (B=0, C=1/2)), cubic2p_b05c03 (2-parameter cubic (B=1/2,
 	 *        C=3/10)), super (Supersampling), lanczos ...
 	 */
-	public FFmpeg addHardwareNVScalerFilter(final Point new_size, final String pixel_format, final String interp_algo) {
+	public FFmpeg addHardwareNVScalerFilter(final Point newSize, final String pixelFormat, final String interpAlgo) {
 		final StringBuilder scale = new StringBuilder();
 
 		scale.append("scale_npp=");
-		scale.append("w=" + new_size.x + ":");
-		scale.append("h=" + new_size.y + ":");
-		if (pixel_format != null) {
-			scale.append("format=" + pixel_format + ":");
+		scale.append("w=" + newSize.x + ":");
+		scale.append("h=" + newSize.y + ":");
+		if (pixelFormat != null) {
+			scale.append("format=" + pixelFormat + ":");
 		}
-		if (interp_algo != null) {
-			scale.append("interp_algo=" + interp_algo);
+		if (interpAlgo != null) {
+			scale.append("interp_algo=" + interpAlgo);
 		}
 
 		log.debug("Add vf: {}", scale);
@@ -115,7 +115,7 @@ public class FFmpeg extends FFbase {
 	 * Not checks will be done
 	 * @param configuration resolution -&gt; filter out name ; resolution can be litteral like hd1080 or cif and filter out name can be "out0", usable after with "-map [out0] -vcodec xxx out.ext"
 	 */
-	public FFmpeg addHardwareNVMultipleScalerFilterComplex(final LinkedHashMap<String, String> configuration) {
+	public FFmpeg addHardwareNVMultipleScalerFilterComplex(final Map<String, String> configuration) {
 		if (configuration == null) {
 			throw new NullPointerException("\"configuration\" can't to be null");
 		}
@@ -127,11 +127,12 @@ public class FFmpeg extends FFbase {
 		nvresize.append("nvresize=outputs=" + configuration.size() + ":");
 		nvresize.append("size=" + configuration.keySet().stream().collect(Collectors.joining("|")) + ":");
 
-		if (device_id_to_use > -1) {
-			nvresize.append("gpu=" + device_id_to_use + ":");
+		if (deviceIdToUse > -1) {
+			nvresize.append("gpu=" + deviceIdToUse + ":");
 		}
 
-		nvresize.append("readback=0" + configuration.keySet().stream().map(resolution -> configuration.get(resolution))
+		nvresize.append("readback=0" + configuration.keySet().stream()
+		        .map(configuration::get)
 		        .collect(Collectors.joining("", "[", "]")));
 
 		log.debug("Add filter_complex: {}", nvresize);
@@ -139,11 +140,11 @@ public class FFmpeg extends FFbase {
 		return this;
 	}
 
-	public static Optional<StreamType> getFirstVideoStream(final FFprobeJAXB analysing_result) {
-		final Optional<StreamType> o_video_stream = analysing_result.getVideoStreams().findFirst();
+	public static Optional<StreamType> getFirstVideoStream(final FFprobeJAXB analysingResult) {
+		final Optional<StreamType> oVideoStream = analysingResult.getVideoStreams().findFirst();
 
-		if (o_video_stream.isPresent() && o_video_stream.get().getDisposition().getAttachedPic() == 0) {
-			return o_video_stream;
+		if (oVideoStream.isPresent() && oVideoStream.get().getDisposition().getAttachedPic() == 0) {
+			return oVideoStream;
 		}
 		return Optional.empty();
 	}
@@ -158,18 +159,18 @@ public class FFmpeg extends FFbase {
 
 	/**
 	 * Used with hardware transcoding.
-	 * @param device_id_to_use -1 by default
+	 * @param deviceIdToUse -1 by default
 	 */
-	public FFmpeg setDeviceIdToUse(final int device_id_to_use) {
-		this.device_id_to_use = device_id_to_use;
+	public FFmpeg setDeviceIdToUse(final int deviceIdToUse) {
+		this.deviceIdToUse = deviceIdToUse;
 		return this;
 	}
 
 	/**
 	 * @return -1 by default
 	 */
-	public int getDevice_id_to_use() {
-		return device_id_to_use;
+	public int getDeviceIdToUse() {
+		return deviceIdToUse;
 	}
 
 	/**
@@ -178,88 +179,89 @@ public class FFmpeg extends FFbase {
 	 * @throws MediaException if hardware decoding is not possible.
 	 */
 	public FFmpeg addHardwareVideoDecoding(final String source,
-	                                       final FFprobeJAXB analysing_result,
-	                                       final FFHardwareCodec hardware_codec,
+	                                       final FFprobeJAXB analysingResult,
+	                                       final FFHardwareCodec hardwareCodec,
 	                                       final FFAbout about) throws MediaException {
-		final Optional<StreamType> o_video_stream = getFirstVideoStream(analysing_result);
+		final Optional<StreamType> oVideoStream = getFirstVideoStream(analysingResult);
 
-		if (o_video_stream.isPresent() == false) {
+		if (oVideoStream.isPresent() == false) {
 			throw new MediaException("Can't found \"valid\" video stream on \"" + source + "\"");
 		}
 
-		final StreamType video_stream = o_video_stream.get();
+		final StreamType videoStream = oVideoStream.get();
 
 		final FFCodec codec = about.getCodecs().stream()
-		        .filter(c -> (c.decoding_supported && c.name.equals(video_stream.getCodecName())))
+		        .filter(c -> (c.decodingSupported && c.name.equals(videoStream.getCodecName())))
 		        .findFirst()
-		        .orElseThrow(() -> new MediaException("Can't found a valid decoder codec for " + video_stream
+		        .orElseThrow(() -> new MediaException("Can't found a valid decoder codec for " + videoStream
 		                .getCodecName() + " in \"" + source + "\""));
 
-		if (hardware_codec == FFHardwareCodec.NV && about.isNVToolkitIsAvaliable()) {
-			final Optional<String> o_source_cuvid_codec_engine = codec.decoders.stream().filter(decoder -> decoder
+		if (hardwareCodec == FFHardwareCodec.NV && about.isNVToolkitIsAvaliable()) {
+			final Optional<String> oSourceCuvidCodecEngine = codec.decoders.stream().filter(decoder -> decoder
 			        .endsWith("_cuvid")).findFirst();
 
-			if (o_source_cuvid_codec_engine.isPresent()) {
+			if (oSourceCuvidCodecEngine.isPresent()) {
 				/**
 				 * [-hwaccel_device 0] -hwaccel cuvid -c:v source_cuvid_codec [-vsync 0] -i source
 				 */
-				final ArrayList<String> source_options = new ArrayList<>();
-				if (device_id_to_use > -1) {
-					source_options.add("-hwaccel_device");
-					source_options.add(Integer.toString(device_id_to_use));
+				final ArrayList<String> sourceOptions = new ArrayList<>();
+				if (deviceIdToUse > -1) {
+					sourceOptions.add("-hwaccel_device");
+					sourceOptions.add(Integer.toString(deviceIdToUse));
 				}
-				source_options.add("-hwaccel");
-				source_options.add("cuvid");
-				source_options.add("-vsync");
-				source_options.add("0");
-				source_options.add("-c:v");
-				source_options.add(o_source_cuvid_codec_engine.get());
+				sourceOptions.add("-hwaccel");
+				sourceOptions.add("cuvid");
+				sourceOptions.add("-vsync");
+				sourceOptions.add("0");
+				sourceOptions.add("-c:v");
+				sourceOptions.add(oSourceCuvidCodecEngine.get());
 
-				log.debug("Add hardware decoded source {} -i {}",
-				        source_options.stream().collect(Collectors.joining(" ")), source);
-				addSimpleInputSource(source, source_options);
+				log.debug(() -> "Add hardware decoded source "
+				                + sourceOptions.stream().collect(Collectors.joining(" "))
+				                + " -i " + source);
+				addSimpleInputSource(source, sourceOptions);
 				return this;
 			}
 		}
 
-		throw new MediaException("Can't found a valid hardware decoder on \"" + source + "\" (\"" + video_stream
+		throw new MediaException("Can't found a valid hardware decoder on \"" + source + "\" (\"" + videoStream
 		        .getCodecLongName() + "\")");
 	}
 
 	/**
 	 * Set codec name, and if it possible, use hardware encoding.
-	 * @param dest_codec_name
-	 * @param output_video_stream_index (-1 by default), X -&gt; -c:v:X
+	 * @param destCodecName
+	 * @param outputVideoStreamIndex (-1 by default), X -&gt; -c:v:X
 	 */
-	public FFmpeg addHardwareVideoEncoding(final String dest_codec_name,
-	                                       final int output_video_stream_index,
-	                                       final FFHardwareCodec hardware_codec,
+	public FFmpeg addHardwareVideoEncoding(final String destCodecName,
+	                                       final int outputVideoStreamIndex,
+	                                       final FFHardwareCodec hardwareCodec,
 	                                       final FFAbout about) throws MediaException {
 
-		if (dest_codec_name.equals("copy")) {
-			new MediaException("\"copy\" codec can't be handled by hardware !");
+		if (destCodecName.equals("copy")) {
+			throw new MediaException("\"copy\" codec can't be handled by hardware !");
 		}
 
-		final FFCodec codec = about.getCodecs().stream().filter(c -> (c.encoding_supported && c.name.equals(
-		        dest_codec_name))).findFirst().orElseThrow(() -> new MediaException("Can't found a valid codec for "
-		                                                                            + dest_codec_name));
+		final FFCodec codec = about.getCodecs().stream().filter(c -> (c.encodingSupported && c.name.equals(
+		        destCodecName))).findFirst().orElseThrow(() -> new MediaException("Can't found a valid codec for "
+		                                                                          + destCodecName));
 
 		String coder;
-		if (hardware_codec == FFHardwareCodec.NV && about.isNVToolkitIsAvaliable()) {
+		if (hardwareCodec == FFHardwareCodec.NV && about.isNVToolkitIsAvaliable()) {
 			coder = codec.encoders.stream()
 			        .filter(encoder -> (encoder.endsWith("_nvenc")
 			                            || encoder.startsWith("nvenc_")
 			                            || encoder.equals("nvenc")))
 			        .findFirst()
-			        .orElseThrow(() -> new MediaException("Can't found a valid hardware " + hardware_codec
-			                                              + " codec for " + dest_codec_name));
+			        .orElseThrow(() -> new MediaException("Can't found a valid hardware " + hardwareCodec
+			                                              + " codec for " + destCodecName));
 
 		} else {
-			throw new MediaException("Can't found a valid hardware coder to \"" + dest_codec_name + "\"");
+			throw new MediaException("Can't found a valid hardware coder to \"" + destCodecName + "\"");
 		}
 
-		if (output_video_stream_index > -1) {
-			getInternalParameters().addParameters("-c:v:" + output_video_stream_index, coder);
+		if (outputVideoStreamIndex > -1) {
+			getInternalParameters().addParameters("-c:v:" + outputVideoStreamIndex, coder);
 		} else {
 			getInternalParameters().addParameters("-c:v", coder);
 		}
@@ -312,35 +314,35 @@ public class FFmpeg extends FFbase {
 	}
 
 	/**
-	 * @param output_video_stream_index -1 by default
+	 * @param outputVideoStreamIndex -1 by default
 	 */
-	public FFmpeg addBitrate(final int bitrate, final FFUnit bitrate_unit, final int output_video_stream_index) {
-		if (output_video_stream_index > -1) {
-			getInternalParameters().addParameters("-b:v:" + output_video_stream_index, bitrate + bitrate_unit
+	public FFmpeg addBitrate(final int bitrate, final FFUnit bitrateUnit, final int outputVideoStreamIndex) {
+		if (outputVideoStreamIndex > -1) {
+			getInternalParameters().addParameters("-b:v:" + outputVideoStreamIndex, bitrate + bitrateUnit
 			        .toString());
 		} else {
-			getInternalParameters().addParameters("-b:v", bitrate + bitrate_unit.toString());
+			getInternalParameters().addParameters("-b:v", bitrate + bitrateUnit.toString());
 		}
 		return this;
 	}
 
 	/**
 	 * @param min_rate set -1 for default
-	 * @param max_rate set -1 for default
+	 * @param maxRate set -1 for default
 	 * @param bufsize set -1 for default
 	 */
-	public FFmpeg addBitrateControl(final int min_rate,
-	                                final int max_rate,
+	public FFmpeg addBitrateControl(final int minRate,
+	                                final int maxRate,
 	                                final int bufsize,
-	                                final FFUnit bitrate_unit) {
-		if (min_rate > 0) {
-			getInternalParameters().addParameters("-minrate", min_rate + bitrate_unit.toString());
+	                                final FFUnit bitrateUnit) {
+		if (minRate > 0) {
+			getInternalParameters().addParameters("-minrate", minRate + bitrateUnit.toString());
 		}
-		if (max_rate > 0) {
-			getInternalParameters().addParameters("-maxrate", max_rate + bitrate_unit.toString());
+		if (maxRate > 0) {
+			getInternalParameters().addParameters("-maxrate", maxRate + bitrateUnit.toString());
 		}
 		if (bufsize > 0) {
-			getInternalParameters().addParameters("-bufsize", bufsize + bitrate_unit.toString());
+			getInternalParameters().addParameters("-bufsize", bufsize + bitrateUnit.toString());
 		}
 		return this;
 	}
@@ -356,13 +358,13 @@ public class FFmpeg extends FFbase {
 	/**
 	 * No checks will be done.
 	 * See FFmpeg.addVideoEncoding for hardware use
-	 * @param output_video_stream_index -1 by default
+	 * @param outputVideoStreamIndex -1 by default
 	 */
-	public FFmpeg addVideoCodecName(final String codec_name, final int output_video_stream_index) {
-		if (output_video_stream_index > -1) {
-			getInternalParameters().addParameters("-c:v:" + output_video_stream_index, codec_name);
+	public FFmpeg addVideoCodecName(final String codecName, final int outputVideoStreamIndex) {
+		if (outputVideoStreamIndex > -1) {
+			getInternalParameters().addParameters("-c:v:" + outputVideoStreamIndex, codecName);
 		} else {
-			getInternalParameters().addParameters("-c:v", codec_name);
+			getInternalParameters().addParameters("-c:v", codecName);
 		}
 		return this;
 	}
@@ -415,13 +417,13 @@ public class FFmpeg extends FFbase {
 
 	/**
 	 * No checks will be done.
-	 * @param output_audio_stream_index -1 by default
+	 * @param outputAudioStreamIndex -1 by default
 	 */
-	public FFmpeg addAudioCodecName(final String codec_name, final int output_audio_stream_index) {
-		if (output_audio_stream_index > -1) {
-			getInternalParameters().addParameters("-c:a:" + output_audio_stream_index, codec_name);
+	public FFmpeg addAudioCodecName(final String codecName, final int outputAudioStreamIndex) {
+		if (outputAudioStreamIndex > -1) {
+			getInternalParameters().addParameters("-c:a:" + outputAudioStreamIndex, codecName);
 		} else {
-			getInternalParameters().addParameters("-c:a", codec_name);
+			getInternalParameters().addParameters("-c:a", codecName);
 		}
 		return this;
 	}
@@ -437,10 +439,10 @@ public class FFmpeg extends FFbase {
 
 	/**
 	 * No checks will be done.
-	 * like -map source_index:stream_index_in_source ; 0 is the first.
+	 * like -map sourceIndex:streamIndexInSource ; 0 is the first.
 	 */
-	public FFmpeg addMap(final int source_index, final int stream_index_in_source) {
-		getInternalParameters().addParameters("-map", source_index + ":" + stream_index_in_source);
+	public FFmpeg addMap(final int sourceIndex, final int streamIndexInSource) {
+		getInternalParameters().addParameters("-map", sourceIndex + ":" + streamIndexInSource);
 		return this;
 	}
 

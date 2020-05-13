@@ -40,11 +40,11 @@ public class FFFilter {
 	/**
 	 * Like "Filter audio signal according to a specified expression."
 	 */
-	public final String long_name;
+	public final String longName;
 
-	public final boolean timeline_support;
-	public final boolean slice_threading;
-	public final boolean command_support;
+	public final boolean timelineSupport;
+	public final boolean sliceThreading;
+	public final boolean commandSupport;
 
 	public enum ConnectorType {
 		AUDIO,
@@ -56,96 +56,100 @@ public class FFFilter {
 		SOURCE_SINK;
 	}
 
-	public final ConnectorType source_connector;
-	public final ConnectorType dest_connector;
+	public final ConnectorType sourceConnector;
+	public final ConnectorType destConnector;
 
-	public final int source_connectors_count;
-	public final int dest_connectors_count;
+	public final int sourceConnectorsCount;
+	public final int destConnectorsCount;
 
 	FFFilter(final String line) {
 
-		final List<String> line_blocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(
-		        String::trim).collect(Collectors.toUnmodifiableList());
+		final List<String> lineBlocs = Arrays.stream(line.split(" "))
+		        .filter(lb -> lb.trim().equals("") == false)
+		        .map(String::trim)
+		        .collect(Collectors.toUnmodifiableList());
 
-		if (line_blocs.size() < 4) {
+		if (lineBlocs.size() < 4) {
 			throw new RuntimeException("Can't parse line: \"" + line + "\"");
 		}
 
-		tag = line_blocs.get(1);
-		long_name = line_blocs.stream().filter(lb -> lb.trim().equals("") == false).skip(3).collect(Collectors.joining(
-		        " "));
+		tag = lineBlocs.get(1);
+		longName = lineBlocs.stream()
+		        .filter(lb -> lb.trim().equals("") == false)
+		        .skip(3)
+		        .collect(Collectors.joining(" "));
 
-		timeline_support = line_blocs.get(0).contains("T");
-		slice_threading = line_blocs.get(0).contains("S");
-		command_support = line_blocs.get(0).contains("C");
+		timelineSupport = lineBlocs.get(0).contains("T");
+		sliceThreading = lineBlocs.get(0).contains("S");
+		commandSupport = lineBlocs.get(0).contains("C");
 
-		final String filter_graph = line_blocs.get(2);
+		final String filter_graph = lineBlocs.get(2);
 
 		final int pos = filter_graph.indexOf("->");
 		final String s_source_connector = filter_graph.substring(0, pos);
 		final String s_dest_connector = filter_graph.substring(pos + "->".length());
 
 		if (s_source_connector.contains("A")) {
-			source_connector = ConnectorType.AUDIO;
+			sourceConnector = ConnectorType.AUDIO;
 		} else if (s_source_connector.contains("V")) {
-			source_connector = ConnectorType.VIDEO;
+			sourceConnector = ConnectorType.VIDEO;
 		} else if (s_source_connector.contains("N")) {
-			source_connector = ConnectorType.DYNAMIC;
+			sourceConnector = ConnectorType.DYNAMIC;
 		} else if (s_source_connector.contains("|")) {
-			source_connector = ConnectorType.SOURCE_SINK;
+			sourceConnector = ConnectorType.SOURCE_SINK;
 		} else {
-			throw new RuntimeException("Invalid line : \"" + line + "\", invalid filter_graph source_connector");
+			throw new RuntimeException("Invalid line : \"" + line + "\", invalid filter_graph sourceConnector");
 		}
 
 		if (s_dest_connector.contains("A")) {
-			dest_connector = ConnectorType.AUDIO;
+			destConnector = ConnectorType.AUDIO;
 		} else if (s_dest_connector.contains("V")) {
-			dest_connector = ConnectorType.VIDEO;
+			destConnector = ConnectorType.VIDEO;
 		} else if (s_dest_connector.contains("N")) {
-			dest_connector = ConnectorType.DYNAMIC;
+			destConnector = ConnectorType.DYNAMIC;
 		} else if (s_dest_connector.contains("|")) {
-			dest_connector = ConnectorType.SOURCE_SINK;
+			destConnector = ConnectorType.SOURCE_SINK;
 		} else {
-			throw new RuntimeException("Invalid line : \"" + line + "\", invalid filter_graph source_connector");
+			throw new RuntimeException("Invalid line : \"" + line + "\", invalid filter_graph sourceConnector");
 		}
 
-		source_connectors_count = s_source_connector.length();
-		dest_connectors_count = s_dest_connector.length();
+		sourceConnectorsCount = s_source_connector.length();
+		destConnectorsCount = s_dest_connector.length();
 	}
 
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
 
-		sb.append(long_name);
+		sb.append(longName);
 		sb.append(" [");
 		sb.append(tag);
 		sb.append("] ");
 
-		sb.append(source_connector.toString().toLowerCase());
+		sb.append(sourceConnector.toString().toLowerCase());
 
-		if (source_connectors_count > 1) {
+		if (sourceConnectorsCount > 1) {
 			sb.append(" (");
-			sb.append(source_connectors_count);
+			sb.append(sourceConnectorsCount);
 			sb.append(")");
 		}
 
 		sb.append(" -> ");
-		sb.append(dest_connector.toString().toLowerCase());
+		sb.append(destConnector.toString().toLowerCase());
 
-		if (dest_connectors_count > 1) {
+		if (destConnectorsCount > 1) {
 			sb.append(" (");
-			sb.append(dest_connectors_count);
+			sb.append(destConnectorsCount);
 			sb.append(")");
 		}
 
-		if (timeline_support) {
+		if (timelineSupport) {
 			sb.append(" <timeline support>");
 		}
-		if (slice_threading) {
+		if (sliceThreading) {
 			sb.append(" <slice threading>");
 		}
-		if (command_support) {
+		if (commandSupport) {
 			sb.append(" <command support>");
 		}
 

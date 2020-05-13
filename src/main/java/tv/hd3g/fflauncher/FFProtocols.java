@@ -35,14 +35,14 @@ public class FFProtocols {
 	 */
 	public final Set<String> output;
 
-	FFProtocols(final List<String> process_result) {
-		input = process_result.stream()
+	FFProtocols(final List<String> processResult) {
+		input = processResult.stream()
 		        .map(String::trim)
 		        .filter(line -> (line.toLowerCase().startsWith(INPUT2.toLowerCase()) == false))
 		        .takeWhile(line -> (line.toLowerCase().startsWith(OUTPUT2.toLowerCase()) == false))
 		        .collect(Collectors.toSet());
 
-		output = process_result.stream()
+		output = processResult.stream()
 		        .map(String::trim)
 		        .dropWhile(line -> (line.toLowerCase().startsWith(OUTPUT2.toLowerCase()) == false))
 		        .filter(line -> (line.toLowerCase().startsWith(OUTPUT2.toLowerCase()) == false))

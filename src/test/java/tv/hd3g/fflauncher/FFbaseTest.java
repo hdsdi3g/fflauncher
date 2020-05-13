@@ -95,8 +95,8 @@ public class FFbaseTest extends TestCase {
 	public void testVersion() {
 		final FFVersion v = new FFVersion(readLinesFromResource("test-version.txt"));
 
-		assertEquals("3.3.3 Copyright (c) 2000-2017 the FFmpeg developers", v.header_version);
-		assertEquals("gcc 4.9.2 (Debian 4.9.2-10)", v.built_with);
+		assertEquals("3.3.3 Copyright (c) 2000-2017 the FFmpeg developers", v.headerVersion);
+		assertEquals("gcc 4.9.2 (Debian 4.9.2-10)", v.builtWith);
 
 		Arrays.stream(
 		        "gpl version3 nonfree yasm libmp3lame libbluray libopenjpeg libtheora libvorbis libtwolame libvpx libxvid libgsm libopencore-amrnb libopencore-amrwb libopus librtmp libschroedinger libsmbclient libspeex libssh libvo-amrwbenc libwavpack libwebp libzvbi libx264 libx265 libsmbclient libssh"
@@ -106,38 +106,38 @@ public class FFbaseTest extends TestCase {
 
 		assertEquals(
 		        "--enable-gpl --enable-version3 --enable-nonfree --as=yasm --enable-libmp3lame --enable-libbluray --enable-libopenjpeg --enable-libtheora --enable-libvorbis --enable-libtwolame --enable-libvpx --enable-libxvid --enable-libgsm --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopus --enable-librtmp --enable-libschroedinger --enable-libsmbclient --enable-libspeex --enable-libssh --enable-libvo-amrwbenc --enable-libwavpack --enable-libwebp --enable-libzvbi --enable-libx264 --enable-libx265 --enable-libsmbclient --enable-libssh",
-		        v.raw_configuration);
-		assertEquals(v.libavutil_version, "55. 58.100 / 55. 58.100");
-		assertEquals(v.libavcodec_version, "57. 89.100 / 57. 89.100");
-		assertEquals(v.libavformat_version, "57. 71.100 / 57. 71.100");
-		assertEquals(v.libavdevice_version, "57.  6.100 / 57.  6.100");
-		assertEquals(v.libavfilter_version, "6. 82.100 /  6. 82.100");
-		assertEquals(v.libswscale_version, "4.  6.100 /  4.  6.100");
-		assertEquals(v.libswresample_version, "2.  7.100 /  2.  7.100");
-		assertEquals(v.libpostproc_version, "54.  5.100 / 54.  5.100");
+		        v.rawConfiguration);
+		assertEquals(v.libavutilVersion, "55. 58.100 / 55. 58.100");
+		assertEquals(v.libavcodecVersion, "57. 89.100 / 57. 89.100");
+		assertEquals(v.libavformatVersion, "57. 71.100 / 57. 71.100");
+		assertEquals(v.libavdeviceVersion, "57.  6.100 / 57.  6.100");
+		assertEquals(v.libavfilterVersion, "6. 82.100 /  6. 82.100");
+		assertEquals(v.libswscaleVersion, "4.  6.100 /  4.  6.100");
+		assertEquals(v.libswresampleVersion, "2.  7.100 /  2.  7.100");
+		assertEquals(v.libpostprocVersion, "54.  5.100 / 54.  5.100");
 	}
 
 	public void testCodecs() {
 		final List<FFCodec> list = FFCodec.parse(readLinesFromResource("test-codecs.txt"));
 
-		final List<FFCodec> test1 = list.stream().filter(c -> (c.type == CodecType.AUDIO & c.encoding_supported
-		                                                       & c.decoding_supported & c.lossy_compression
+		final List<FFCodec> test1 = list.stream().filter(c -> (c.type == CodecType.AUDIO & c.encodingSupported
+		                                                       & c.decodingSupported & c.lossyCompression
 		                                                       & c.name.equals("adpcm_g722"))).collect(Collectors
 		                                                               .toUnmodifiableList());
 
 		assertEquals(1, test1.size());
-		assertTrue(test1.get(0).long_name.equals("G.722 ADPCM"));
-		assertTrue(test1.get(0).toString().startsWith(test1.get(0).long_name));
+		assertTrue(test1.get(0).longName.equals("G.722 ADPCM"));
+		assertTrue(test1.get(0).toString().startsWith(test1.get(0).longName));
 
 		assertEquals(7, list.stream().filter(c -> (c.type == CodecType.DATA)).count());
 
-		assertEquals(10, list.stream().filter(c -> (c.encoding_supported == false & c.decoding_supported == false
-		                                            & c.lossless_compression == false
-		                                            && c.lossy_compression == false)).count());
+		assertEquals(10, list.stream().filter(c -> (c.encodingSupported == false & c.decodingSupported == false
+		                                            & c.losslessCompression == false
+		                                            && c.lossyCompression == false)).count());
 
 		final FFCodec t = list.stream().filter(c -> c.name.equals("dirac")).findFirst().get();
 
-		assertTrue(t.long_name.equals("Dirac"));
+		assertTrue(t.longName.equals("Dirac"));
 		assertTrue(t.decoders.contains("dirac"));
 		assertTrue(t.encoders.contains("vc2"));
 
@@ -157,11 +157,11 @@ public class FFbaseTest extends TestCase {
 		        "bfi"))).collect(Collectors.toUnmodifiableList());
 
 		assertEquals(1, test1.size());
-		assertTrue(test1.get(0).long_name.equals("Brute Force & Ignorance"));
+		assertTrue(test1.get(0).longName.equals("Brute Force & Ignorance"));
 
 		assertEquals(2, list.stream().filter(f -> f.name.equals("hls")).count());
 
-		assertEquals(2, list.stream().filter(f -> f.alternate_tags.contains("mp4")).count());
+		assertEquals(2, list.stream().filter(f -> f.alternateTags.contains("mp4")).count());
 
 	}
 
@@ -211,18 +211,18 @@ public class FFbaseTest extends TestCase {
 
 		assertTrue(list.stream().anyMatch(f -> f.tag.equals("afftfilt")));
 
-		assertEquals(3, list.stream().filter(f -> (f.source_connectors_count == 2
-		                                           && f.source_connector == ConnectorType.AUDIO)).count());
+		assertEquals(3, list.stream().filter(f -> (f.sourceConnectorsCount == 2
+		                                           && f.sourceConnector == ConnectorType.AUDIO)).count());
 
-		assertEquals(1, list.stream().filter(f -> (f.source_connectors_count == 2
-		                                           && f.source_connector == ConnectorType.VIDEO
-		                                           && f.dest_connectors_count == 2
-		                                           && f.dest_connector == ConnectorType.VIDEO)).filter(f -> f.tag
-		                                                   .equals("scale2ref")).filter(f -> f.long_name.equals(
+		assertEquals(1, list.stream().filter(f -> (f.sourceConnectorsCount == 2
+		                                           && f.sourceConnector == ConnectorType.VIDEO
+		                                           && f.destConnectorsCount == 2
+		                                           && f.destConnector == ConnectorType.VIDEO)).filter(f -> f.tag
+		                                                   .equals("scale2ref")).filter(f -> f.longName.equals(
 		                                                           "Scale the input video size and/or convert the image format to the given reference."))
 		        .count());
 
-		assertTrue(list.get(0).toString().startsWith(list.get(0).long_name));
+		assertTrue(list.get(0).toString().startsWith(list.get(0).longName));
 
 	}
 
@@ -232,14 +232,14 @@ public class FFbaseTest extends TestCase {
 
 		assertEquals(183, list.size());
 
-		assertEquals(1, list.stream().filter(pf -> (pf.tag.equals("pal8") && pf.supported_input
-		                                            && pf.supported_output == false && pf.paletted
-		                                            && pf.nb_components == 1 && pf.bits_per_pixel == 8)).count());
+		assertEquals(1, list.stream().filter(pf -> (pf.tag.equals("pal8") && pf.supportedInput
+		                                            && pf.supportedOutput == false && pf.paletted
+		                                            && pf.nbComponents == 1 && pf.bitsPerPixel == 8)).count());
 
-		assertEquals(1, list.stream().filter(pf -> (pf.tag.equals("yuv444p16le") && pf.supported_input
-		                                            && pf.supported_output && pf.paletted == false
-		                                            && pf.hardware_accelerated == false && pf.nb_components == 3
-		                                            && pf.bits_per_pixel == 48)).count());
+		assertEquals(1, list.stream().filter(pf -> (pf.tag.equals("yuv444p16le") && pf.supportedInput
+		                                            && pf.supportedOutput && pf.paletted == false
+		                                            && pf.hardwareAccelerated == false && pf.nbComponents == 3
+		                                            && pf.bitsPerPixel == 48)).count());
 	}
 
 	public void testHwaccels() {

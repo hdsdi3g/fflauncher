@@ -34,12 +34,12 @@ public class FFVersion {
 	/**
 	 * Like "4.0 Copyright (c) 2000-2018 the FFmpeg developers"
 	 */
-	public final String header_version;
+	public final String headerVersion;
 
 	/**
 	 * Like "gcc 6.3.0 (Debian 6.3.0-18+deb9u1) 20170516" or "gcc 7.3.0 (GCC)"
 	 */
-	public final String built_with;
+	public final String builtWith;
 
 	/**
 	 * unmodifiableSet, like "yasm, gpl, version3, nonfree, libmp3lame, libbluray..."
@@ -49,52 +49,52 @@ public class FFVersion {
 	/**
 	 * Like "--as=yasm --enable-gpl --enable-version3 --enable-nonfree --enable-libmp3lame" ...
 	 */
-	public final String raw_configuration;
+	public final String rawConfiguration;
 
 	/**
 	 * Like "56. 14.100 / 56. 14.100"
 	 */
-	public final String libavutil_version;
+	public final String libavutilVersion;
 	/**
 	 * Like "56. 14.100 / 56. 14.100"
 	 */
-	public final String libavcodec_version;
+	public final String libavcodecVersion;
 	/**
 	 * Like "56. 14.100 / 56. 14.100"
 	 */
-	public final String libavformat_version;
+	public final String libavformatVersion;
 	/**
 	 * Like "56. 14.100 / 56. 14.100"
 	 */
-	public final String libavdevice_version;
+	public final String libavdeviceVersion;
 	/**
 	 * Like "56. 14.100 / 56. 14.100"
 	 */
-	public final String libavfilter_version;
+	public final String libavfilterVersion;
 	/**
 	 * Like "56. 14.100 / 56. 14.100"
 	 */
-	public final String libswscale_version;
+	public final String libswscaleVersion;
 	/**
 	 * Like "56. 14.100 / 56. 14.100"
 	 */
-	public final String libswresample_version;
+	public final String libswresampleVersion;
 	/**
 	 * Like "56. 14.100 / 56. 14.100"
 	 */
-	public final String libpostproc_version;
+	public final String libpostprocVersion;
 
-	FFVersion(final List<String> process_result) {
-		header_version = process_result.stream().filter(l -> l.startsWith("ffmpeg version ")).findFirst().orElse(
+	FFVersion(final List<String> processResult) {
+		headerVersion = processResult.stream().filter(l -> l.startsWith("ffmpeg version ")).findFirst().orElse(
 		        "ffmpeg version ?").substring("ffmpeg version ".length()).trim();
 
-		built_with = process_result.stream().filter(l -> l.startsWith("built with ")).findFirst().orElse("built with ?")
+		builtWith = processResult.stream().filter(l -> l.startsWith("built with ")).findFirst().orElse("built with ?")
 		        .substring("built with ".length()).trim();
 
-		raw_configuration = process_result.stream().filter(l -> l.startsWith(HEADER_CONFIGURATION)).findFirst().orElse(
+		rawConfiguration = processResult.stream().filter(l -> l.startsWith(HEADER_CONFIGURATION)).findFirst().orElse(
 		        HEADER_CONFIGURATION).substring(HEADER_CONFIGURATION.length()).trim();
 
-		configuration = Collections.unmodifiableSet(Arrays.stream(raw_configuration.split(" ")).map(c -> {
+		configuration = Collections.unmodifiableSet(Arrays.stream(rawConfiguration.split(" ")).map(c -> {
 			if (c.startsWith("--enable-")) {
 				return c.substring("--enable-".length()).trim();
 			} else if (c.startsWith("--as=")) {
@@ -103,24 +103,24 @@ public class FFVersion {
 			return c.trim();
 		}).distinct().collect(Collectors.toSet()));
 
-		log.debug(() -> "\"" + raw_configuration + "\" <-> configuration: " + configuration);
+		log.debug(() -> "\"" + rawConfiguration + "\" <-> configuration: " + configuration);
 
-		libavutil_version = extractLibavVersion("libavutil", process_result);
-		libavcodec_version = extractLibavVersion("libavcodec", process_result);
-		libavformat_version = extractLibavVersion("libavformat", process_result);
-		libavdevice_version = extractLibavVersion("libavdevice", process_result);
-		libavfilter_version = extractLibavVersion("libavfilter", process_result);
-		libswscale_version = extractLibavVersion("libswscale", process_result);
-		libswresample_version = extractLibavVersion("libswresample", process_result);
-		libpostproc_version = extractLibavVersion("libpostproc", process_result);
+		libavutilVersion = extractLibavVersion("libavutil", processResult);
+		libavcodecVersion = extractLibavVersion("libavcodec", processResult);
+		libavformatVersion = extractLibavVersion("libavformat", processResult);
+		libavdeviceVersion = extractLibavVersion("libavdevice", processResult);
+		libavfilterVersion = extractLibavVersion("libavfilter", processResult);
+		libswscaleVersion = extractLibavVersion("libswscale", processResult);
+		libswresampleVersion = extractLibavVersion("libswresample", processResult);
+		libpostprocVersion = extractLibavVersion("libpostproc", processResult);
 	}
 
 	/**
-	 * @return header_version
+	 * @return headerVersion
 	 */
 	@Override
 	public String toString() {
-		return header_version;
+		return headerVersion;
 	}
 
 	private static String extractLibavVersion(final String key, final List<String> lines) {

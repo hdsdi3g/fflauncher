@@ -33,32 +33,32 @@ public class FFPixelFormat {
 		        .collect(Collectors.toUnmodifiableList());
 	}
 
-	public final boolean supported_input;
-	public final boolean supported_output;
-	public final boolean hardware_accelerated;
+	public final boolean supportedInput;
+	public final boolean supportedOutput;
+	public final boolean hardwareAccelerated;
 	public final boolean paletted;
 	public final boolean bitstream;
-	public final int nb_components;
-	public final int bits_per_pixel;
+	public final int nbComponents;
+	public final int bitsPerPixel;
 	public final String tag;
 
 	FFPixelFormat(final String line) {
 
-		final List<String> line_blocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(
+		final List<String> lineBlocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(
 		        String::trim).collect(Collectors.toUnmodifiableList());
 
-		if (line_blocs.size() != 4) {
+		if (lineBlocs.size() != 4) {
 			throw new RuntimeException("Can't parse line: \"" + line + "\"");
 		}
 
-		supported_input = line_blocs.get(0).contains("I");
-		supported_output = line_blocs.get(0).contains("O");
-		hardware_accelerated = line_blocs.get(0).contains("H");
-		paletted = line_blocs.get(0).contains("P");
-		bitstream = line_blocs.get(0).contains("B");
-		tag = line_blocs.get(1);
-		nb_components = Integer.parseInt(line_blocs.get(2));
-		bits_per_pixel = Integer.parseInt(line_blocs.get(3));
+		supportedInput = lineBlocs.get(0).contains("I");
+		supportedOutput = lineBlocs.get(0).contains("O");
+		hardwareAccelerated = lineBlocs.get(0).contains("H");
+		paletted = lineBlocs.get(0).contains("P");
+		bitstream = lineBlocs.get(0).contains("B");
+		tag = lineBlocs.get(1);
+		nbComponents = Integer.parseInt(lineBlocs.get(2));
+		bitsPerPixel = Integer.parseInt(lineBlocs.get(3));
 	}
 
 }

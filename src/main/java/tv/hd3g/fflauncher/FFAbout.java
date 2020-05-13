@@ -101,11 +101,11 @@ public class FFAbout {
 	private List<FFCodec> codecs;
 	private List<FFFormat> formats;
 	private List<FFDevice> devices;
-	private Set<String> bit_stream_filters;
+	private Set<String> bitStreamFilters;
 	private FFProtocols protocols;
 	private List<FFFilter> filters;
-	private List<FFPixelFormat> pixels_formats;
-	private Set<String> hardware_acceleration_methods;
+	private List<FFPixelFormat> pixelsFormats;
+	private Set<String> hardwareAccelerationMethods;
 
 	public synchronized FFVersion getVersion() {
 		if (version == null) {
@@ -157,10 +157,10 @@ public class FFAbout {
 	 * -bsfs show available bit stream filters
 	 */
 	public synchronized Set<String> getBitStreamFilters() {
-		if (bit_stream_filters == null) {
-			bit_stream_filters = parseBSFS(internalRun("-bsfs").getStdoutLines(false).map(String::trim));
+		if (bitStreamFilters == null) {
+			bitStreamFilters = parseBSFS(internalRun("-bsfs").getStdoutLines(false).map(String::trim));
 		}
-		return bit_stream_filters;
+		return bitStreamFilters;
 	}
 
 	/**
@@ -190,11 +190,11 @@ public class FFAbout {
 	 * -pix_fmts show available pixel formats
 	 */
 	public synchronized List<FFPixelFormat> getPixelFormats() {
-		if (pixels_formats == null) {
-			pixels_formats = FFPixelFormat.parsePixelsFormats(internalRun("-pix_fmts").getStdoutLines(false).map(
+		if (pixelsFormats == null) {
+			pixelsFormats = FFPixelFormat.parsePixelsFormats(internalRun("-pix_fmts").getStdoutLines(false).map(
 			        String::trim).collect(Collectors.toUnmodifiableList()));
 		}
-		return pixels_formats;
+		return pixelsFormats;
 	}
 
 	static Set<String> parseHWAccelerationMethods(final Stream<String> lines) {
@@ -206,11 +206,11 @@ public class FFAbout {
 	 * -hwaccels show available HW acceleration methods
 	 */
 	public synchronized Set<String> getAvailableHWAccelerationMethods() {
-		if (hardware_acceleration_methods == null) {
-			hardware_acceleration_methods = parseHWAccelerationMethods(internalRun("-hwaccels").getStdoutLines(false)
+		if (hardwareAccelerationMethods == null) {
+			hardwareAccelerationMethods = parseHWAccelerationMethods(internalRun("-hwaccels").getStdoutLines(false)
 			        .map(String::trim));
 		}
-		return hardware_acceleration_methods;
+		return hardwareAccelerationMethods;
 	}
 
 	/**
@@ -273,27 +273,28 @@ public class FFAbout {
 	}
 
 	public boolean isCoderIsAvaliable(final String codec_name) {
-		return getCodecs().stream().anyMatch(codec -> (codec.name.equals(codec_name.toLowerCase())
-		                                               && codec.encoding_supported == true));
+		return getCodecs().stream()
+		        .anyMatch(codec -> (codec.name.equalsIgnoreCase(codec_name) && codec.encodingSupported == true));
 	}
 
 	public boolean isDecoderIsAvaliable(final String codec_name) {
-		return getCodecs().stream().anyMatch(codec -> (codec.name.equals(codec_name.toLowerCase())
-		                                               && codec.decoding_supported == true));
+		return getCodecs().stream()
+		        .anyMatch(codec -> (codec.name.equalsIgnoreCase(codec_name) && codec.decodingSupported == true));
 	}
 
 	public boolean isFromFormatIsAvaliable(final String demuxer_name) {
-		return getFormats().stream().anyMatch(format -> (format.name.equals(demuxer_name.toLowerCase())
-		                                                 && format.demuxing == true));
+		return getFormats().stream()
+		        .anyMatch(format -> (format.name.equalsIgnoreCase(demuxer_name) && format.demuxing == true));
 	}
 
 	public boolean isToFormatIsAvaliable(final String muxer_name) {
-		return getFormats().stream().anyMatch(format -> (format.name.equals(muxer_name.toLowerCase())
-		                                                 && format.muxing == true));
+		return getFormats().stream()
+		        .anyMatch(format -> (format.name.equalsIgnoreCase(muxer_name) && format.muxing == true));
 	}
 
 	public boolean isFilterIsAvaliable(final String filter_name) {
-		return getFilters().stream().anyMatch(filter -> filter.tag.equals(filter_name.toLowerCase()));
+		return getFilters().stream()
+		        .anyMatch(filter -> filter.tag.equalsIgnoreCase(filter_name));
 	}
 
 	/**
@@ -302,7 +303,7 @@ public class FFAbout {
 	 */
 	public boolean isCoderEngineIsAvaliable(final String engine_name) {
 		return getCodecs().stream()
-		        .anyMatch(codec -> (codec.encoding_supported == true
+		        .anyMatch(codec -> (codec.encodingSupported == true
 		                            && codec.encoders.contains(engine_name)));
 	}
 
@@ -311,7 +312,7 @@ public class FFAbout {
 	 *        ALL CODECS ARE NOT AVAILABLE FOR ALL GRAPHICS CARDS, EVEN IF FFMPEG SUPPORT IT HERE.
 	 */
 	public boolean isDecoderEngineIsAvaliable(final String engine_name) {
-		return getCodecs().stream().anyMatch(codec -> (codec.decoding_supported == true && codec.decoders.contains(
+		return getCodecs().stream().anyMatch(codec -> (codec.decodingSupported == true && codec.decoders.contains(
 		        engine_name)));
 	}
 
@@ -327,17 +328,17 @@ public class FFAbout {
 			log.debug("(NVIDIA) Cuvid is not available in hardware acceleration methods");
 			return false;
 		}
-		final List<String> all_nv_related_codecs = getCodecs().stream()
+		final List<String> allNvRelatedCodecs = getCodecs().stream()
 		        .filter(c -> c.decoders.isEmpty() == false || c.encoders.isEmpty() == false)
 		        .flatMap(c -> Stream.concat(c.decoders.stream(), c.encoders.stream()))
 		        .distinct()
 		        .filter(c -> c.contains("nvenc") || c.contains(CUVID))
 		        .collect(Collectors.toList());
 
-		if (all_nv_related_codecs.stream().noneMatch(c -> c.contains("nvenc"))) {
+		if (allNvRelatedCodecs.stream().noneMatch(c -> c.contains("nvenc"))) {
 			log.debug("(NVIDIA) nvenc is not available in codec list");
 			return false;
-		} else if (all_nv_related_codecs.stream().noneMatch(c -> c.contains(CUVID))) {
+		} else if (allNvRelatedCodecs.stream().noneMatch(c -> c.contains(CUVID))) {
 			log.debug("(NVIDIA) cuvid is not available in codec list");
 			return false;
 		}

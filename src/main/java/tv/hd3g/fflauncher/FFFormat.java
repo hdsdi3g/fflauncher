@@ -50,49 +50,51 @@ public class FFFormat {
 	/**
 	 * Like "mov, mp4, m4a, 3gp, 3g2, mj2"
 	 */
-	public final Set<String> alternate_tags;
+	public final Set<String> alternateTags;
 
 	/**
 	 * Like "ASF (Advanced / Active Streaming Format)"
 	 */
-	public final String long_name;
+	public final String longName;
 
 	FFFormat(final String line) {
 
-		final List<String> line_blocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(
-		        String::trim).collect(Collectors.toUnmodifiableList());
+		final List<String> lineBlocs = Arrays.stream(line.split(" "))
+		        .filter(lb -> lb.trim().equals("") == false)
+		        .map(String::trim)
+		        .collect(Collectors.toUnmodifiableList());
 
-		if (line_blocs.size() < 2) {
+		if (lineBlocs.size() < 2) {
 			throw new RuntimeException("Can't parse line: \"" + line + "\"");
 		}
 
-		demuxing = line_blocs.get(0).trim().contains("D");
-		muxing = line_blocs.get(0).trim().contains("E");
+		demuxing = lineBlocs.get(0).trim().contains("D");
+		muxing = lineBlocs.get(0).trim().contains("E");
 
-		if (line_blocs.get(1).contains(",")) {
-			name = Arrays.stream(line_blocs.get(1).trim().split(",")).findFirst().orElse("");
-			alternate_tags = unmodifiableSet(Arrays.stream(line_blocs.get(1).trim().split(",")).collect(toSet()));
+		if (lineBlocs.get(1).contains(",")) {
+			name = Arrays.stream(lineBlocs.get(1).trim().split(",")).findFirst().orElse("");
+			alternateTags = unmodifiableSet(Arrays.stream(lineBlocs.get(1).trim().split(",")).collect(toSet()));
 		} else {
-			name = line_blocs.get(1);
-			alternate_tags = Collections.singleton(name);
+			name = lineBlocs.get(1);
+			alternateTags = Collections.singleton(name);
 		}
 
-		long_name = line_blocs.stream().filter(lb -> lb.trim().equals("") == false).skip(2).collect(joining(" "));
+		longName = lineBlocs.stream().filter(lb -> lb.trim().equals("") == false).skip(2).collect(joining(" "));
 	}
 
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
 
-		if (long_name.isBlank() == false) {
-			sb.append(long_name);
+		if (longName.isBlank() == false) {
+			sb.append(longName);
 			sb.append(" ");
 		}
 		sb.append("[");
 		sb.append(name);
-		if (alternate_tags.size() > 1) {
+		if (alternateTags.size() > 1) {
 			sb.append(", ");
-			sb.append(alternate_tags.stream().filter(t -> t.equals(name) == false).collect(Collectors.joining(", ")));
+			sb.append(alternateTags.stream().filter(t -> t.equals(name) == false).collect(Collectors.joining(", ")));
 		}
 		sb.append("] ");
 
