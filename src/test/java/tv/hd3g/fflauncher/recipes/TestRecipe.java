@@ -23,10 +23,10 @@ import org.junit.jupiter.api.Test;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.tool.ToolRunner;
 
-public class TestRecipe {
+class TestRecipe {
 
 	@Test
-	public void test() {
+	void test() {
 		final ToolRunner run = new ToolRunner(new ExecutableFinder());
 
 		final Recipe r = new Recipe(run, "java") {};

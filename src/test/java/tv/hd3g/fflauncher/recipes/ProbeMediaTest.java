@@ -32,16 +32,16 @@ import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.tool.ToolRunner;
 
-public class ProbeMediaTest {
+class ProbeMediaTest {
 
-	private final ToolRunner run;
+	final ToolRunner run;
 
-	public ProbeMediaTest() {
+	ProbeMediaTest() {
 		run = new ToolRunner(new ExecutableFinder());
 	}
 
 	@Test
-	public void test() throws Exception {
+	void test() throws Exception {
 		final GenerateVideoFile gvf = new GenerateVideoFile(run);
 
 		final String tDir = System.getProperty("java.io.tmpdir");

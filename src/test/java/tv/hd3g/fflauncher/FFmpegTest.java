@@ -37,13 +37,13 @@ import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 import tv.hd3g.processlauncher.tool.ToolRunner;
 
-public class FFmpegTest {
+class FFmpegTest {
 
-	private final ToolRunner toolRun;
-	private final ScheduledExecutorService maxExecTimeScheduler;
-	private final ProbeMedia probeMedia;
+	final ToolRunner toolRun;
+	final ScheduledExecutorService maxExecTimeScheduler;
+	final ProbeMedia probeMedia;
 
-	public FFmpegTest() {
+	FFmpegTest() {
 		toolRun = new ToolRunner(new ExecutableFinder());
 		maxExecTimeScheduler = Executors.newSingleThreadScheduledExecutor();
 		probeMedia = new ProbeMedia(toolRun, maxExecTimeScheduler);
@@ -54,7 +54,7 @@ public class FFmpegTest {
 	}
 
 	@Test
-	public void testSimpleOutputDestination() {
+	void testSimpleOutputDestination() {
 		final FFmpeg ffmpeg = create();
 		ffmpeg.addSimpleOutputDestination("dest", "container");
 
@@ -62,7 +62,7 @@ public class FFmpegTest {
 	}
 
 	@Test
-	public void testParameters() throws FileNotFoundException {
+	void testParameters() throws FileNotFoundException {
 		final FFmpeg ffmpeg = create();
 		final int header = ffmpeg.getInternalParameters().toString().length();
 
@@ -77,7 +77,7 @@ public class FFmpegTest {
 	}
 
 	@Test
-	public void testNV() throws IOException, MediaException {
+	void testNV() throws IOException, MediaException {
 		if (System.getProperty("ffmpeg.test.nvidia", "").equals("1") == false) {
 			return;
 		}
@@ -127,7 +127,7 @@ public class FFmpegTest {
 	}
 
 	@Test
-	public void testGetFirstVideoStream() throws IOException, InterruptedException, ExecutionException, MediaException {
+	void testGetFirstVideoStream() throws IOException, InterruptedException, ExecutionException, MediaException {
 		if (System.getProperty("ffmpeg.test.nvidia", "").equals("1") == false) {
 			return;
 		}

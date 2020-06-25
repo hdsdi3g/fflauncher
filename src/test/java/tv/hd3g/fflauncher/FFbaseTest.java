@@ -38,25 +38,25 @@ import tv.hd3g.fflauncher.FFFilter.ConnectorType;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
-public class FFbaseTest {
+class FFbaseTest {
 
-	private final ExecutableFinder executableFinder;
+	final ExecutableFinder executableFinder;
 
-	public FFbaseTest() {
+	FFbaseTest() {
 		executableFinder = new ExecutableFinder();
 	}
 
 	private static class FFbaseImpl extends FFbase {
 		private static final String execName = "ffmpeg";
 
-		public FFbaseImpl(final Parameters parameters) throws IOException {
+		FFbaseImpl(final Parameters parameters) throws IOException {
 			super(execName, parameters);
 		}
 
 	}
 
 	@Test
-	public void testBase() throws Exception {
+	void testBase() throws Exception {
 		final FFbaseImpl b = new FFbaseImpl(new Parameters());
 		final var about = b.getAbout(executableFinder);
 
@@ -80,7 +80,7 @@ public class FFbaseTest {
 	}
 
 	@Test
-	public void testNVPresence() throws Exception {
+	void testNVPresence() throws Exception {
 		final FFbaseImpl b = new FFbaseImpl(new Parameters());
 
 		if (System.getProperty("ffmpeg.test.nvidia", "").equals("1")) {
@@ -101,7 +101,7 @@ public class FFbaseTest {
 	}
 
 	@Test
-	public void testVersion() {
+	void testVersion() {
 		final FFVersion v = new FFVersion(readLinesFromResource("test-version.txt"));
 
 		assertEquals("3.3.3 Copyright (c) 2000-2017 the FFmpeg developers", v.headerVersion);
@@ -127,7 +127,7 @@ public class FFbaseTest {
 	}
 
 	@Test
-	public void testCodecs() {
+	void testCodecs() {
 		final List<FFCodec> list = FFCodec.parse(readLinesFromResource("test-codecs.txt"));
 
 		final List<FFCodec> test1 = list.stream().filter(c -> (c.type == CodecType.AUDIO & c.encodingSupported
@@ -159,7 +159,7 @@ public class FFbaseTest {
 	}
 
 	@Test
-	public void testFormats() {
+	void testFormats() {
 		final List<FFFormat> list = FFFormat.parseFormats(readLinesFromResource("test-formats.txt"));
 
 		assertEquals(326, list.size());
@@ -177,7 +177,7 @@ public class FFbaseTest {
 	}
 
 	@Test
-	public void testDevices() {
+	void testDevices() {
 		final List<FFDevice> list = FFDevice.parseDevices(readLinesFromResource("test-devices.txt"));
 		assertEquals(7, list.size());
 
@@ -192,7 +192,7 @@ public class FFbaseTest {
 	}
 
 	@Test
-	public void testBSFS() {
+	void testBSFS() {
 		final Set<String> filters = FFAbout.parseBSFS(readLinesFromResource("test-bsfs.txt").stream());
 
 		assertTrue(filters.contains("noise"));
@@ -200,7 +200,7 @@ public class FFbaseTest {
 	}
 
 	@Test
-	public void testProtocols() {
+	void testProtocols() {
 		final FFProtocols p = new FFProtocols(readLinesFromResource("test-protocols.txt"));
 
 		assertFalse(p.input.contains("Input:") | p.input.contains("input:"));
@@ -219,7 +219,7 @@ public class FFbaseTest {
 	}
 
 	@Test
-	public void testFilters() {
+	void testFilters() {
 		final List<FFFilter> list = FFFilter.parseFilters(readLinesFromResource("test-filters.txt"));
 
 		assertEquals(299, list.size());
@@ -242,7 +242,7 @@ public class FFbaseTest {
 	}
 
 	@Test
-	public void testPixelFormats() {
+	void testPixelFormats() {
 		final List<FFPixelFormat> list = FFPixelFormat.parsePixelsFormats(readLinesFromResource(
 		        "test-pixelsformats.txt"));
 
@@ -259,7 +259,7 @@ public class FFbaseTest {
 	}
 
 	@Test
-	public void testHwaccels() {
+	void testHwaccels() {
 		final Set<String> list = FFAbout.parseBSFS(readLinesFromResource("test-hwaccels.txt").stream());
 		assertEquals(6, list.size());
 
@@ -272,7 +272,7 @@ public class FFbaseTest {
 	}
 
 	@Test
-	public void testParams() throws IOException {
+	void testParams() throws IOException {
 		final FFbaseImpl b = new FFbaseImpl(new Parameters());
 		assertFalse(b.isLogLevelSet());
 

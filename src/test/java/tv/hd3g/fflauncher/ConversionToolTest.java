@@ -35,10 +35,10 @@ import org.junit.jupiter.api.Test;
 
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
-public class ConversionToolTest {
+class ConversionToolTest {
 
 	@Test
-	public void test() throws IOException {
+	void test() throws IOException {
 		final ConversionTool ct = new ConversionTool("java");
 		ct.getInternalParameters().addParameters("-firstparam");
 
@@ -104,12 +104,12 @@ public class ConversionToolTest {
 	}
 
 	@Test
-	public void testCatchMissingOutVar() {
+	void testCatchMissingOutVar() {
 		final LinkedHashMap<String, String> catchs = new LinkedHashMap<>();
 
 		class CT extends ConversionTool {
 
-			public CT() {
+			CT() {
 				super("java");
 			}
 
@@ -139,7 +139,7 @@ public class ConversionToolTest {
 	}
 
 	@Test
-	public void testManageOutFiles() throws IOException {
+	void testManageOutFiles() throws IOException {
 		final File f1 = File.createTempFile("test", ".txt");
 		final File d1 = new File(f1.getParent() + File.separator + "sub1-" + f1.getName() + File.separator + "sub2");
 		assertTrue(d1.mkdirs());

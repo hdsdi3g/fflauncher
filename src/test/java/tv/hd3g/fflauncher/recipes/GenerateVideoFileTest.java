@@ -30,10 +30,10 @@ import tv.hd3g.fflauncher.FFmpeg;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.tool.ToolRunner;
 
-public class GenerateVideoFileTest {
+class GenerateVideoFileTest {
 
 	@Test
-	public void test() throws InterruptedException, ExecutionException, IOException {
+	void test() throws InterruptedException, ExecutionException, IOException {
 		final ToolRunner run = new ToolRunner(new ExecutableFinder());
 		final GenerateVideoFile gvf = new GenerateVideoFile(run);
 

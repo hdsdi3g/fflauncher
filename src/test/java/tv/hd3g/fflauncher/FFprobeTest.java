@@ -25,10 +25,10 @@ import org.junit.jupiter.api.Test;
 import tv.hd3g.fflauncher.FFprobe.FFPrintFormat;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
-public class FFprobeTest {
+class FFprobeTest {
 
 	@Test
-	public void test() {
+	void test() {
 		final Parameters parameters = new Parameters();
 		final FFprobe p = new FFprobe("ffprobe", parameters);
 

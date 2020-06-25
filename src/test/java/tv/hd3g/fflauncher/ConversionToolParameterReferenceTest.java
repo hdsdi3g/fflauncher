@@ -28,19 +28,19 @@ import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class ConversionToolParameterReferenceTest {
+class ConversionToolParameterReferenceTest {
 
-	private final File tempFile;
+	final File tempFile;
 
-	public ConversionToolParameterReferenceTest() throws IOException {
+	ConversionToolParameterReferenceTest() throws IOException {
 		tempFile = File.createTempFile("bintest", ".txt");
 	}
 
-	private ConversionToolParameterReference ctprS;
-	private ConversionToolParameterReference ctprF;
+	ConversionToolParameterReference ctprS;
+	ConversionToolParameterReference ctprF;
 
 	@BeforeEach
-	public void setUp() throws Exception {
+	void setUp() throws Exception {
 		ctprS = new ConversionToolParameterReference("reference", "var", Arrays.asList("before1", "before2"), Arrays
 		        .asList("after1", "after2"));
 		ctprF = new ConversionToolParameterReference(tempFile, "var", Arrays.asList("before1", "before2"), Arrays
@@ -48,7 +48,7 @@ public class ConversionToolParameterReferenceTest {
 	}
 
 	@Test
-	public void testNullConstructor() {
+	void testNullConstructor() {
 		final ConversionToolParameterReference ctprS = new ConversionToolParameterReference("reference", "var", null,
 		        null);
 		final ConversionToolParameterReference ctprF = new ConversionToolParameterReference(tempFile, "var", null,
@@ -61,39 +61,39 @@ public class ConversionToolParameterReferenceTest {
 	}
 
 	@Test
-	public void testGetRessource() {
+	void testGetRessource() {
 		assertEquals("reference", ctprS.getRessource());
 		assertEquals(tempFile.getPath(), ctprF.getRessource());
 	}
 
 	@Test
-	public void testGetParametersListAfterRef() {
+	void testGetParametersListAfterRef() {
 		assertEquals(Arrays.asList("after1", "after2"), ctprS.getParametersListAfterRef());
 	}
 
 	@Test
-	public void testGetParametersListBeforeRef() {
+	void testGetParametersListBeforeRef() {
 		assertEquals(Arrays.asList("before1", "before2"), ctprS.getParametersListBeforeRef());
 	}
 
 	@Test
-	public void testGetVarNameInParameters() {
+	void testGetVarNameInParameters() {
 		assertEquals("var", ctprS.getVarNameInParameters());
 	}
 
 	@Test
-	public void testIsVarNameInParametersEquals() {
+	void testIsVarNameInParametersEquals() {
 		assertTrue(ctprS.isVarNameInParametersEquals("var"));
 	}
 
 	@Test
-	public void testToString() {
+	void testToString() {
 		assertEquals(ctprS.getRessource(), ctprS.toString());
 		assertEquals(ctprF.getRessource(), ctprF.toString());
 	}
 
 	@Test
-	public void testCheckOpenRessourceAsFile() throws IOException, InterruptedException {
+	void testCheckOpenRessourceAsFile() throws IOException, InterruptedException {
 		ctprS.checkOpenRessourceAsFile();
 		ctprF.checkOpenRessourceAsFile();
 		assertThrows(IOException.class, () -> {
