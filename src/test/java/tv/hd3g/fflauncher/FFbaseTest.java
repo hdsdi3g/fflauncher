@@ -136,7 +136,7 @@ class FFbaseTest {
 		                                                               .toUnmodifiableList());
 
 		assertEquals(1, test1.size());
-		assertTrue(test1.get(0).longName.equals("G.722 ADPCM"));
+		assertEquals("G.722 ADPCM", test1.get(0).longName);
 		assertTrue(test1.get(0).toString().startsWith(test1.get(0).longName));
 
 		assertEquals(7, list.stream().filter(c -> (c.type == CodecType.DATA)).count());
@@ -147,7 +147,7 @@ class FFbaseTest {
 
 		final FFCodec t = list.stream().filter(c -> c.name.equals("dirac")).findFirst().get();
 
-		assertTrue(t.longName.equals("Dirac"));
+		assertEquals("Dirac", t.longName);
 		assertTrue(t.decoders.contains("dirac"));
 		assertTrue(t.encoders.contains("vc2"));
 
@@ -168,7 +168,7 @@ class FFbaseTest {
 		        "bfi"))).collect(Collectors.toUnmodifiableList());
 
 		assertEquals(1, test1.size());
-		assertTrue(test1.get(0).longName.equals("Brute Force & Ignorance"));
+		assertEquals("Brute Force & Ignorance", test1.get(0).longName);
 
 		assertEquals(2, list.stream().filter(f -> f.name.equals("hls")).count());
 
