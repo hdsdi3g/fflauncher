@@ -17,8 +17,8 @@
 package tv.hd3g.fflauncher;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -93,24 +93,13 @@ public class ConversionToolParameterReferenceTest {
 	}
 
 	@Test
-	public void testCheckOpenRessourceAsFile() {
-		try {
-			ctprS.checkOpenRessourceAsFile();
-		} catch (IOException | InterruptedException e) {
-			throw new RuntimeException("Unexpected exception from here", e);
-		}
-
-		try {
-			ctprF.checkOpenRessourceAsFile();
-		} catch (IOException | InterruptedException e) {
-			throw new RuntimeException("Unexpected exception from here", e);
-		}
-
-		try {
+	public void testCheckOpenRessourceAsFile() throws IOException, InterruptedException {
+		ctprS.checkOpenRessourceAsFile();
+		ctprF.checkOpenRessourceAsFile();
+		assertThrows(IOException.class, () -> {
 			new ConversionToolParameterReference(new File("nope"), "var", null, null).checkOpenRessourceAsFile();
-			fail("Expected exception from here: file not exists");
-		} catch (IOException | InterruptedException e) {
-		}
+		}, "Expected exception from here: file not exists");
+
 	}
 
 }

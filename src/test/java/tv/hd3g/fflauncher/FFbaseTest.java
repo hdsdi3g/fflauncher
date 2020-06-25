@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import tv.hd3g.commons.IORuntimeException;
 import tv.hd3g.fflauncher.FFCodec.CodecType;
 import tv.hd3g.fflauncher.FFFilter.ConnectorType;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
@@ -95,7 +96,7 @@ public class FFbaseTest {
 		try {
 			return Files.readAllLines(new File("src/test/resources/" + resource).toPath(), UTF_8);
 		} catch (final IOException e) {
-			throw new RuntimeException("Can't get resource " + resource, e);
+			throw new IORuntimeException("Can't get resource " + resource, e);
 		}
 	}
 

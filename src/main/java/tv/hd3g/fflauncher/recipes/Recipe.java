@@ -33,7 +33,7 @@ public abstract class Recipe {
 		this.toolRun = Objects.requireNonNull(toolRun, "\"toolRun\" can't to be null");
 		this.execName = Objects.requireNonNull(execName, "\"execName\" can't to be null");
 		if (execName.isEmpty()) {
-			throw new NullPointerException("\"exec_name\" can't to be empty");
+			throw new IllegalArgumentException("\"exec_name\" can't to be empty");
 		}
 		log.debug("Init recipe {} with {}", getClass().getSimpleName(), execName);
 	}

@@ -94,8 +94,9 @@ public class FFmpegTest {
 		cmd.addBulkParameters("-f lavfi -i smptehdbars=duration=" + 5 + ":size=1280x720:rate=25");
 
 		ffmpeg.addHardwareVideoEncoding("h264", -1, FFHardwareCodec.NV, about).addCRF(0);
-		assertTrue(cmd.getValues("-c:v").stream().findFirst().orElseThrow(() -> new NullPointerException(
-		        "No codecs was added: " + cmd)).contains("nvenc"));
+		assertTrue(cmd.getValues("-c:v").stream()
+		        .findFirst()
+		        .orElseThrow(() -> new IllegalArgumentException("No codecs was added: " + cmd)).contains("nvenc"));
 
 		final File test_file = File.createTempFile("smptebars", ".mkv");
 		ffmpeg.addSimpleOutputDestination(test_file.getPath());

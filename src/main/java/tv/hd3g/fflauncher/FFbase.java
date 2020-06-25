@@ -16,6 +16,8 @@
  */
 package tv.hd3g.fflauncher;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -109,9 +111,7 @@ public class FFbase extends ConversionTool {
 	 * Add -i parameter
 	 */
 	public FFbase addSimpleInputSource(final String sourceName, final String... sourceOptions) {
-		if (sourceName == null) {
-			throw new NullPointerException("\"sourceName\" can't to be null");
-		}
+		requireNonNull(sourceName, "\"sourceName\" can't to be null");
 
 		if (sourceOptions == null) {
 			return addSimpleInputSource(sourceName, Collections.emptyList());
@@ -126,9 +126,7 @@ public class FFbase extends ConversionTool {
 	 * Add -i parameter
 	 */
 	public FFbase addSimpleInputSource(final File file, final String... sourceOptions) {
-		if (file == null) {
-			throw new NullPointerException("\"file\" can't to be null");
-		}
+		requireNonNull(file, "\"file\" can't to be null");
 
 		if (sourceOptions == null) {
 			return addSimpleInputSource(file, Collections.emptyList());
@@ -142,11 +140,8 @@ public class FFbase extends ConversionTool {
 	 * Add -i parameter
 	 */
 	public FFbase addSimpleInputSource(final String sourceName, final List<String> sourceOptions) {
-		if (sourceName == null) {
-			throw new NullPointerException("\"sourceName\" can't to be null");
-		} else if (sourceOptions == null) {
-			throw new NullPointerException("\"sourceOptions\" can't to be null");
-		}
+		requireNonNull(sourceName, "\"sourceName\" can't to be null");
+		requireNonNull(sourceOptions, "\"sourceOptions\" can't to be null");
 
 		final String varname = parameters.addVariable("IN_AUTOMATIC_" + inputSources.size());
 		addInputSource(sourceName, varname, Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(Collectors
@@ -160,11 +155,8 @@ public class FFbase extends ConversionTool {
 	 * Add -i parameter
 	 */
 	public FFbase addSimpleInputSource(final File file, final List<String> sourceOptions) {
-		if (file == null) {
-			throw new NullPointerException("\"file\" can't to be null");
-		} else if (sourceOptions == null) {
-			throw new NullPointerException("\"sourceOptions\" can't to be null");
-		}
+		requireNonNull(file, "\"file\" can't to be null");
+		requireNonNull(sourceOptions, "\"sourceOptions\" can't to be null");
 
 		final String varname = parameters.addVariable("IN_AUTOMATIC_" + inputSources.size());
 		addInputSource(file, varname, Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(Collectors

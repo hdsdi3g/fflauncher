@@ -16,6 +16,8 @@
  */
 package tv.hd3g.fflauncher;
 
+import static java.util.Objects.requireNonNull;
+
 import java.awt.Point;
 import java.io.File;
 import java.util.ArrayList;
@@ -44,14 +46,11 @@ public class FFmpeg extends FFbase {
 	 * Add "-f container destination"
 	 */
 	public FFmpeg addSimpleOutputDestination(final String destinationName, final String destinationContainer) {
-		if (destinationName == null) {
-			throw new NullPointerException("\"destinationName\" can't to be null");
-		} else if (destinationContainer == null) {
-			throw new NullPointerException("\"destinationContainer\" can't to be null");
-		}
+		requireNonNull(destinationName, "\"destinationName\" can't to be null");
+		requireNonNull(destinationContainer, "\"destinationContainer\" can't to be null");
 
-		final String varname = getInternalParameters().addVariable("OUT_AUTOMATIC_" + outputExpectedDestinations
-		        .size());
+		final String varname = getInternalParameters()
+		        .addVariable("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
 		addOutputDestination(destinationName, varname, "-f", destinationContainer);
 		return this;
 	}
@@ -61,14 +60,11 @@ public class FFmpeg extends FFbase {
 	 * Add "-f container /destination"
 	 */
 	public FFmpeg addSimpleOutputDestination(final File destinationFile, final String destinationContainer) {
-		if (destinationFile == null) {
-			throw new NullPointerException("\"destinatdestinationFileion_name\" can't to be null");
-		} else if (destinationContainer == null) {
-			throw new NullPointerException("\"destinationContainer\" can't to be null");
-		}
+		requireNonNull(destinationFile, "\"destinationFile\" can't to be null");
+		requireNonNull(destinationContainer, "\"destinationContainer\" can't to be null");
 
-		final String varname = getInternalParameters().addVariable("OUT_AUTOMATIC_" + outputExpectedDestinations
-		        .size());
+		final String varname = getInternalParameters()
+		        .addVariable("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
 		addOutputDestination(destinationFile, varname, "-f", destinationContainer);
 		return this;
 	}
@@ -116,11 +112,9 @@ public class FFmpeg extends FFbase {
 	 * @param configuration resolution -&gt; filter out name ; resolution can be litteral like hd1080 or cif and filter out name can be "out0", usable after with "-map [out0] -vcodec xxx out.ext"
 	 */
 	public FFmpeg addHardwareNVMultipleScalerFilterComplex(final Map<String, String> configuration) {
-		if (configuration == null) {
-			throw new NullPointerException("\"configuration\" can't to be null");
-		}
+		requireNonNull(configuration, "\"configuration\" can't to be null");
 		if (configuration.isEmpty()) {
-			throw new NullPointerException("\"configuration\" can't to be empty");
+			throw new IllegalArgumentException("\"configuration\" can't to be empty");
 		}
 
 		final StringBuilder nvresize = new StringBuilder();

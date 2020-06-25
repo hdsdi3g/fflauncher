@@ -16,6 +16,8 @@
  */
 package tv.hd3g.fflauncher;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -305,9 +307,9 @@ public class ConversionTool implements ExecutableTool {
 	}
 
 	public ConversionTool setWorkingDirectory(final File workingDirectory) throws IOException {
-		if (workingDirectory == null) {
-			throw new NullPointerException("\"workingDirectory\" can't to be null");
-		} else if (workingDirectory.exists() == false) {
+		Objects.requireNonNull(workingDirectory, "\"workingDirectory\" can't to be null");
+
+		if (workingDirectory.exists() == false) {
 			throw new FileNotFoundException("\"" + workingDirectory.getPath() + "\" in filesytem");
 		} else if (workingDirectory.canRead() == false) {
 			throw new IOException("Can't read workingDirectory \"" + workingDirectory.getPath() + "\"");
@@ -409,13 +411,11 @@ public class ConversionTool implements ExecutableTool {
 	 * Define cmd var name like &lt;%OUT_AUTOMATIC_n%&gt; with "n" the # of setted destination.
 	 * Add -i parameter
 	 */
-	public ConversionTool addSimpleOutputDestination(final String destination_name) {
-		if (destination_name == null) {
-			throw new NullPointerException("\"destination_name\" can't to be null");
-		}
+	public ConversionTool addSimpleOutputDestination(final String destinationName) {
+		requireNonNull(destinationName, "\"destinationName\" can't to be null");
 
 		final String varname = parameters.addVariable("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
-		addOutputDestination(destination_name, varname);
+		addOutputDestination(destinationName, varname);
 		return this;
 	}
 
@@ -424,9 +424,7 @@ public class ConversionTool implements ExecutableTool {
 	 * Add -i parameter
 	 */
 	public ConversionTool addSimpleOutputDestination(final File destinationFile) {
-		if (destinationFile == null) {
-			throw new NullPointerException("\"destinationFile\" can't to be null");
-		}
+		requireNonNull(destinationFile, "\"destinationFile\" can't to be null");
 
 		final String varname = parameters.addVariable("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
 		addOutputDestination(destinationFile, varname);
