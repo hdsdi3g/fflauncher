@@ -4,7 +4,7 @@
 
 	<groupId>tv.hd3g</groupId>
 	<artifactId>fflauncher</artifactId>
-	<version>1.5.2-SNAPSHOT</version>
+	<version>1.5.2</version>
 	<packaging>jar</packaging>
 
 	<name>fflauncher</name>
