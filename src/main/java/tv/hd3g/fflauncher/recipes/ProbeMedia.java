@@ -16,6 +16,8 @@
  */
 package tv.hd3g.fflauncher.recipes;
 
+import static tv.hd3g.fflauncher.ConversionTool.APPEND_PARAM_AT_END;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
@@ -90,6 +92,7 @@ public class ProbeMedia extends Recipe {
 	public FFprobeJAXB doAnalysing(final String source) throws IOException {
 		final FFprobe ffprobe = internal();
 		ffprobe.addSimpleInputSource(source);
+		ffprobe.fixIOParametredVars(APPEND_PARAM_AT_END, APPEND_PARAM_AT_END);
 		return execute(ffprobe, source);
 	}
 
@@ -102,6 +105,7 @@ public class ProbeMedia extends Recipe {
 	public FFprobeJAXB doAnalysing(final File source) throws IOException {
 		final FFprobe ffprobe = internal();
 		ffprobe.addSimpleInputSource(source);
+		ffprobe.fixIOParametredVars(APPEND_PARAM_AT_END, APPEND_PARAM_AT_END);
 		return execute(ffprobe, source.getPath());
 	}
 

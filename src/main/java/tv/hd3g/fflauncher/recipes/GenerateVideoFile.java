@@ -16,6 +16,8 @@
  */
 package tv.hd3g.fflauncher.recipes;
 
+import static tv.hd3g.fflauncher.ConversionTool.APPEND_PARAM_AT_END;
+
 import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
@@ -81,6 +83,7 @@ public class GenerateVideoFile extends Recipe {
 	                                             final Point resolution) throws IOException {
 		final FFmpeg ffmpeg = internal(duration_in_sec, resolution);
 		ffmpeg.addSimpleOutputDestination(destination);
+		ffmpeg.fixIOParametredVars(APPEND_PARAM_AT_END, APPEND_PARAM_AT_END);
 		return toolRun.execute(ffmpeg).waitForEnd();
 	}
 
@@ -92,6 +95,7 @@ public class GenerateVideoFile extends Recipe {
 	                                             final Point resolution) throws IOException {
 		final FFmpeg ffmpeg = internal(duration_in_sec, resolution);
 		ffmpeg.addSimpleOutputDestination(destination);
+		ffmpeg.fixIOParametredVars(APPEND_PARAM_AT_END, APPEND_PARAM_AT_END);
 		return toolRun.execute(ffmpeg).waitForEnd();
 	}
 

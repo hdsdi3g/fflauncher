@@ -22,7 +22,9 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -44,39 +46,32 @@ class ConversionToolParameterReference {
 	private final boolean ressourceAsFile;
 	private final String varNameInParameters;
 	private final Parameters parametersBeforeRef;
-	private final Parameters parametersAfterRef;
 
 	/**
 	 * @param parametersBeforeRef can be null
-	 * @param parametersAfterRef can be null
 	 */
 	ConversionToolParameterReference(final String reference, final String varNameInParameters,
-	                                 final Collection<String> parametersBeforeRef,
-	                                 final Collection<String> parametersAfterRef) {
+	                                 final Collection<String> parametersBeforeRef) {
 		ressource = Objects.requireNonNull(reference, "\"reference\" can't to be null");
 		this.varNameInParameters = Objects.requireNonNull(varNameInParameters,
 		        "\"var_name_in_parameters\" can't to be null");
-		this.parametersBeforeRef = Optional.ofNullable(parametersBeforeRef).map(Parameters::new).orElseGet(
-		        Parameters::new);
-		this.parametersAfterRef = Optional.ofNullable(parametersAfterRef).map(Parameters::new).orElseGet(
-		        Parameters::new);
+		this.parametersBeforeRef = Optional.ofNullable(parametersBeforeRef)
+		        .map(Parameters::new)
+		        .orElseGet(Parameters::new);
 		ressourceAsFile = false;
 	}
 
 	/**
 	 * @param parametersBeforeRef can be null
-	 * @param parametersAfterRef can be null
 	 */
 	ConversionToolParameterReference(final File reference, final String varNameInParameters,
-	                                 final Collection<String> parametersBeforeRef,
-	                                 final Collection<String> parametersAfterRef) {
+	                                 final Collection<String> parametersBeforeRef) {
 		ressource = Objects.requireNonNull(reference, "\"reference\" can't to be null").getPath();
 		this.varNameInParameters = Objects.requireNonNull(varNameInParameters,
 		        "\"var_name_in_parameters\" can't to be null");
-		this.parametersBeforeRef = Optional.ofNullable(parametersBeforeRef).map(Parameters::new).orElseGet(
-		        Parameters::new);
-		this.parametersAfterRef = Optional.ofNullable(parametersAfterRef).map(Parameters::new).orElseGet(
-		        Parameters::new);
+		this.parametersBeforeRef = Optional.ofNullable(parametersBeforeRef)
+		        .map(Parameters::new)
+		        .orElseGet(Parameters::new);
 		ressourceAsFile = true;
 	}
 
@@ -84,12 +79,73 @@ class ConversionToolParameterReference {
 		return ressource;
 	}
 
-	List<String> getParametersListAfterRef() {
-		return parametersAfterRef.getParameters();
+	Parameters getParametersBeforeRef() {
+		return parametersBeforeRef;
+	}
+
+	/**
+	 * Replace on this Param all the founded char in search.
+	 * All this Param count args = N
+	 * @param actual search N args on the this current var pos, from the right to the left.
+	 */
+	void manageCollisionsParameters(final Parameters actualParameters) {
+		final var parametersList = parametersBeforeRef.getParameters();
+		if (parametersList.isEmpty()) {
+			return;
+		}
+		final var actual = actualParameters.getParameters();
+		final var allNParamBeforeThisVarCount = (int) actual.stream()
+		        .takeWhile(arg -> arg.equals(actualParameters.tagVar(varNameInParameters)) == false)
+		        .count();
+
+		/**
+		 * Trim by ends
+		 * [a, b, c, d] / [e, c, d]
+		 * <<<----^--^ / <<<--^--^ => [a, b, c, d] / [e]
+		 */
+		log.trace("Compare collisions, actual: \"{}\", this: \"{}\"", actual, parametersList);
+		final ArrayList<Integer> toRemove = new ArrayList<>();
+		for (int pos = 0; pos < Math.min(parametersList.size(), allNParamBeforeThisVarCount); pos++) {
+			final var argActual = actual.get(allNParamBeforeThisVarCount - (pos + 1));
+			final var argThis = parametersList.get(parametersList.size() - (pos + 1));
+			if (argThis.equals(argActual)) {
+				toRemove.add(pos);
+			} else {
+				break;
+			}
+		}
+
+		Collections.reverse(toRemove);
+		toRemove.forEach(pos -> parametersList.remove((int) pos));
+
+		if (parametersList.isEmpty()) {
+			return;
+		}
+
+		/**
+		 * Sliding mask
+		 * [a, b, c, d] / [c, d, e]
+		 * ......=> [c] => Nope
+		 * ...=> [c, d] => Yes, trim => [a, b, c, d] / [e]
+		 */
+		for (int windowsWidth = 0; windowsWidth < Math.min(parametersList.size(),
+		        allNParamBeforeThisVarCount) - 1; windowsWidth++) {
+			final var actualMinBound = allNParamBeforeThisVarCount - (windowsWidth + 1);
+			final var actualMaxBound = allNParamBeforeThisVarCount;
+			final var beforePMinBound = 0;
+			final var beforePMaxBound = windowsWidth + 1;
+
+			final var actualSubList = actual.subList(actualMinBound, actualMaxBound);
+			final var parametersListSubList = parametersList.subList(beforePMinBound, beforePMaxBound);
+			if (actualSubList.equals(parametersListSubList)) {
+				parametersListSubList.clear();
+				break;
+			}
+		}
 	}
 
 	List<String> getParametersListBeforeRef() {
-		return parametersBeforeRef.getParameters();
+		return getParametersBeforeRef().getParameters();
 	}
 
 	String getVarNameInParameters() {

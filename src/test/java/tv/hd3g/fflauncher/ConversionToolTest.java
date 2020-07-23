@@ -29,8 +29,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import tv.hd3g.processlauncher.cmdline.Parameters;
@@ -76,27 +78,25 @@ class ConversionToolTest {
 		assertEquals(2, p.getParameters().size());
 
 		p.addParameters("<%varsource2%>");
-		ct.addInputSource("source2", "varsource2", Arrays.asList("-pre1-source2", "-pre2-source2"), Arrays.asList(
-		        "-post1-source2", "-post2-source2"));
+		ct.addInputSource("source2", "varsource2", Arrays.asList("-pre1-source2", "-pre2-source2"));
 
 		p.addParameters("<%vardest1%>");
 		ct.addOutputDestination("dest1", "vardest1", "-pre1-dest1", "-pre2-dest1");
 
 		p.addParameters("<%vardest2%>");
-		ct.addOutputDestination("dest2", "vardest2", Arrays.asList("-pre1-dest2", "-pre2-dest2"), Arrays.asList(
-		        "-post1-dest2", "-post2-dest2"));
+		ct.addOutputDestination("dest2", "vardest2", Arrays.asList("-pre1-dest2", "-pre2-dest2"));
 
-		ct.addSimpleOutputDestination("dest-simple");
-
-		assertEquals(6, p.getParameters().size());
+		assertEquals(5, p.getParameters().size());
 
 		assertEquals("source1 source2", ct.getDeclaredSources().stream().collect(Collectors.joining(" ")));
+
+		ct.addSimpleOutputDestination("dest-simple");
 		assertEquals("dest1 dest2 dest-simple", ct.getDeclaredDestinations().stream().collect(Collectors.joining(" ")));
 
 		final String processed_cmdline = ct.getReadyToRunParameters().getParameters().stream().collect(Collectors
 		        .joining(" "));
 
-		final String expected = "-firstparam -pre1-source1 -pre2-source1 source1 -pre1-source2 -pre2-source2 source2 -post1-source2 -post2-source2 -pre1-dest1 -pre2-dest1 dest1 -pre1-dest2 -pre2-dest2 dest2 -post1-dest2 -post2-dest2 dest-simple";
+		final String expected = "-firstparam -pre1-source1 -pre2-source1 source1 -pre1-source2 -pre2-source2 source2 -pre1-dest1 -pre2-dest1 dest1 -pre1-dest2 -pre2-dest2 dest2";
 		assertEquals(expected, processed_cmdline);
 
 		assertEquals("source1", ct.getDeclaredSourceByVarName("varsource1").orElse("nope"));
@@ -127,13 +127,19 @@ class ConversionToolTest {
 		ct.addInputSource("source", "found_var");
 		assertEquals("-1 -2 source", ct.getReadyToRunParameters().toString());
 
+		ct.addSimpleOutputDestination("dest-simple");
+		assertEquals("-1 -2 source", ct.getReadyToRunParameters().toString());
+		assertEquals(1, catchs.size());
+		assertEquals("dest-simple", catchs.get("<%OUT_AUTOMATIC_0%>"));
+		catchs.clear();
+
 		ct.setRemoveParamsIfNoVarToInject(true);
 		assertEquals("-2 source", ct.getReadyToRunParameters().toString());
+		assertEquals(1, catchs.size());
 
-		assertTrue(catchs.isEmpty());
 		p.clear();
 		assertEquals("", ct.getReadyToRunParameters().toString());
-		assertEquals(1, catchs.size());
+		assertEquals(2, catchs.size());
 		assertTrue(catchs.containsKey("found_var"));
 		assertEquals("source", catchs.get("found_var"));
 	}
@@ -198,5 +204,69 @@ class ConversionToolTest {
 		assertTrue(d1.getParentFile().exists());
 		assertTrue(d1.getParentFile().delete());*/
 	}
+
+	@Nested
+	class FixIOParametredVars {
+
+		@Test
+		void noIORef_noCollision() {
+			final var ct = new ConversionTool("java");
+			ct.parameters.addBulkParameters("-pre -before <%myvar%> -after -post value");
+			ct.addInputSource("src0", "in0", List.of("-bef00", "-bef01"));
+			ct.addInputSource("src1", "in1", List.of("-bef10", "-bef11"));
+			ct.addOutputDestination("dst0", "out0", List.of("-bef20", "-bef21"));
+			ct.addOutputDestination("dst1", "out1", List.of("-bef30", "-bef31"));
+
+			ct.fixIOParametredVars(
+			        (p, k) -> p.addParameters("<i", k, "i>"),
+			        (p, k) -> p.addParameters("<o", k, "o>"));
+			assertEquals(
+			        "-pre -before <%myvar%> -after -post value <i <%in0%> i> <i <%in1%> i> <o <%out0%> o> <o <%out1%> o>",
+			        ct.parameters.toString());
+			assertEquals(
+			        "-pre -before -after -post value <i -bef00 -bef01 src0 i> <i -bef10 -bef11 src1 i> <o -bef20 -bef21 dst0 o> <o -bef30 -bef31 dst1 o>",
+			        ct.getReadyToRunParameters().toString());
+		}
+
+		@Test
+		void ioRef_noCollision() {
+			final var ct = new ConversionTool("java");
+			ct.parameters.addBulkParameters("-pre -i <%in%> -o <%out%> -post");
+			ct.addInputSource("src", "in", "-i");
+			ct.addOutputDestination("dst", "out", "-o");
+
+			ct.fixIOParametredVars(neverTriggMe, neverTriggMe);
+			assertEquals("-pre -i <%in%> -o <%out%> -post", ct.parameters.toString());
+			assertEquals("-pre -i src -o dst -post", ct.getReadyToRunParameters().toString());
+		}
+
+		@Test
+		void ioRef_Collision() {
+			final var ct = new ConversionTool("java");
+			ct.parameters.addBulkParameters("-pre -i <%in%> -o <%out%> -post");
+			ct.addInputSource("src", "in", "-i", "beforeI");
+			ct.addOutputDestination("dst", "out", "-o", "beforeO");
+
+			ct.fixIOParametredVars(neverTriggMe, neverTriggMe);
+			assertEquals("-pre -i <%in%> -o <%out%> -post", ct.parameters.toString());
+			assertEquals("-pre -i beforeI src -o beforeO dst -post", ct.getReadyToRunParameters().toString());
+		}
+
+		@Test
+		void ioRef_MultipleNotCollisions() {
+			final var ct = new ConversionTool("java");
+			ct.parameters.addBulkParameters("-pre -i keepme <%in%> -o <%out%> -post");
+			ct.addInputSource("src", "in", "-i", "beforeI");
+			ct.addOutputDestination("dst", "out", "-o", "beforeO");
+
+			ct.fixIOParametredVars(neverTriggMe, neverTriggMe);
+			assertEquals("-pre -i keepme <%in%> -o <%out%> -post", ct.parameters.toString());
+			assertEquals("-pre -i keepme -i beforeI src -o beforeO dst -post", ct.getReadyToRunParameters().toString());
+		}
+	}
+
+	private static final BiConsumer<Parameters, String> neverTriggMe = (p, k) -> {
+		throw new IllegalStateException("You never should manage here missing keys: " + k);
+	};
 
 }

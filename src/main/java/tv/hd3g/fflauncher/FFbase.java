@@ -17,6 +17,7 @@
 package tv.hd3g.fflauncher;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -109,6 +110,7 @@ public class FFbase extends ConversionTool {
 	/**
 	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
+	 * Don't forget to call fixIOParametredVars() for add the new created var in current Parameters.
 	 */
 	public FFbase addSimpleInputSource(final String sourceName, final String... sourceOptions) {
 		requireNonNull(sourceName, "\"sourceName\" can't to be null");
@@ -124,6 +126,7 @@ public class FFbase extends ConversionTool {
 	/**
 	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
+	 * Don't forget to call fixIOParametredVars() for add the new created var in current Parameters.
 	 */
 	public FFbase addSimpleInputSource(final File file, final String... sourceOptions) {
 		requireNonNull(file, "\"file\" can't to be null");
@@ -138,30 +141,30 @@ public class FFbase extends ConversionTool {
 	/**
 	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
+	 * Don't forget to call fixIOParametredVars() for add the new created var in current Parameters.
 	 */
 	public FFbase addSimpleInputSource(final String sourceName, final List<String> sourceOptions) {
 		requireNonNull(sourceName, "\"sourceName\" can't to be null");
 		requireNonNull(sourceOptions, "\"sourceOptions\" can't to be null");
 
-		final String varname = parameters.addVariable("IN_AUTOMATIC_" + inputSources.size());
-		addInputSource(sourceName, varname, Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(Collectors
-		        .toUnmodifiableList()), Collections.emptyList());
-
+		final var varname = "IN_AUTOMATIC_" + inputSources.size();
+		addInputSource(sourceName, parameters.getStartVarTag() + varname + parameters.getEndVarTag(),
+		        Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(toUnmodifiableList()));
 		return this;
 	}
 
 	/**
 	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
+	 * Don't forget to call fixIOParametredVars() for add the new created var in current Parameters.
 	 */
 	public FFbase addSimpleInputSource(final File file, final List<String> sourceOptions) {
 		requireNonNull(file, "\"file\" can't to be null");
 		requireNonNull(sourceOptions, "\"sourceOptions\" can't to be null");
 
-		final String varname = parameters.addVariable("IN_AUTOMATIC_" + inputSources.size());
-		addInputSource(file, varname, Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(Collectors
-		        .toUnmodifiableList()), Collections.emptyList());
-
+		final var varname = "IN_AUTOMATIC_" + inputSources.size();
+		addInputSource(file, parameters.getStartVarTag() + varname + parameters.getEndVarTag(),
+		        Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(toUnmodifiableList()));
 		return this;
 	}
 
