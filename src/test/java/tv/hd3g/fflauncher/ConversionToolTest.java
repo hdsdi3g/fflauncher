@@ -99,8 +99,8 @@ class ConversionToolTest {
 		final String expected = "-firstparam -pre1-source1 -pre2-source1 source1 -pre1-source2 -pre2-source2 source2 -pre1-dest1 -pre2-dest1 dest1 -pre1-dest2 -pre2-dest2 dest2";
 		assertEquals(expected, processed_cmdline);
 
-		assertEquals("source1", ct.getDeclaredSourceByVarName("varsource1").orElse("nope"));
-		assertEquals("dest2", ct.getDeclaredDestinationByVarName("vardest2").orElse("nope"));
+		assertEquals("source1", ct.getDeclaredSourceByVarName("<%varsource1%>").orElse("nope"));
+		assertEquals("dest2", ct.getDeclaredDestinationByVarName("<%vardest2%>").orElse("nope"));
 	}
 
 	@Test
@@ -140,8 +140,8 @@ class ConversionToolTest {
 		p.clear();
 		assertEquals("", ct.getReadyToRunParameters().toString());
 		assertEquals(2, catchs.size());
-		assertTrue(catchs.containsKey("found_var"));
-		assertEquals("source", catchs.get("found_var"));
+		assertTrue(catchs.containsKey("<%found_var%>"));
+		assertEquals("source", catchs.get("<%found_var%>"));
 	}
 
 	@Test

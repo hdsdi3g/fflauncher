@@ -48,6 +48,7 @@ class ConversionToolParameterReference {
 	private final Parameters parametersBeforeRef;
 
 	/**
+	 * @param varNameInParameters should be with tags
 	 * @param parametersBeforeRef can be null
 	 */
 	ConversionToolParameterReference(final String reference, final String varNameInParameters,
@@ -95,7 +96,7 @@ class ConversionToolParameterReference {
 		}
 		final var actual = actualParameters.getParameters();
 		final var allNParamBeforeThisVarCount = (int) actual.stream()
-		        .takeWhile(arg -> arg.equals(actualParameters.tagVar(varNameInParameters)) == false)
+		        .takeWhile(arg -> arg.equals(varNameInParameters) == false)
 		        .count();
 
 		/**
@@ -148,12 +149,18 @@ class ConversionToolParameterReference {
 		return getParametersBeforeRef().getParameters();
 	}
 
+	/**
+	 * @return with tags
+	 */
 	String getVarNameInParameters() {
 		return varNameInParameters;
 	}
 
-	boolean isVarNameInParametersEquals(final String var_name) {
-		return varNameInParameters.equals(var_name);
+	/**
+	 * @param varName with tags
+	 */
+	boolean isVarNameInParametersEquals(final String varName) {
+		return varNameInParameters.equals(varName);
 	}
 
 	void checkOpenRessourceAsFile() throws IOException, InterruptedException {

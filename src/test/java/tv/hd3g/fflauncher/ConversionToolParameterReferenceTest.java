@@ -45,14 +45,15 @@ class ConversionToolParameterReferenceTest {
 
 	@BeforeEach
 	void setUp() throws Exception {
-		ctprS = new ConversionToolParameterReference("reference", "var", Arrays.asList("before1", "before2"));
-		ctprF = new ConversionToolParameterReference(tempFile, "var", Arrays.asList("before1", "before2"));
+		ctprS = new ConversionToolParameterReference("reference", "<%var%>", Arrays.asList("before1", "before2"));
+		ctprF = new ConversionToolParameterReference(tempFile, "<%var%>", Arrays.asList("before1", "before2"));
 	}
 
 	@Test
 	void testNullConstructor() {
-		final ConversionToolParameterReference ctprS = new ConversionToolParameterReference("reference", "var", null);
-		final ConversionToolParameterReference ctprF = new ConversionToolParameterReference(tempFile, "var", null);
+		final ConversionToolParameterReference ctprS = new ConversionToolParameterReference("reference", "<%var%>",
+		        null);
+		final ConversionToolParameterReference ctprF = new ConversionToolParameterReference(tempFile, "<%var%>", null);
 
 		assertEquals(Collections.emptyList(), ctprS.getParametersListBeforeRef());
 		assertEquals(Collections.emptyList(), ctprF.getParametersListBeforeRef());
@@ -71,12 +72,12 @@ class ConversionToolParameterReferenceTest {
 
 	@Test
 	void testGetVarNameInParameters() {
-		assertEquals("var", ctprS.getVarNameInParameters());
+		assertEquals("<%var%>", ctprS.getVarNameInParameters());
 	}
 
 	@Test
 	void testIsVarNameInParametersEquals() {
-		assertTrue(ctprS.isVarNameInParametersEquals("var"));
+		assertTrue(ctprS.isVarNameInParametersEquals("<%var%>"));
 	}
 
 	@Test
@@ -90,7 +91,7 @@ class ConversionToolParameterReferenceTest {
 		ctprS.checkOpenRessourceAsFile();
 		ctprF.checkOpenRessourceAsFile();
 		assertThrows(IOException.class, () -> {
-			new ConversionToolParameterReference(new File("nope"), "var", null).checkOpenRessourceAsFile();
+			new ConversionToolParameterReference(new File("nope"), "<%var%>", null).checkOpenRessourceAsFile();
 		}, "Expected exception from here: file not exists");
 
 	}
@@ -100,7 +101,7 @@ class ConversionToolParameterReferenceTest {
 
 		@Test
 		void noCollision() {
-			final var ctpr = new ConversionToolParameterReference("ref", "var", List.of("b1", "b2"));
+			final var ctpr = new ConversionToolParameterReference("ref", "<%var%>", List.of("b1", "b2"));
 			final var actual = new Parameters("-beforeall <%var%> -afterall");
 			ctpr.manageCollisionsParameters(actual);
 
@@ -110,7 +111,7 @@ class ConversionToolParameterReferenceTest {
 
 		@Test
 		void noCollision_NoAddedParams() {
-			final var ctpr = new ConversionToolParameterReference("ref", "var", List.of());
+			final var ctpr = new ConversionToolParameterReference("ref", "<%var%>", List.of());
 			final var actual = new Parameters("-beforeall <%var%> -afterall");
 			ctpr.manageCollisionsParameters(actual);
 
@@ -120,7 +121,7 @@ class ConversionToolParameterReferenceTest {
 
 		@Test
 		void noCollision_ShuffledParam_2() {
-			final var ctpr = new ConversionToolParameterReference("ref", "var", List.of("s1", "s2"));
+			final var ctpr = new ConversionToolParameterReference("ref", "<%var%>", List.of("s1", "s2"));
 			final var actual = new Parameters("-beforeall s2 s1 <%var%> -afterall");
 			ctpr.manageCollisionsParameters(actual);
 
@@ -130,7 +131,7 @@ class ConversionToolParameterReferenceTest {
 
 		@Test
 		void noCollision_ShuffledParam_3() {
-			final var ctpr = new ConversionToolParameterReference("ref", "var", List.of("s1", "s2", "s3"));
+			final var ctpr = new ConversionToolParameterReference("ref", "<%var%>", List.of("s1", "s2", "s3"));
 			final var actual = new Parameters("-beforeall s3 s2 s1 <%var%> -afterall");
 			ctpr.manageCollisionsParameters(actual);
 
@@ -140,7 +141,7 @@ class ConversionToolParameterReferenceTest {
 
 		@Test
 		void simpleEqualsCollision() {
-			final var ctpr = new ConversionToolParameterReference("ref", "var", List.of("eq1", "eq2"));
+			final var ctpr = new ConversionToolParameterReference("ref", "<%var%>", List.of("eq1", "eq2"));
 			final var actual = new Parameters("-beforeall eq1 eq2 <%var%> -afterall");
 			ctpr.manageCollisionsParameters(actual);
 
@@ -150,7 +151,7 @@ class ConversionToolParameterReferenceTest {
 
 		@Test
 		void simpleCollisionMoreThan() {
-			final var ctpr = new ConversionToolParameterReference("ref", "var", List.of("smT1", "smT2", "smT3"));
+			final var ctpr = new ConversionToolParameterReference("ref", "<%var%>", List.of("smT1", "smT2", "smT3"));
 			final var actual = new Parameters("-beforeall smT1 smT2 <%var%> -afterall");
 			ctpr.manageCollisionsParameters(actual);
 
@@ -160,7 +161,7 @@ class ConversionToolParameterReferenceTest {
 
 		@Test
 		void simpleCollisionLessThan() {
-			final var ctpr = new ConversionToolParameterReference("ref", "var", List.of("b1"));
+			final var ctpr = new ConversionToolParameterReference("ref", "<%var%>", List.of("b1"));
 			final var actual = new Parameters("-beforeall b1 b2 <%var%> -afterall");
 			ctpr.manageCollisionsParameters(actual);
 
@@ -170,7 +171,7 @@ class ConversionToolParameterReferenceTest {
 
 		@Test
 		void paramValueCollision() {
-			final var ctpr = new ConversionToolParameterReference("ref", "var", List.of("-b", "before"));
+			final var ctpr = new ConversionToolParameterReference("ref", "<%var%>", List.of("-b", "before"));
 			final var actual = new Parameters("-beforeall -b <%var%> -afterall");
 			ctpr.manageCollisionsParameters(actual);
 
@@ -180,7 +181,7 @@ class ConversionToolParameterReferenceTest {
 
 		@Test
 		void dangerousNotACollision() {
-			final var ctpr = new ConversionToolParameterReference("ref", "var", List.of("-i"));
+			final var ctpr = new ConversionToolParameterReference("ref", "<%var%>", List.of("-i"));
 			final var actual = new Parameters("-i letMe <%var%> -afterall");
 			ctpr.manageCollisionsParameters(actual);
 
@@ -190,7 +191,7 @@ class ConversionToolParameterReferenceTest {
 
 		@Test
 		void dangerousCollision() {
-			final var ctpr = new ConversionToolParameterReference("ref", "var", List.of("-i"));
+			final var ctpr = new ConversionToolParameterReference("ref", "<%var%>", List.of("-i"));
 			final var actual = new Parameters("-i letMe -i <%var%> -afterall");
 			ctpr.manageCollisionsParameters(actual);
 

@@ -194,9 +194,21 @@ public class ConversionTool implements ExecutableTool {
 	public ConversionTool addInputSource(final String source,
 	                                     final String varNameInParameters,
 	                                     final Collection<String> parametersBeforeInputSource) {
-		inputSources.add(new ConversionToolParameterReference(source, varNameInParameters,
+		inputSources.add(new ConversionToolParameterReference(source, patchVarName(varNameInParameters),
 		        parametersBeforeInputSource));
 		return this;
+	}
+
+	protected String patchVarName(final String rawVarName) {
+		if (parameters.isTaggedParameter(rawVarName)) {
+			return rawVarName;
+		} else if (rawVarName.startsWith(parameters.getStartVarTag())) {
+			return rawVarName + parameters.getEndVarTag();
+		} else if (rawVarName.endsWith(parameters.getEndVarTag())) {
+			return parameters.getStartVarTag() + rawVarName;
+		} else {
+			return parameters.tagVar(rawVarName);
+		}
 	}
 
 	/**
@@ -211,7 +223,7 @@ public class ConversionTool implements ExecutableTool {
 	public ConversionTool addInputSource(final File source,
 	                                     final String varNameInParameters,
 	                                     final Collection<String> parametersBeforeInputSource) {
-		inputSources.add(new ConversionToolParameterReference(source, varNameInParameters,
+		inputSources.add(new ConversionToolParameterReference(source, patchVarName(varNameInParameters),
 		        parametersBeforeInputSource));
 		return this;
 	}
@@ -268,7 +280,8 @@ public class ConversionTool implements ExecutableTool {
 	public ConversionTool addOutputDestination(final String destination,
 	                                           final String varNameInParameters,
 	                                           final Collection<String> parametersBeforeOutputDestination) {
-		outputExpectedDestinations.add(new ConversionToolParameterReference(destination, varNameInParameters,
+		outputExpectedDestinations.add(new ConversionToolParameterReference(destination, patchVarName(
+		        varNameInParameters),
 		        parametersBeforeOutputDestination));
 		return this;
 	}
@@ -285,8 +298,8 @@ public class ConversionTool implements ExecutableTool {
 	public ConversionTool addOutputDestination(final File destination,
 	                                           final String varNameInParameters,
 	                                           final Collection<String> parametersBeforeOutputDestination) {
-		outputExpectedDestinations.add(new ConversionToolParameterReference(destination, varNameInParameters,
-		        parametersBeforeOutputDestination));
+		outputExpectedDestinations.add(new ConversionToolParameterReference(destination,
+		        patchVarName(varNameInParameters), parametersBeforeOutputDestination));
 		return this;
 	}
 
@@ -372,6 +385,7 @@ public class ConversionTool implements ExecutableTool {
 	}
 
 	/**
+	 * @param varName with tags
 	 * @return never null
 	 */
 	public Optional<String> getDeclaredSourceByVarName(final String var_name) {
@@ -380,6 +394,7 @@ public class ConversionTool implements ExecutableTool {
 	}
 
 	/**
+	 * @param varName with tags
 	 * @return never null
 	 */
 	public Optional<String> getDeclaredDestinationByVarName(final String var_name) {
@@ -410,8 +425,8 @@ public class ConversionTool implements ExecutableTool {
 	public ConversionTool addSimpleOutputDestination(final String destinationName) {
 		requireNonNull(destinationName, "\"destinationName\" can't to be null");
 
-		final var varname = "OUT_AUTOMATIC_" + outputExpectedDestinations.size();
-		addOutputDestination(destinationName, parameters.getStartVarTag() + varname + parameters.getEndVarTag());
+		final var varname = parameters.tagVar("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
+		addOutputDestination(destinationName, varname);
 		return this;
 	}
 
@@ -422,8 +437,8 @@ public class ConversionTool implements ExecutableTool {
 	public ConversionTool addSimpleOutputDestination(final File destinationFile) {
 		requireNonNull(destinationFile, "\"destinationFile\" can't to be null");
 
-		final var varname = "OUT_AUTOMATIC_" + outputExpectedDestinations.size();
-		addOutputDestination(destinationFile, parameters.getStartVarTag() + varname + parameters.getEndVarTag());
+		final var varname = parameters.tagVar("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
+		addOutputDestination(destinationFile, varname);
 		return this;
 	}
 
@@ -572,12 +587,10 @@ public class ConversionTool implements ExecutableTool {
 		        .collect(toUnmodifiableSet());
 		inputSources.stream()
 		        .map(ConversionToolParameterReference::getVarNameInParameters)
-		        .map(parameters::tagVar)
 		        .filter(v -> actualTaggedParameters.contains(v) == false)
 		        .forEach(v -> onMissingInputVar.accept(parameters, v));
 		outputExpectedDestinations.stream()
 		        .map(ConversionToolParameterReference::getVarNameInParameters)
-		        .map(parameters::tagVar)
 		        .filter(v -> actualTaggedParameters.contains(v) == false)
 		        .forEach(v -> onMissingOutputVar.accept(parameters, v));
 		Stream.of(inputSources, outputExpectedDestinations)
@@ -598,19 +611,22 @@ public class ConversionTool implements ExecutableTool {
 		final Parameters newerParameters = parameters.duplicate();
 
 		Stream.concat(inputSources.stream(), outputExpectedDestinations.stream()).forEach(paramRef -> {
-			final String var_name = paramRef.getVarNameInParameters();
+			final var taggedVarName = paramRef.getVarNameInParameters();
 
-			final boolean done = newerParameters.injectParamsAroundVariable(var_name, paramRef
-			        .getParametersListBeforeRef(), List.of());
+			final boolean done = newerParameters.injectParamsAroundVariable(
+			        newerParameters.extractVarNameFromTaggedParameter(taggedVarName),
+			        paramRef.getParametersListBeforeRef(),
+			        List.of());
 
 			if (done) {
-				if (allVarsToInject.containsKey(var_name)) {
-					throw new IllegalStateException("Variable collision: \"" + var_name + "\" was already set to \""
-					                                + allVarsToInject.get(var_name) + "\" in " + newerParameters);
+				if (allVarsToInject.containsKey(taggedVarName)) {
+					throw new IllegalStateException("Variable collision: \"" + taggedVarName
+					                                + "\" was already set to \""
+					                                + allVarsToInject.get(taggedVarName) + "\" in " + newerParameters);
 				}
-				allVarsToInject.put(var_name, paramRef.getRessource());
+				allVarsToInject.put(taggedVarName, paramRef.getRessource());
 			} else {
-				onMissingInputOutputVar(var_name, paramRef.getRessource());
+				onMissingInputOutputVar(taggedVarName, paramRef.getRessource());
 			}
 		});
 

@@ -147,8 +147,8 @@ public class FFbase extends ConversionTool {
 		requireNonNull(sourceName, "\"sourceName\" can't to be null");
 		requireNonNull(sourceOptions, "\"sourceOptions\" can't to be null");
 
-		final var varname = "IN_AUTOMATIC_" + inputSources.size();
-		addInputSource(sourceName, parameters.getStartVarTag() + varname + parameters.getEndVarTag(),
+		final var varname = parameters.tagVar("IN_AUTOMATIC_" + inputSources.size());
+		addInputSource(sourceName, varname,
 		        Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(toUnmodifiableList()));
 		return this;
 	}
@@ -162,8 +162,8 @@ public class FFbase extends ConversionTool {
 		requireNonNull(file, "\"file\" can't to be null");
 		requireNonNull(sourceOptions, "\"sourceOptions\" can't to be null");
 
-		final var varname = "IN_AUTOMATIC_" + inputSources.size();
-		addInputSource(file, parameters.getStartVarTag() + varname + parameters.getEndVarTag(),
+		final var varname = parameters.tagVar("IN_AUTOMATIC_" + inputSources.size());
+		addInputSource(file, varname,
 		        Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(toUnmodifiableList()));
 		return this;
 	}
