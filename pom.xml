@@ -47,7 +47,7 @@
 		<dependency>
 			<groupId>tv.hd3g</groupId>
 			<artifactId>processlauncher</artifactId>
-			<version>2.3.0</version>
+			<version>3.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>tv.hd3g.commons</groupId>
