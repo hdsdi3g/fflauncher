@@ -44,13 +44,14 @@ public class FFmpeg extends FFbase {
 	/**
 	 * Define cmd var name like &lt;%OUT_AUTOMATIC_n%&gt; with "n" the # of setted destination.
 	 * Add "-f container destination"
+	 * Don't forget to call fixIOParametredVars
 	 */
 	public FFmpeg addSimpleOutputDestination(final String destinationName, final String destinationContainer) {
 		requireNonNull(destinationName, "\"destinationName\" can't to be null");
 		requireNonNull(destinationContainer, "\"destinationContainer\" can't to be null");
 
 		final String varname = getInternalParameters()
-		        .addVariable("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
+		        .tagVar("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
 		addOutputDestination(destinationName, varname, "-f", destinationContainer);
 		return this;
 	}
@@ -58,13 +59,14 @@ public class FFmpeg extends FFbase {
 	/**
 	 * Define cmd var name like &lt;%OUT_AUTOMATIC_n%&gt; with "n" the # of setted destination.
 	 * Add "-f container /destination"
+	 * Don't forget to call fixIOParametredVars
 	 */
 	public FFmpeg addSimpleOutputDestination(final File destinationFile, final String destinationContainer) {
 		requireNonNull(destinationFile, "\"destinationFile\" can't to be null");
 		requireNonNull(destinationContainer, "\"destinationContainer\" can't to be null");
 
 		final String varname = getInternalParameters()
-		        .addVariable("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
+		        .tagVar("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
 		addOutputDestination(destinationFile, varname, "-f", destinationContainer);
 		return this;
 	}

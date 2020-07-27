@@ -18,6 +18,8 @@ package tv.hd3g.fflauncher;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static tv.hd3g.fflauncher.ConversionTool.APPEND_PARAM_AT_END;
+import static tv.hd3g.fflauncher.ConversionTool.PREPEND_PARAM_AT_START;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -57,6 +59,7 @@ class FFmpegTest {
 	void testSimpleOutputDestination() {
 		final FFmpeg ffmpeg = create();
 		ffmpeg.addSimpleOutputDestination("dest", "container");
+		ffmpeg.fixIOParametredVars(PREPEND_PARAM_AT_START, APPEND_PARAM_AT_END);
 
 		assertTrue(ffmpeg.getReadyToRunParameters().toString().endsWith("-f container dest"));
 	}

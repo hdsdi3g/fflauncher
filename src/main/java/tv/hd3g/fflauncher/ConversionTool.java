@@ -557,6 +557,7 @@ public class ConversionTool implements ExecutableTool {
 	}
 
 	public static final BiConsumer<Parameters, String> APPEND_PARAM_AT_END = (p, arg) -> p.addParameters(arg);
+	public static final BiConsumer<Parameters, String> PREPEND_PARAM_AT_START = (p, arg) -> p.prependParameters(arg);
 
 	/**
 	 * Search and patch missing I/O parameter vars, and manageCollisionsParameters for each I/O entries.
