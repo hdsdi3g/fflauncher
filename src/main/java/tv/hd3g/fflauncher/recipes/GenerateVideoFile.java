@@ -84,7 +84,7 @@ public class GenerateVideoFile extends Recipe {
 		final FFmpeg ffmpeg = internal(duration_in_sec, resolution);
 		ffmpeg.addSimpleOutputDestination(destination);
 		ffmpeg.fixIOParametredVars(APPEND_PARAM_AT_END, APPEND_PARAM_AT_END);
-		return toolRun.execute(ffmpeg).waitForEnd();
+		return toolRun.execute(ffmpeg).waitForEndAndCheckExecution();
 	}
 
 	/**
@@ -96,7 +96,7 @@ public class GenerateVideoFile extends Recipe {
 		final FFmpeg ffmpeg = internal(duration_in_sec, resolution);
 		ffmpeg.addSimpleOutputDestination(destination);
 		ffmpeg.fixIOParametredVars(APPEND_PARAM_AT_END, APPEND_PARAM_AT_END);
-		return toolRun.execute(ffmpeg).waitForEnd();
+		return toolRun.execute(ffmpeg).waitForEndAndCheckExecution();
 	}
 
 }
