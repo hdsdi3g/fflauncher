@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
@@ -57,7 +56,7 @@ class FFbaseTest {
 
 	@Test
 	void testBase() throws Exception {
-		final FFbaseImpl b = new FFbaseImpl(new Parameters());
+		final var b = new FFbaseImpl(new Parameters());
 		final var about = b.getAbout(executableFinder);
 
 		assertNotNull(about.getVersion(), "version");
@@ -81,7 +80,7 @@ class FFbaseTest {
 
 	@Test
 	void testNVPresence() throws Exception {
-		final FFbaseImpl b = new FFbaseImpl(new Parameters());
+		final var b = new FFbaseImpl(new Parameters());
 
 		if (System.getProperty("ffmpeg.test.nvidia", "").equals("1")) {
 			assertTrue(b.getAbout(executableFinder)
@@ -102,7 +101,7 @@ class FFbaseTest {
 
 	@Test
 	void testVersion() {
-		final FFVersion v = new FFVersion(readLinesFromResource("test-version.txt"));
+		final var v = new FFVersion(readLinesFromResource("test-version.txt"));
 
 		assertEquals("3.3.3 Copyright (c) 2000-2017 the FFmpeg developers", v.headerVersion);
 		assertEquals("gcc 4.9.2 (Debian 4.9.2-10)", v.builtWith);
@@ -128,12 +127,12 @@ class FFbaseTest {
 
 	@Test
 	void testCodecs() {
-		final List<FFCodec> list = FFCodec.parse(readLinesFromResource("test-codecs.txt"));
+		final var list = FFCodec.parse(readLinesFromResource("test-codecs.txt"));
 
-		final List<FFCodec> test1 = list.stream().filter(c -> (c.type == CodecType.AUDIO & c.encodingSupported
-		                                                       & c.decodingSupported & c.lossyCompression
-		                                                       & c.name.equals("adpcm_g722"))).collect(Collectors
-		                                                               .toUnmodifiableList());
+		final var test1 = list.stream().filter(c -> (c.type == CodecType.AUDIO & c.encodingSupported
+		                                             & c.decodingSupported & c.lossyCompression
+		                                             & c.name.equals("adpcm_g722"))).collect(Collectors
+		                                                     .toUnmodifiableList());
 
 		assertEquals(1, test1.size());
 		assertEquals("G.722 ADPCM", test1.get(0).longName);
@@ -145,7 +144,7 @@ class FFbaseTest {
 		                                            & c.losslessCompression == false
 		                                            && c.lossyCompression == false)).count());
 
-		final FFCodec t = list.stream().filter(c -> c.name.equals("dirac")).findFirst().get();
+		final var t = list.stream().filter(c -> c.name.equals("dirac")).findFirst().get();
 
 		assertEquals("Dirac", t.longName);
 		assertTrue(t.decoders.contains("dirac"));
@@ -160,11 +159,11 @@ class FFbaseTest {
 
 	@Test
 	void testFormats() {
-		final List<FFFormat> list = FFFormat.parseFormats(readLinesFromResource("test-formats.txt"));
+		final var list = FFFormat.parseFormats(readLinesFromResource("test-formats.txt"));
 
 		assertEquals(326, list.size());
 
-		final List<FFFormat> test1 = list.stream().filter(f -> (f.muxing == false & f.demuxing == true & f.name.equals(
+		final var test1 = list.stream().filter(f -> (f.muxing == false & f.demuxing == true & f.name.equals(
 		        "bfi"))).collect(Collectors.toUnmodifiableList());
 
 		assertEquals(1, test1.size());
@@ -178,10 +177,10 @@ class FFbaseTest {
 
 	@Test
 	void testDevices() {
-		final List<FFDevice> list = FFDevice.parseDevices(readLinesFromResource("test-devices.txt"));
+		final var list = FFDevice.parseDevices(readLinesFromResource("test-devices.txt"));
 		assertEquals(7, list.size());
 
-		int i = 0;
+		var i = 0;
 		assertEquals("DV1394 A/V grab [dv1394] demuxing only supported", list.get(i++).toString());
 		assertEquals("Linux framebuffer [fbdev] muxing and demuxing supported", list.get(i++).toString());
 		assertEquals("Libavfilter virtual input device [lavfi] demuxing only supported", list.get(i++).toString());
@@ -193,7 +192,7 @@ class FFbaseTest {
 
 	@Test
 	void testBSFS() {
-		final Set<String> filters = FFAbout.parseBSFS(readLinesFromResource("test-bsfs.txt").stream());
+		final var filters = FFAbout.parseBSFS(readLinesFromResource("test-bsfs.txt").stream());
 
 		assertTrue(filters.contains("noise"));
 		assertEquals(17, filters.size());
@@ -201,7 +200,7 @@ class FFbaseTest {
 
 	@Test
 	void testProtocols() {
-		final FFProtocols p = new FFProtocols(readLinesFromResource("test-protocols.txt"));
+		final var p = new FFProtocols(readLinesFromResource("test-protocols.txt"));
 
 		assertFalse(p.input.contains("Input:") | p.input.contains("input:"));
 		assertFalse(p.input.contains("Output:") | p.input.contains("output:"));
@@ -220,30 +219,31 @@ class FFbaseTest {
 
 	@Test
 	void testFilters() {
-		final List<FFFilter> list = FFFilter.parseFilters(readLinesFromResource("test-filters.txt"));
+		final var list = FFFilter.parseFilters(readLinesFromResource("test-filters.txt"));
 
 		assertEquals(299, list.size());
 
-		assertTrue(list.stream().anyMatch(f -> f.tag.equals("afftfilt")));
+		assertTrue(list.stream().anyMatch(f -> f.getTag().equals("afftfilt")));
 
-		assertEquals(3, list.stream().filter(f -> (f.sourceConnectorsCount == 2
-		                                           && f.sourceConnector == ConnectorType.AUDIO)).count());
+		assertEquals(3, list.stream().filter(f -> (f.getSourceConnectorsCount() == 2
+		                                           && f.getSourceConnector() == ConnectorType.AUDIO)).count());
 
-		assertEquals(1, list.stream().filter(f -> (f.sourceConnectorsCount == 2
-		                                           && f.sourceConnector == ConnectorType.VIDEO
-		                                           && f.destConnectorsCount == 2
-		                                           && f.destConnector == ConnectorType.VIDEO)).filter(f -> f.tag
-		                                                   .equals("scale2ref")).filter(f -> f.longName.equals(
+		assertEquals(1, list.stream().filter(f -> (f.getSourceConnectorsCount() == 2
+		                                           && f.getSourceConnector() == ConnectorType.VIDEO
+		                                           && f.getDestConnectorsCount() == 2
+		                                           && f.getDestConnector() == ConnectorType.VIDEO)).filter(f -> f
+		                                                   .getTag()
+		                                                   .equals("scale2ref")).filter(f -> f.getLongName().equals(
 		                                                           "Scale the input video size and/or convert the image format to the given reference."))
 		        .count());
 
-		assertTrue(list.get(0).toString().startsWith(list.get(0).longName));
+		assertTrue(list.get(0).toString().startsWith(list.get(0).getLongName()));
 
 	}
 
 	@Test
 	void testPixelFormats() {
-		final List<FFPixelFormat> list = FFPixelFormat.parsePixelsFormats(readLinesFromResource(
+		final var list = FFPixelFormat.parsePixelsFormats(readLinesFromResource(
 		        "test-pixelsformats.txt"));
 
 		assertEquals(183, list.size());
@@ -260,7 +260,7 @@ class FFbaseTest {
 
 	@Test
 	void testHwaccels() {
-		final Set<String> list = FFAbout.parseBSFS(readLinesFromResource("test-hwaccels.txt").stream());
+		final var list = FFAbout.parseBSFS(readLinesFromResource("test-hwaccels.txt").stream());
 		assertEquals(6, list.size());
 
 		assertTrue(list.contains("cuvid"));
@@ -273,10 +273,10 @@ class FFbaseTest {
 
 	@Test
 	void testParams() throws IOException {
-		final FFbaseImpl b = new FFbaseImpl(new Parameters());
+		final var b = new FFbaseImpl(new Parameters());
 		assertFalse(b.isLogLevelSet());
 
-		final int skip_base_cmdline = b.getInternalParameters().toString().length();
+		final var skip_base_cmdline = b.getInternalParameters().toString().length();
 
 		b.setLogLevel(FFLogLevel.FATAL, true, true);
 		assertEquals("-loglevel repeat+level+fatal", b.getInternalParameters().toString().substring(skip_base_cmdline));
