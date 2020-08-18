@@ -30,6 +30,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import tv.hd3g.fflauncher.FFFilter.ConnectorType;
+import tv.hd3g.fflauncher.filtering.Filter;
+import tv.hd3g.fflauncher.filtering.FilterChains;
 import tv.hd3g.processlauncher.ProcesslauncherBuilder;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.cmdline.Parameters;
@@ -178,6 +181,26 @@ public class FFbase extends ConversionTool {
 			}
 		}
 		return about;
+	}
+
+	public synchronized List<Filter> checkFiltersAvailability(final ExecutableFinder executableFinder) {
+		getAbout(executableFinder);
+
+		final var badVideoFilters = FilterChains.merge(FilterChains.parse("-vf", this))
+		        .checkFiltersAvailability(about, ConnectorType.VIDEO);
+		final var badAudioFilters = FilterChains.merge(FilterChains.parse("-af", this))
+		        .checkFiltersAvailability(about, ConnectorType.AUDIO);
+		final var badGenericFilterChainsLists = FilterChains.merge(FilterChains.parse("-filter", this))
+		        .checkFiltersAvailability(about);
+		final var badGenericComplexFilterChainsLists = FilterChains.merge(FilterChains.parse("-filter_complex", this))
+		        .checkFiltersAvailability(about);
+
+		return Stream.of(badVideoFilters.stream(),
+		        badAudioFilters.stream(),
+		        badGenericFilterChainsLists.stream(),
+		        badGenericComplexFilterChainsLists.stream())
+		        .flatMap(s -> s)
+		        .collect(Collectors.toUnmodifiableList());
 	}
 
 	private static final Predicate<String> filterOutErrorLines = rawL -> {

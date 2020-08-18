@@ -35,16 +35,16 @@ public class FFFilter {
 	/**
 	 * Like "aeval"
 	 */
-	public final String tag;
+	private final String tag;
 
 	/**
 	 * Like "Filter audio signal according to a specified expression."
 	 */
-	public final String longName;
+	private final String longName;
 
-	public final boolean timelineSupport;
-	public final boolean sliceThreading;
-	public final boolean commandSupport;
+	private final boolean timelineSupport;
+	private final boolean sliceThreading;
+	private final boolean commandSupport;
 
 	public enum ConnectorType {
 		AUDIO,
@@ -56,15 +56,15 @@ public class FFFilter {
 		SOURCE_SINK;
 	}
 
-	public final ConnectorType sourceConnector;
-	public final ConnectorType destConnector;
+	private final ConnectorType sourceConnector;
+	private final ConnectorType destConnector;
 
-	public final int sourceConnectorsCount;
-	public final int destConnectorsCount;
+	private final int sourceConnectorsCount;
+	private final int destConnectorsCount;
 
 	FFFilter(final String line) {
 
-		final List<String> lineBlocs = Arrays.stream(line.split(" "))
+		final var lineBlocs = Arrays.stream(line.split(" "))
 		        .filter(lb -> lb.trim().equals("") == false)
 		        .map(String::trim)
 		        .collect(Collectors.toUnmodifiableList());
@@ -83,11 +83,11 @@ public class FFFilter {
 		sliceThreading = lineBlocs.get(0).contains("S");
 		commandSupport = lineBlocs.get(0).contains("C");
 
-		final String filter_graph = lineBlocs.get(2);
+		final var filter_graph = lineBlocs.get(2);
 
-		final int pos = filter_graph.indexOf("->");
-		final String s_source_connector = filter_graph.substring(0, pos);
-		final String s_dest_connector = filter_graph.substring(pos + "->".length());
+		final var pos = filter_graph.indexOf("->");
+		final var s_source_connector = filter_graph.substring(0, pos);
+		final var s_dest_connector = filter_graph.substring(pos + "->".length());
 
 		if (s_source_connector.contains("A")) {
 			sourceConnector = ConnectorType.AUDIO;
@@ -119,7 +119,7 @@ public class FFFilter {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder();
+		final var sb = new StringBuilder();
 
 		sb.append(longName);
 		sb.append(" [");
@@ -154,6 +154,42 @@ public class FFFilter {
 		}
 
 		return sb.toString();
+	}
+
+	public String getTag() {
+		return tag;
+	}
+
+	public String getLongName() {
+		return longName;
+	}
+
+	public boolean isTimelineSupport() {
+		return timelineSupport;
+	}
+
+	public boolean isSliceThreading() {
+		return sliceThreading;
+	}
+
+	public boolean isCommandSupport() {
+		return commandSupport;
+	}
+
+	public ConnectorType getSourceConnector() {
+		return sourceConnector;
+	}
+
+	public ConnectorType getDestConnector() {
+		return destConnector;
+	}
+
+	public int getSourceConnectorsCount() {
+		return sourceConnectorsCount;
+	}
+
+	public int getDestConnectorsCount() {
+		return destConnectorsCount;
 	}
 
 }

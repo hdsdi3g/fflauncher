@@ -85,7 +85,7 @@ public class FFAbout {
 
 	private CapturedStdOutErrTextRetention internalRun(final String bulkParameters) {
 		try {
-			final FFbase referer = new FFbase(execName, new Parameters(bulkParameters));
+			final var referer = new FFbase(execName, new Parameters(bulkParameters));
 			referer.setMaxExecTimeScheduler(maxExecTimeScheduler);
 			return new Exec(referer, executableFinder).runWaitGetText(null);
 		} catch (final InvalidExecution e) {
@@ -225,7 +225,7 @@ public class FFAbout {
 	public static final Map<String, List<Channel>> channel_layouts;
 
 	static {
-		final HashMap<String, Integer> sf = new HashMap<>();
+		final var sf = new HashMap<String, Integer>();
 		sf.put("u8", 8);
 		sf.put("s16", 16);
 		sf.put("s32", 32);
@@ -240,7 +240,7 @@ public class FFAbout {
 		sf.put("s64p", 64);
 		sample_formats = Collections.unmodifiableMap(sf);
 
-		final HashMap<String, List<Channel>> cl = new HashMap<>();
+		final var cl = new HashMap<String, List<Channel>>();
 		cl.put("mono           ".trim(), unmodifiableList(asList(FC)));
 		cl.put("stereo         ".trim(), unmodifiableList(asList(FL, FR)));
 		cl.put("2.1            ".trim(), unmodifiableList(asList(FL, FR, LFE)));
@@ -295,7 +295,7 @@ public class FFAbout {
 
 	public boolean isFilterIsAvaliable(final String filter_name) {
 		return getFilters().stream()
-		        .anyMatch(filter -> filter.tag.equalsIgnoreCase(filter_name));
+		        .anyMatch(filter -> filter.getTag().equalsIgnoreCase(filter_name));
 	}
 
 	/**
@@ -329,7 +329,7 @@ public class FFAbout {
 			log.debug("(NVIDIA) Cuvid is not available in hardware acceleration methods");
 			return false;
 		}
-		final List<String> allNvRelatedCodecs = getCodecs().stream()
+		final var allNvRelatedCodecs = getCodecs().stream()
 		        .filter(c -> c.decoders.isEmpty() == false || c.encoders.isEmpty() == false)
 		        .flatMap(c -> Stream.concat(c.decoders.stream(), c.encoders.stream()))
 		        .distinct()
