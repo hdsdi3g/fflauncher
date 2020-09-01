@@ -8,3 +8,5 @@ Please use Maven and Java 11 for build and test.
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=hdsdi3g_fflauncher&metric=alert_status)](https://sonarcloud.io/dashboard?id=hdsdi3g_fflauncher)
 
+![CodeQL](https://github.com/hdsdi3g/fflauncher/workflows/CodeQL/badge.svg)
+
