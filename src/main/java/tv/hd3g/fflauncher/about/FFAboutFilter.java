@@ -14,21 +14,24 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
  */
-package tv.hd3g.fflauncher;
+package tv.hd3g.fflauncher.about;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FFFilter {
+import tv.hd3g.fflauncher.UnknownFormatException;
+import tv.hd3g.fflauncher.enums.FilterConnectorType;
 
-	static List<FFFilter> parseFilters(final List<String> lines) {
+public class FFAboutFilter {
+
+	static List<FFAboutFilter> parseFilters(final List<String> lines) {
 		return lines.stream()
 		        .map(String::trim)
 		        .filter(line -> (line.toLowerCase().startsWith("Filters:".toLowerCase()) == false))
 		        .filter(line -> (line.startsWith("---") == false))
 		        .filter(line -> (line.indexOf('=') == -1))
-		        .map(FFFilter::new)
+		        .map(FFAboutFilter::new)
 		        .collect(Collectors.toUnmodifiableList());
 	}
 
@@ -46,23 +49,13 @@ public class FFFilter {
 	private final boolean sliceThreading;
 	private final boolean commandSupport;
 
-	public enum ConnectorType {
-		AUDIO,
-		VIDEO,
-		/**
-		 * Dynamic number and/or type
-		 */
-		DYNAMIC,
-		SOURCE_SINK;
-	}
-
-	private final ConnectorType sourceConnector;
-	private final ConnectorType destConnector;
+	private final FilterConnectorType sourceConnector;
+	private final FilterConnectorType destConnector;
 
 	private final int sourceConnectorsCount;
 	private final int destConnectorsCount;
 
-	FFFilter(final String line) {
+	FFAboutFilter(final String line) {
 
 		final var lineBlocs = Arrays.stream(line.split(" "))
 		        .filter(lb -> lb.trim().equals("") == false)
@@ -90,25 +83,25 @@ public class FFFilter {
 		final var s_dest_connector = filter_graph.substring(pos + "->".length());
 
 		if (s_source_connector.contains("A")) {
-			sourceConnector = ConnectorType.AUDIO;
+			sourceConnector = FilterConnectorType.AUDIO;
 		} else if (s_source_connector.contains("V")) {
-			sourceConnector = ConnectorType.VIDEO;
+			sourceConnector = FilterConnectorType.VIDEO;
 		} else if (s_source_connector.contains("N")) {
-			sourceConnector = ConnectorType.DYNAMIC;
+			sourceConnector = FilterConnectorType.DYNAMIC;
 		} else if (s_source_connector.contains("|")) {
-			sourceConnector = ConnectorType.SOURCE_SINK;
+			sourceConnector = FilterConnectorType.SOURCE_SINK;
 		} else {
 			throw new UnknownFormatException("Invalid line : \"" + line + "\", invalid filter_graph sourceConnector");
 		}
 
 		if (s_dest_connector.contains("A")) {
-			destConnector = ConnectorType.AUDIO;
+			destConnector = FilterConnectorType.AUDIO;
 		} else if (s_dest_connector.contains("V")) {
-			destConnector = ConnectorType.VIDEO;
+			destConnector = FilterConnectorType.VIDEO;
 		} else if (s_dest_connector.contains("N")) {
-			destConnector = ConnectorType.DYNAMIC;
+			destConnector = FilterConnectorType.DYNAMIC;
 		} else if (s_dest_connector.contains("|")) {
-			destConnector = ConnectorType.SOURCE_SINK;
+			destConnector = FilterConnectorType.SOURCE_SINK;
 		} else {
 			throw new UnknownFormatException("Invalid line : \"" + line + "\", invalid filter_graph sourceConnector");
 		}
@@ -176,11 +169,11 @@ public class FFFilter {
 		return commandSupport;
 	}
 
-	public ConnectorType getSourceConnector() {
+	public FilterConnectorType getSourceConnector() {
 		return sourceConnector;
 	}
 
-	public ConnectorType getDestConnector() {
+	public FilterConnectorType getDestConnector() {
 		return destConnector;
 	}
 

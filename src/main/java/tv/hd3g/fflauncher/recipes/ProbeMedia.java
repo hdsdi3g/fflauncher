@@ -26,9 +26,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tv.hd3g.fflauncher.FFLogLevel;
 import tv.hd3g.fflauncher.FFprobe;
 import tv.hd3g.fflauncher.FFprobe.FFPrintFormat;
+import tv.hd3g.fflauncher.enums.FFLogLevel;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 import tv.hd3g.processlauncher.tool.ToolRunner;

@@ -14,22 +14,24 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
  */
-package tv.hd3g.fflauncher;
+package tv.hd3g.fflauncher.about;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FFPixelFormat {
+import tv.hd3g.fflauncher.UnknownFormatException;
 
-	static List<FFPixelFormat> parsePixelsFormats(final List<String> lines) {
+public class FFAboutPixelFormat {
+
+	static List<FFAboutPixelFormat> parsePixelsFormats(final List<String> lines) {
 		return lines.stream()
 		        .map(String::trim)
 		        .filter(line -> (line.toLowerCase().startsWith("Pixel formats:".toLowerCase()) == false))
 		        .filter(line -> (line.contains("=") == false))
 		        .filter(line -> (line.toLowerCase().startsWith("FLAGS".toLowerCase()) == false))
 		        .filter(line -> (line.startsWith("-----") == false))
-		        .map(FFPixelFormat::new)
+		        .map(FFAboutPixelFormat::new)
 		        .collect(Collectors.toUnmodifiableList());
 	}
 
@@ -42,7 +44,7 @@ public class FFPixelFormat {
 	public final int bitsPerPixel;
 	public final String tag;
 
-	FFPixelFormat(final String line) {
+	FFAboutPixelFormat(final String line) {
 
 		final List<String> lineBlocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(
 		        String::trim).collect(Collectors.toUnmodifiableList());

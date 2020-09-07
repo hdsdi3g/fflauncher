@@ -51,6 +51,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tv.hd3g.commons.IORuntimeException;
+import tv.hd3g.fflauncher.enums.OutputFilePresencePolicy;
 import tv.hd3g.processlauncher.CapturedStdOutErrToPrintStream;
 import tv.hd3g.processlauncher.ExecutionCallbacker;
 import tv.hd3g.processlauncher.LineEntry;

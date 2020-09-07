@@ -29,6 +29,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ffmpeg.ffprobe.StreamType;
 
+import tv.hd3g.fflauncher.about.FFAbout;
+import tv.hd3g.fflauncher.about.FFAboutCodec;
+import tv.hd3g.fflauncher.enums.FFUnit;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
@@ -186,7 +189,7 @@ public class FFmpeg extends FFbase {
 
 		final StreamType videoStream = oVideoStream.get();
 
-		final FFCodec codec = about.getCodecs().stream()
+		final FFAboutCodec codec = about.getCodecs().stream()
 		        .filter(c -> (c.decodingSupported && c.name.equals(videoStream.getCodecName())))
 		        .findFirst()
 		        .orElseThrow(() -> new MediaException("Can't found a valid decoder codec for " + videoStream
@@ -238,7 +241,7 @@ public class FFmpeg extends FFbase {
 			throw new MediaException("\"copy\" codec can't be handled by hardware !");
 		}
 
-		final FFCodec codec = about.getCodecs().stream().filter(c -> (c.encodingSupported && c.name.equals(
+		final FFAboutCodec codec = about.getCodecs().stream().filter(c -> (c.encodingSupported && c.name.equals(
 		        destCodecName))).findFirst().orElseThrow(() -> new MediaException("Can't found a valid codec for "
 		                                                                          + destCodecName));
 

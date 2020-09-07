@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import tv.hd3g.fflauncher.enums.OutputFilePresencePolicy;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
 class ConversionToolTest {

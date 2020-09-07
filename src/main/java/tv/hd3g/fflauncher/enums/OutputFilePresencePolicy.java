@@ -14,7 +14,7 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2019
  *
  */
-package tv.hd3g.fflauncher;
+package tv.hd3g.fflauncher.enums;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,13 +25,13 @@ import java.util.function.Predicate;
 public enum OutputFilePresencePolicy {
 	ALL {
 		@Override
-		Predicate<File> filter() {
+		public Predicate<File> filter() {
 			return f -> true;
 		}
 	},
 	MUST_EXISTS {
 		@Override
-		Predicate<File> filter() {
+		public Predicate<File> filter() {
 			return TEST_EXISTS;
 		}
 	},
@@ -40,7 +40,7 @@ public enum OutputFilePresencePolicy {
 	 */
 	MUST_BE_A_REGULAR_FILE {
 		@Override
-		Predicate<File> filter() {
+		public Predicate<File> filter() {
 			return TEST_EXISTS.and(TEST_REGULAR_FILE);
 		}
 	},
@@ -49,7 +49,7 @@ public enum OutputFilePresencePolicy {
 	 */
 	NOT_EMPTY {
 		@Override
-		Predicate<File> filter() {
+		public Predicate<File> filter() {
 			return TEST_EXISTS.and(TEST_REGULAR_DIR.and(TEST_NOT_EMPTY_DIR)).or(TEST_REGULAR_FILE.and(
 			        TEST_NOT_EMPTY_FILE));
 		}
@@ -69,6 +69,6 @@ public enum OutputFilePresencePolicy {
 		}
 	};
 
-	abstract Predicate<File> filter();
+	public abstract Predicate<File> filter();
 
 }

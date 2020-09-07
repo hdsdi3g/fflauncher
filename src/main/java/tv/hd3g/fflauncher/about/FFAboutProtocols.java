@@ -14,13 +14,13 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
  */
-package tv.hd3g.fflauncher;
+package tv.hd3g.fflauncher.about;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class FFProtocols {
+public class FFAboutProtocols {
 
 	private static final String INPUT2 = "Input:";
 	private static final String OUTPUT2 = "Output:";
@@ -35,7 +35,7 @@ public class FFProtocols {
 	 */
 	public final Set<String> output;
 
-	FFProtocols(final List<String> processResult) {
+	FFAboutProtocols(final List<String> processResult) {
 		input = processResult.stream()
 		        .map(String::trim)
 		        .filter(line -> (line.toLowerCase().startsWith(INPUT2.toLowerCase()) == false))

@@ -30,7 +30,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import tv.hd3g.fflauncher.FFFilter.ConnectorType;
+import tv.hd3g.fflauncher.about.FFAbout;
+import tv.hd3g.fflauncher.enums.FFLogLevel;
+import tv.hd3g.fflauncher.enums.FilterConnectorType;
 import tv.hd3g.fflauncher.filtering.Filter;
 import tv.hd3g.fflauncher.filtering.FilterChains;
 import tv.hd3g.processlauncher.ProcesslauncherBuilder;
@@ -187,9 +189,9 @@ public class FFbase extends ConversionTool {
 		getAbout(executableFinder);
 
 		final var badVideoFilters = FilterChains.merge(FilterChains.parse("-vf", this))
-		        .checkFiltersAvailability(about, ConnectorType.VIDEO);
+		        .checkFiltersAvailability(about, FilterConnectorType.VIDEO);
 		final var badAudioFilters = FilterChains.merge(FilterChains.parse("-af", this))
-		        .checkFiltersAvailability(about, ConnectorType.AUDIO);
+		        .checkFiltersAvailability(about, FilterConnectorType.AUDIO);
 		final var badGenericFilterChainsLists = FilterChains.merge(FilterChains.parse("-filter", this))
 		        .checkFiltersAvailability(about);
 		final var badGenericComplexFilterChainsLists = FilterChains.merge(FilterChains.parse("-filter_complex", this))

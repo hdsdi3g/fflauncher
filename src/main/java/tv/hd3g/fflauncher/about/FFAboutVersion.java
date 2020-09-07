@@ -14,7 +14,7 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
  */
-package tv.hd3g.fflauncher;
+package tv.hd3g.fflauncher.about;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class FFVersion {
+public class FFAboutVersion {
 
 	private static final String HEADER_CONFIGURATION = "configuration:";
 
@@ -84,7 +84,7 @@ public class FFVersion {
 	 */
 	public final String libpostprocVersion;
 
-	FFVersion(final List<String> processResult) {
+	FFAboutVersion(final List<String> processResult) {
 		headerVersion = processResult.stream().filter(l -> l.startsWith("ffmpeg version ")).findFirst().orElse(
 		        "ffmpeg version ?").substring("ffmpeg version ".length()).trim();
 

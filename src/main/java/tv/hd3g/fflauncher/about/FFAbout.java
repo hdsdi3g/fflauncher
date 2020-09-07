@@ -14,31 +14,31 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
  */
-package tv.hd3g.fflauncher;
+package tv.hd3g.fflauncher.about;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
-import static tv.hd3g.fflauncher.Channel.BC;
-import static tv.hd3g.fflauncher.Channel.BL;
-import static tv.hd3g.fflauncher.Channel.BR;
-import static tv.hd3g.fflauncher.Channel.DL;
-import static tv.hd3g.fflauncher.Channel.DR;
-import static tv.hd3g.fflauncher.Channel.FC;
-import static tv.hd3g.fflauncher.Channel.FL;
-import static tv.hd3g.fflauncher.Channel.FLC;
-import static tv.hd3g.fflauncher.Channel.FR;
-import static tv.hd3g.fflauncher.Channel.FRC;
-import static tv.hd3g.fflauncher.Channel.LFE;
-import static tv.hd3g.fflauncher.Channel.SL;
-import static tv.hd3g.fflauncher.Channel.SR;
-import static tv.hd3g.fflauncher.Channel.TBC;
-import static tv.hd3g.fflauncher.Channel.TBL;
-import static tv.hd3g.fflauncher.Channel.TBR;
-import static tv.hd3g.fflauncher.Channel.TFC;
-import static tv.hd3g.fflauncher.Channel.TFL;
-import static tv.hd3g.fflauncher.Channel.TFR;
-import static tv.hd3g.fflauncher.Channel.WL;
-import static tv.hd3g.fflauncher.Channel.WR;
+import static tv.hd3g.fflauncher.enums.Channel.BC;
+import static tv.hd3g.fflauncher.enums.Channel.BL;
+import static tv.hd3g.fflauncher.enums.Channel.BR;
+import static tv.hd3g.fflauncher.enums.Channel.DL;
+import static tv.hd3g.fflauncher.enums.Channel.DR;
+import static tv.hd3g.fflauncher.enums.Channel.FC;
+import static tv.hd3g.fflauncher.enums.Channel.FL;
+import static tv.hd3g.fflauncher.enums.Channel.FLC;
+import static tv.hd3g.fflauncher.enums.Channel.FR;
+import static tv.hd3g.fflauncher.enums.Channel.FRC;
+import static tv.hd3g.fflauncher.enums.Channel.LFE;
+import static tv.hd3g.fflauncher.enums.Channel.SL;
+import static tv.hd3g.fflauncher.enums.Channel.SR;
+import static tv.hd3g.fflauncher.enums.Channel.TBC;
+import static tv.hd3g.fflauncher.enums.Channel.TBL;
+import static tv.hd3g.fflauncher.enums.Channel.TBR;
+import static tv.hd3g.fflauncher.enums.Channel.TFC;
+import static tv.hd3g.fflauncher.enums.Channel.TFL;
+import static tv.hd3g.fflauncher.enums.Channel.TFR;
+import static tv.hd3g.fflauncher.enums.Channel.WL;
+import static tv.hd3g.fflauncher.enums.Channel.WR;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -55,6 +55,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tv.hd3g.commons.IORuntimeException;
+import tv.hd3g.fflauncher.FFbase;
+import tv.hd3g.fflauncher.enums.Channel;
 import tv.hd3g.processlauncher.CapturedStdOutErrTextRetention;
 import tv.hd3g.processlauncher.Exec;
 import tv.hd3g.processlauncher.InvalidExecution;
@@ -75,8 +77,8 @@ public class FFAbout {
 	private final ExecutableFinder executableFinder;
 	private final ScheduledExecutorService maxExecTimeScheduler;
 
-	FFAbout(final String execName, final ExecutableFinder executableFinder,
-	        final ScheduledExecutorService maxExecTimeScheduler) {
+	public FFAbout(final String execName, final ExecutableFinder executableFinder,
+	               final ScheduledExecutorService maxExecTimeScheduler) {
 		this.execName = Objects.requireNonNull(execName, "\"execName\" can't to be null");
 		this.executableFinder = Objects.requireNonNull(executableFinder, "\"executableFinder\" can't to be null");
 		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler,
@@ -98,19 +100,19 @@ public class FFAbout {
 		}
 	}
 
-	private FFVersion version;
-	private List<FFCodec> codecs;
-	private List<FFFormat> formats;
-	private List<FFDevice> devices;
+	private FFAboutVersion version;
+	private List<FFAboutCodec> codecs;
+	private List<FFAboutFormat> formats;
+	private List<FFAboutDevice> devices;
 	private Set<String> bitStreamFilters;
-	private FFProtocols protocols;
-	private List<FFFilter> filters;
-	private List<FFPixelFormat> pixelsFormats;
+	private FFAboutProtocols protocols;
+	private List<FFAboutFilter> filters;
+	private List<FFAboutPixelFormat> pixelsFormats;
 	private Set<String> hardwareAccelerationMethods;
 
-	public synchronized FFVersion getVersion() {
+	public synchronized FFAboutVersion getVersion() {
 		if (version == null) {
-			version = new FFVersion(internalRun("-loglevel quiet -version").getStdouterrLines(false).map(String::trim)
+			version = new FFAboutVersion(internalRun("-loglevel quiet -version").getStdouterrLines(false).map(String::trim)
 			        .collect(Collectors.toUnmodifiableList()));
 		}
 		return version;
@@ -119,9 +121,9 @@ public class FFAbout {
 	/**
 	 * -codecs show available codecs
 	 */
-	public synchronized List<FFCodec> getCodecs() {
+	public synchronized List<FFAboutCodec> getCodecs() {
 		if (codecs == null) {
-			codecs = FFCodec.parse(internalRun("-codecs").getStdoutLines(false).map(String::trim).collect(Collectors
+			codecs = FFAboutCodec.parse(internalRun("-codecs").getStdoutLines(false).map(String::trim).collect(Collectors
 			        .toUnmodifiableList()));
 		}
 		return codecs;
@@ -130,9 +132,9 @@ public class FFAbout {
 	/**
 	 * -formats show available formats
 	 */
-	public synchronized List<FFFormat> getFormats() {
+	public synchronized List<FFAboutFormat> getFormats() {
 		if (formats == null) {
-			formats = FFFormat.parseFormats(internalRun("-formats").getStdoutLines(false).map(String::trim).collect(
+			formats = FFAboutFormat.parseFormats(internalRun("-formats").getStdoutLines(false).map(String::trim).collect(
 			        Collectors.toUnmodifiableList()));
 		}
 		return formats;
@@ -141,9 +143,9 @@ public class FFAbout {
 	/**
 	 * -devices show available devices
 	 */
-	public synchronized List<FFDevice> getDevices() {
+	public synchronized List<FFAboutDevice> getDevices() {
 		if (devices == null) {
-			devices = FFDevice.parseDevices(internalRun("-devices").getStdoutLines(false).map(String::trim).collect(
+			devices = FFAboutDevice.parseDevices(internalRun("-devices").getStdoutLines(false).map(String::trim).collect(
 			        Collectors.toUnmodifiableList()));
 		}
 		return devices;
@@ -167,9 +169,9 @@ public class FFAbout {
 	/**
 	 * -protocols show available protocols
 	 */
-	public synchronized FFProtocols getProtocols() {
+	public synchronized FFAboutProtocols getProtocols() {
 		if (protocols == null) {
-			protocols = new FFProtocols(internalRun("-protocols").getStdouterrLines(false).map(String::trim).collect(
+			protocols = new FFAboutProtocols(internalRun("-protocols").getStdouterrLines(false).map(String::trim).collect(
 			        Collectors.toUnmodifiableList()));
 		}
 
@@ -179,9 +181,9 @@ public class FFAbout {
 	/**
 	 * -filters show available filters
 	 */
-	public synchronized List<FFFilter> getFilters() {
+	public synchronized List<FFAboutFilter> getFilters() {
 		if (filters == null) {
-			filters = FFFilter.parseFilters(internalRun("-filters").getStdoutLines(false).map(String::trim).collect(
+			filters = FFAboutFilter.parseFilters(internalRun("-filters").getStdoutLines(false).map(String::trim).collect(
 			        Collectors.toUnmodifiableList()));
 		}
 		return filters;
@@ -190,9 +192,9 @@ public class FFAbout {
 	/**
 	 * -pix_fmts show available pixel formats
 	 */
-	public synchronized List<FFPixelFormat> getPixelFormats() {
+	public synchronized List<FFAboutPixelFormat> getPixelFormats() {
 		if (pixelsFormats == null) {
-			pixelsFormats = FFPixelFormat.parsePixelsFormats(internalRun("-pix_fmts").getStdoutLines(false).map(
+			pixelsFormats = FFAboutPixelFormat.parsePixelsFormats(internalRun("-pix_fmts").getStdoutLines(false).map(
 			        String::trim).collect(Collectors.toUnmodifiableList()));
 		}
 		return pixelsFormats;

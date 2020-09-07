@@ -14,7 +14,7 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
  */
-package tv.hd3g.fflauncher;
+package tv.hd3g.fflauncher.enums;
 
 /**
  * Get by ffmpeg -layouts

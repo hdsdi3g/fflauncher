@@ -14,7 +14,7 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
  */
-package tv.hd3g.fflauncher;
+package tv.hd3g.fflauncher.about;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,16 +22,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class FFCodec {
+import tv.hd3g.fflauncher.UnknownFormatException;
+
+public class FFAboutCodec {
 
 	private static final String CAN_T_PARSE_LINE = "Can't parse line: \"";
 
-	static List<FFCodec> parse(final List<String> lines) {
+	static List<FFAboutCodec> parse(final List<String> lines) {
 		return lines.stream()
 		        .map(String::trim)
 		        .filter(line -> (line.toLowerCase().startsWith("codecs:") == false))
 		        .filter(line -> (line.startsWith("-------") == false))
-		        .filter(line -> (line.indexOf('=') == -1)).map(FFCodec::new)
+		        .filter(line -> (line.indexOf('=') == -1)).map(FFAboutCodec::new)
 		        .collect(Collectors.toUnmodifiableList());
 	}
 
@@ -82,7 +84,7 @@ public class FFCodec {
 		}
 	}
 
-	FFCodec(final String line) {
+	FFAboutCodec(final String line) {
 		final String[] lineBlocs = line.split(" ");
 
 		if (lineBlocs.length < 3) {

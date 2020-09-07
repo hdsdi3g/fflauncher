@@ -14,25 +14,25 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
  */
-package tv.hd3g.fflauncher;
+package tv.hd3g.fflauncher.about;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FFDevice extends FFFormat {
+public class FFAboutDevice extends FFAboutFormat {
 
-	static List<FFDevice> parseDevices(final List<String> lines) {
+	static List<FFAboutDevice> parseDevices(final List<String> lines) {
 		return lines.stream()
 		        .map(String::trim)
 		        .filter(line -> (line.toLowerCase().startsWith("Devices:".toLowerCase()) == false))
 		        .filter(line -> (line.toLowerCase().startsWith("D. = Demuxing supported".toLowerCase()) == false))
 		        .filter(line -> (line.toLowerCase().startsWith(".E = Muxing supported".toLowerCase()) == false))
 		        .filter(line -> (line.startsWith("--") == false))
-		        .map(FFDevice::new)
+		        .map(FFAboutDevice::new)
 		        .collect(Collectors.toUnmodifiableList());
 	}
 
-	FFDevice(final String line) {
+	FFAboutDevice(final String line) {
 		super(line);
 	}
 

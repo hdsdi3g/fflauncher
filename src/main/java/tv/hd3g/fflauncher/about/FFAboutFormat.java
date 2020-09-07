@@ -14,7 +14,7 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2018
  *
  */
-package tv.hd3g.fflauncher;
+package tv.hd3g.fflauncher.about;
 
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
@@ -26,16 +26,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class FFFormat {
+import tv.hd3g.fflauncher.UnknownFormatException;
 
-	static List<FFFormat> parseFormats(final List<String> lines) {
+public class FFAboutFormat {
+
+	static List<FFAboutFormat> parseFormats(final List<String> lines) {
 		return lines.stream()
 		        .map(String::trim)
 		        .filter(line -> (line.toLowerCase().startsWith("File formats:".toLowerCase()) == false))
 		        .filter(line -> (line.toLowerCase().startsWith("D. = Demuxing supported".toLowerCase()) == false))
 		        .filter(line -> (line.toLowerCase().startsWith(".E = Muxing supported".toLowerCase()) == false))
 		        .filter(line -> (line.startsWith("--") == false))
-		        .map(FFFormat::new)
+		        .map(FFAboutFormat::new)
 		        .collect(Collectors.toUnmodifiableList());
 	}
 
@@ -57,7 +59,7 @@ public class FFFormat {
 	 */
 	public final String longName;
 
-	FFFormat(final String line) {
+	FFAboutFormat(final String line) {
 
 		final List<String> lineBlocs = Arrays.stream(line.split(" "))
 		        .filter(lb -> lb.trim().equals("") == false)

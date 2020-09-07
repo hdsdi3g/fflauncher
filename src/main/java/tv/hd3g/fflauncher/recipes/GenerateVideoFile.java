@@ -22,8 +22,8 @@ import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 
-import tv.hd3g.fflauncher.FFAbout;
 import tv.hd3g.fflauncher.FFmpeg;
+import tv.hd3g.fflauncher.about.FFAbout;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 import tv.hd3g.processlauncher.tool.ToolRunner;
 import tv.hd3g.processlauncher.tool.ToolRunner.RunningTool;

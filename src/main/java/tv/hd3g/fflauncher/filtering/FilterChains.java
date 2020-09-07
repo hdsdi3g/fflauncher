@@ -24,10 +24,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import tv.hd3g.fflauncher.ConversionTool;
-import tv.hd3g.fflauncher.FFAbout;
-import tv.hd3g.fflauncher.FFFilter;
-import tv.hd3g.fflauncher.FFFilter.ConnectorType;
 import tv.hd3g.fflauncher.FFbase;
+import tv.hd3g.fflauncher.about.FFAbout;
+import tv.hd3g.fflauncher.about.FFAboutFilter;
+import tv.hd3g.fflauncher.enums.FilterConnectorType;
 import tv.hd3g.fflauncher.filtering.parser.FilterParser;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
@@ -187,7 +187,8 @@ public class FilterChains {
 	/**
 	 * @return all non managed filters for this instance. Empty == all ok.
 	 */
-	public List<Filter> checkFiltersAvailability(final FFAbout about, final ConnectorType expectedType) {
+	public List<Filter> checkFiltersAvailability(final FFAbout about,
+	                                             final FilterConnectorType expectedType) {
 		final var filters = about.getFilters();
 
 		final var availableFilters = filters.stream()
@@ -197,7 +198,7 @@ public class FilterChains {
 			        }
 			        return expectedType.equals(f.getSourceConnector());
 		        })
-		        .map(FFFilter::getTag)
+		        .map(FFAboutFilter::getTag)
 		        .distinct()
 		        .collect(Collectors.toUnmodifiableSet());
 

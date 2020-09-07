@@ -15,10 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import tv.hd3g.fflauncher.ConversionTool;
-import tv.hd3g.fflauncher.FFAbout;
-import tv.hd3g.fflauncher.FFFilter;
-import tv.hd3g.fflauncher.FFFilter.ConnectorType;
 import tv.hd3g.fflauncher.FFbase;
+import tv.hd3g.fflauncher.about.FFAbout;
+import tv.hd3g.fflauncher.about.FFAboutFilter;
+import tv.hd3g.fflauncher.enums.FilterConnectorType;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
 class FilterChainsTest {
@@ -243,8 +243,8 @@ class FilterChainsTest {
 	@Test
 	void testCheckFiltersAvailability() {
 		final var about = Mockito.mock(FFAbout.class);
-		final var ffFilter0 = Mockito.mock(FFFilter.class);
-		final var ffFilter1 = Mockito.mock(FFFilter.class);
+		final var ffFilter0 = Mockito.mock(FFAboutFilter.class);
+		final var ffFilter1 = Mockito.mock(FFAboutFilter.class);
 
 		when(about.getFilters()).thenReturn(List.of(ffFilter0, ffFilter1));
 		when(ffFilter0.getTag()).thenReturn("ff0");
@@ -265,17 +265,17 @@ class FilterChainsTest {
 	@Test
 	void testCheckFiltersAvailability_ConnectorType() {
 		final var about = Mockito.mock(FFAbout.class);
-		final var ffFilter0 = Mockito.mock(FFFilter.class);
-		final var ffFilter1 = Mockito.mock(FFFilter.class);
+		final var ffFilter0 = Mockito.mock(FFAboutFilter.class);
+		final var ffFilter1 = Mockito.mock(FFAboutFilter.class);
 
 		when(about.getFilters()).thenReturn(List.of(ffFilter0, ffFilter1));
 		when(ffFilter0.getTag()).thenReturn("fvideo");
-		when(ffFilter0.getSourceConnector()).thenReturn(ConnectorType.VIDEO);
+		when(ffFilter0.getSourceConnector()).thenReturn(FilterConnectorType.VIDEO);
 		when(ffFilter1.getTag()).thenReturn("faudio");
-		when(ffFilter1.getSourceConnector()).thenReturn(ConnectorType.AUDIO);
+		when(ffFilter1.getSourceConnector()).thenReturn(FilterConnectorType.AUDIO);
 
 		final var fcNone = new FilterChains("nope, fvideo, faudio");
-		var avail = fcNone.checkFiltersAvailability(about, ConnectorType.VIDEO);
+		var avail = fcNone.checkFiltersAvailability(about, FilterConnectorType.VIDEO);
 		assertNotNull(avail);
 		assertEquals(2, avail.size());
 		assertEquals("nope", avail.get(0).getFilterName());

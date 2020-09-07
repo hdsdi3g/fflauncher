@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Test;
 
 import tv.hd3g.fflauncher.FFmpeg;
-import tv.hd3g.fflauncher.OutputFilePresencePolicy;
+import tv.hd3g.fflauncher.enums.OutputFilePresencePolicy;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.tool.ToolRunner;
