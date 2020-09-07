@@ -16,30 +16,6 @@
  */
 package tv.hd3g.fflauncher.about;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableList;
-import static tv.hd3g.fflauncher.enums.Channel.BC;
-import static tv.hd3g.fflauncher.enums.Channel.BL;
-import static tv.hd3g.fflauncher.enums.Channel.BR;
-import static tv.hd3g.fflauncher.enums.Channel.DL;
-import static tv.hd3g.fflauncher.enums.Channel.DR;
-import static tv.hd3g.fflauncher.enums.Channel.FC;
-import static tv.hd3g.fflauncher.enums.Channel.FL;
-import static tv.hd3g.fflauncher.enums.Channel.FLC;
-import static tv.hd3g.fflauncher.enums.Channel.FR;
-import static tv.hd3g.fflauncher.enums.Channel.FRC;
-import static tv.hd3g.fflauncher.enums.Channel.LFE;
-import static tv.hd3g.fflauncher.enums.Channel.SL;
-import static tv.hd3g.fflauncher.enums.Channel.SR;
-import static tv.hd3g.fflauncher.enums.Channel.TBC;
-import static tv.hd3g.fflauncher.enums.Channel.TBL;
-import static tv.hd3g.fflauncher.enums.Channel.TBR;
-import static tv.hd3g.fflauncher.enums.Channel.TFC;
-import static tv.hd3g.fflauncher.enums.Channel.TFL;
-import static tv.hd3g.fflauncher.enums.Channel.TFR;
-import static tv.hd3g.fflauncher.enums.Channel.WL;
-import static tv.hd3g.fflauncher.enums.Channel.WR;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 
 import tv.hd3g.commons.IORuntimeException;
 import tv.hd3g.fflauncher.FFbase;
-import tv.hd3g.fflauncher.enums.Channel;
 import tv.hd3g.processlauncher.CapturedStdOutErrTextRetention;
 import tv.hd3g.processlauncher.Exec;
 import tv.hd3g.processlauncher.InvalidExecution;
@@ -112,7 +87,8 @@ public class FFAbout {
 
 	public synchronized FFAboutVersion getVersion() {
 		if (version == null) {
-			version = new FFAboutVersion(internalRun("-loglevel quiet -version").getStdouterrLines(false).map(String::trim)
+			version = new FFAboutVersion(internalRun("-loglevel quiet -version").getStdouterrLines(false).map(
+			        String::trim)
 			        .collect(Collectors.toUnmodifiableList()));
 		}
 		return version;
@@ -123,8 +99,9 @@ public class FFAbout {
 	 */
 	public synchronized List<FFAboutCodec> getCodecs() {
 		if (codecs == null) {
-			codecs = FFAboutCodec.parse(internalRun("-codecs").getStdoutLines(false).map(String::trim).collect(Collectors
-			        .toUnmodifiableList()));
+			codecs = FFAboutCodec.parse(internalRun("-codecs").getStdoutLines(false).map(String::trim).collect(
+			        Collectors
+			                .toUnmodifiableList()));
 		}
 		return codecs;
 	}
@@ -134,8 +111,9 @@ public class FFAbout {
 	 */
 	public synchronized List<FFAboutFormat> getFormats() {
 		if (formats == null) {
-			formats = FFAboutFormat.parseFormats(internalRun("-formats").getStdoutLines(false).map(String::trim).collect(
-			        Collectors.toUnmodifiableList()));
+			formats = FFAboutFormat.parseFormats(internalRun("-formats").getStdoutLines(false).map(String::trim)
+			        .collect(
+			                Collectors.toUnmodifiableList()));
 		}
 		return formats;
 	}
@@ -145,8 +123,9 @@ public class FFAbout {
 	 */
 	public synchronized List<FFAboutDevice> getDevices() {
 		if (devices == null) {
-			devices = FFAboutDevice.parseDevices(internalRun("-devices").getStdoutLines(false).map(String::trim).collect(
-			        Collectors.toUnmodifiableList()));
+			devices = FFAboutDevice.parseDevices(internalRun("-devices").getStdoutLines(false).map(String::trim)
+			        .collect(
+			                Collectors.toUnmodifiableList()));
 		}
 		return devices;
 	}
@@ -171,8 +150,9 @@ public class FFAbout {
 	 */
 	public synchronized FFAboutProtocols getProtocols() {
 		if (protocols == null) {
-			protocols = new FFAboutProtocols(internalRun("-protocols").getStdouterrLines(false).map(String::trim).collect(
-			        Collectors.toUnmodifiableList()));
+			protocols = new FFAboutProtocols(internalRun("-protocols").getStdouterrLines(false).map(String::trim)
+			        .collect(
+			                Collectors.toUnmodifiableList()));
 		}
 
 		return protocols;
@@ -183,8 +163,9 @@ public class FFAbout {
 	 */
 	public synchronized List<FFAboutFilter> getFilters() {
 		if (filters == null) {
-			filters = FFAboutFilter.parseFilters(internalRun("-filters").getStdoutLines(false).map(String::trim).collect(
-			        Collectors.toUnmodifiableList()));
+			filters = FFAboutFilter.parseFilters(internalRun("-filters").getStdoutLines(false).map(String::trim)
+			        .collect(
+			                Collectors.toUnmodifiableList()));
 		}
 		return filters;
 	}
@@ -221,11 +202,6 @@ public class FFAbout {
 	 */
 	public static final Map<String, Integer> sample_formats;
 
-	/**
-	 * Get by ffmpeg -layouts
-	 */
-	public static final Map<String, List<Channel>> channel_layouts;
-
 	static {
 		final var sf = new HashMap<String, Integer>();
 		sf.put("u8", 8);
@@ -241,38 +217,6 @@ public class FFAbout {
 		sf.put("s64", 64);
 		sf.put("s64p", 64);
 		sample_formats = Collections.unmodifiableMap(sf);
-
-		final var cl = new HashMap<String, List<Channel>>();
-		cl.put("mono           ".trim(), unmodifiableList(asList(FC)));
-		cl.put("stereo         ".trim(), unmodifiableList(asList(FL, FR)));
-		cl.put("2.1            ".trim(), unmodifiableList(asList(FL, FR, LFE)));
-		cl.put("3.0            ".trim(), unmodifiableList(asList(FL, FR, FC)));
-		cl.put("3.0(back)      ".trim(), unmodifiableList(asList(FL, FR, BC)));
-		cl.put("4.0            ".trim(), unmodifiableList(asList(FL, FR, FC, BC)));
-		cl.put("quad           ".trim(), unmodifiableList(asList(FL, FR, BL, BR)));
-		cl.put("quad(side)     ".trim(), unmodifiableList(asList(FL, FR, SL, SR)));
-		cl.put("3.1            ".trim(), unmodifiableList(asList(FL, FR, FC, LFE)));
-		cl.put("5.0            ".trim(), unmodifiableList(asList(FL, FR, FC, BL, BR)));
-		cl.put("5.0(side)      ".trim(), unmodifiableList(asList(FL, FR, FC, SL, SR)));
-		cl.put("4.1            ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, BC)));
-		cl.put("5.1            ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, BL, BR)));
-		cl.put("5.1(side)      ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, SL, SR)));
-		cl.put("6.0            ".trim(), unmodifiableList(asList(FL, FR, FC, BC, SL, SR)));
-		cl.put("6.0(front)     ".trim(), unmodifiableList(asList(FL, FR, FLC, FRC, SL, SR)));
-		cl.put("hexagonal      ".trim(), unmodifiableList(asList(FL, FR, FC, BL, BR, BC)));
-		cl.put("6.1            ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, BC, SL, SR)));
-		cl.put("6.1(back)      ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, BL, BR, BC)));
-		cl.put("6.1(front)     ".trim(), unmodifiableList(asList(FL, FR, LFE, FLC, FRC, SL, SR)));
-		cl.put("7.0            ".trim(), unmodifiableList(asList(FL, FR, FC, BL, BR, SL, SR)));
-		cl.put("7.0(front)     ".trim(), unmodifiableList(asList(FL, FR, FC, FLC, FRC, SL, SR)));
-		cl.put("7.1            ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, BL, BR, SL, SR)));
-		cl.put("7.1(wide)      ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, BL, BR, FLC, FRC)));
-		cl.put("7.1(wide-side) ".trim(), unmodifiableList(asList(FL, FR, FC, LFE, FLC, FRC, SL, SR)));
-		cl.put("octagonal      ".trim(), unmodifiableList(asList(FL, FR, FC, BL, BR, BC, SL, SR)));
-		cl.put("hexadecagonal  ".trim(),
-		        unmodifiableList(asList(FL, FR, FC, BL, BR, BC, SL, SR, TFL, TFC, TFR, TBL, TBC, TBR, WL, WR)));
-		cl.put("downmix        ".trim(), unmodifiableList(asList(DL, DR)));
-		channel_layouts = Collections.unmodifiableMap(cl);
 	}
 
 	public boolean isCoderIsAvaliable(final String codec_name) {

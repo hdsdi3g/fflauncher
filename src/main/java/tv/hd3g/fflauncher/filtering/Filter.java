@@ -55,6 +55,18 @@ public class Filter implements FilterParserDefinition {
 		destBlocks = new ArrayList<>();
 	}
 
+	public Filter(final String filterName, final FilterArgument... arguments) {
+		this.filterName = filterName;
+
+		for (int pos = 0; pos < arguments.length; pos++) {
+			Objects.requireNonNull(arguments[pos], "arguments can't contain null elements: #" + pos);
+		}
+
+		this.arguments = new ArrayList<>(List.of(arguments));
+		sourceBlocks = new ArrayList<>();
+		destBlocks = new ArrayList<>();
+	}
+
 	@Override
 	public String toString() {
 		final var ioBlocksJoiner = Collectors.joining("][");

@@ -119,7 +119,7 @@ public class FilterChains {
 	}
 
 	/**
-	 * @param parameterName like -vf, -af, ... Use toString.
+	 * @param parameterName like -filter_complex, -vf, -af, ... Use toString.
 	 */
 	public void pushFilterChainTo(final String parameterName, final FFbase ffbase) {
 		ffbase.getInternalParameters().addParameters(parameterName, toString());

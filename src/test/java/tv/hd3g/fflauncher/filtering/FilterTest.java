@@ -34,6 +34,12 @@ class FilterTest {
 	}
 
 	@Test
+	void testFilter_varargs() {
+		f = new Filter("foobar", new FilterArgument("a", "b"), new FilterArgument("c"));
+		assertEquals("foobar=a=b:c", f.toString());
+	}
+
+	@Test
 	void testFilter_in_out() {
 		f = new Filter("[i]overlay=w:h[o]");
 

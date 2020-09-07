@@ -21,179 +21,68 @@ package tv.hd3g.fflauncher.enums;
  */
 public enum Channel {
 	/** front left */
-	FL {
-		@Override
-		public String toString() {
-			return "front left";
-		}
-	},
+	FL("front left"),
 	/** front right */
-	FR {
-		@Override
-		public String toString() {
-			return "front right";
-		}
-	},
+	FR("front right"),
 	/** front center */
-	FC {
-		@Override
-		public String toString() {
-			return "front center";
-		}
-	},
+	FC("front center"),
 	/** low frequency */
-	LFE {
-		@Override
-		public String toString() {
-			return "low frequency";
-		}
-	},
+	LFE("low frequency"),
 	/** back left */
-	BL {
-		@Override
-		public String toString() {
-			return "back left";
-		}
-	},
+	BL("back left"),
 	/** back right */
-	BR {
-		@Override
-		public String toString() {
-			return "back right";
-		}
-	},
+	BR("back right"),
 	/** front left-of-center */
-	FLC {
-		@Override
-		public String toString() {
-			return "front left-of-center";
-		}
-	},
+	FLC("front left-of-center"),
 	/** front right-of-center */
-	FRC {
-		@Override
-		public String toString() {
-			return "front right-of-center";
-		}
-	},
+	FRC("front right-of-center"),
 	/** back center */
-	BC {
-		@Override
-		public String toString() {
-			return "back center";
-		}
-	},
+	BC("back center"),
 	/** side left */
-	SL {
-		@Override
-		public String toString() {
-			return "side left";
-		}
-	},
+	SL("side left"),
 	/** side right */
-	SR {
-		@Override
-		public String toString() {
-			return "side right";
-		}
-	},
+	SR("side right"),
 	/** top center */
-	TC {
-		@Override
-		public String toString() {
-			return "top center";
-		}
-	},
+	TC("top center"),
 	/** top front left */
-	TFL {
-		@Override
-		public String toString() {
-			return "top front left";
-		}
-	},
+	TFL("top front left"),
 	/** top front center */
-	TFC {
-		@Override
-		public String toString() {
-			return "top front center";
-		}
-	},
+	TFC("top front center"),
 	/** top front right */
-	TFR {
-		@Override
-		public String toString() {
-			return "top front right";
-		}
-	},
+	TFR("top front right"),
 	/** top back left */
-	TBL {
-		@Override
-		public String toString() {
-			return "top back left";
-		}
-	},
+	TBL("top back left"),
 	/** top back center */
-	TBC {
-		@Override
-		public String toString() {
-			return "top back center";
-		}
-	},
+	TBC("top back center"),
 	/** top back right */
-	TBR {
-		@Override
-		public String toString() {
-			return "top back right";
-		}
-	},
+	TBR("top back right"),
 	/** downmix left */
-	DL {
-		@Override
-		public String toString() {
-			return "downmix left";
-		}
-	},
+	DL("downmix left"),
 	/** downmix right */
-	DR {
-		@Override
-		public String toString() {
-			return "downmix right";
-		}
-	},
+	DR("downmix right"),
 	/** wide left */
-	WL {
-		@Override
-		public String toString() {
-			return "wide left";
-		}
-	},
+	WL("wide left"),
 	/** wide right */
-	WR {
-		@Override
-		public String toString() {
-			return "wide right";
-		}
-	},
+	WR("wide right"),
 	/** surround direct left */
-	SDL {
-		@Override
-		public String toString() {
-			return "surround direct left";
-		}
-	},
+	SDL("surround direct left"),
 	/** surround direct right */
-	SDR {
-		@Override
-		public String toString() {
-			return "surround direct right";
-		}
-	},
+	SDR("surround direct right"),
 	/** low frequency 2 */
-	LFE2 {
-		@Override
-		public String toString() {
-			return "low frequency 2";
-		}
-	};
+	LFE2("low frequency 2");
 
+	private final String longName;
+
+	private Channel(final String longName) {
+		this.longName = longName;
+	}
+
+	public String getLongName() {
+		return longName;
+	}
+
+	@Override
+	public String toString() {
+		return name();
+	}
 }
