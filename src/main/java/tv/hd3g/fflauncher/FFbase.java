@@ -115,7 +115,7 @@ public class FFbase extends ConversionTool {
 	/**
 	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
-	 * Don't forget to call fixIOParametredVars() for add the new created var in current Parameters.
+	 * Add now in current Parameters the new add var only if not exists (you should call fixIOParametredVars, if you have add manually vars in Parametres)
 	 */
 	public FFbase addSimpleInputSource(final String sourceName, final String... sourceOptions) {
 		requireNonNull(sourceName, "\"sourceName\" can't to be null");
@@ -131,7 +131,7 @@ public class FFbase extends ConversionTool {
 	/**
 	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
-	 * Don't forget to call fixIOParametredVars() for add the new created var in current Parameters.
+	 * Add now in current Parameters the new add var only if not exists (you should call fixIOParametredVars, if you have add manually vars in Parametres)
 	 */
 	public FFbase addSimpleInputSource(final File file, final String... sourceOptions) {
 		requireNonNull(file, "\"file\" can't to be null");
@@ -146,13 +146,14 @@ public class FFbase extends ConversionTool {
 	/**
 	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
-	 * Don't forget to call fixIOParametredVars() for add the new created var in current Parameters.
+	 * Add now in current Parameters the new add var only if not exists (you should call fixIOParametredVars, if you have add manually vars in Parametres)
 	 */
 	public FFbase addSimpleInputSource(final String sourceName, final List<String> sourceOptions) {
 		requireNonNull(sourceName, "\"sourceName\" can't to be null");
 		requireNonNull(sourceOptions, "\"sourceOptions\" can't to be null");
 
 		final var varname = parameters.tagVar("IN_AUTOMATIC_" + inputSources.size());
+		addVarInParametersIfNotExists(varname);
 		addInputSource(sourceName, varname,
 		        Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(toUnmodifiableList()));
 		return this;
@@ -161,16 +162,45 @@ public class FFbase extends ConversionTool {
 	/**
 	 * Define cmd var name like &lt;%IN_AUTOMATIC_n%&gt; with "n" the # of setted sources.
 	 * Add -i parameter
-	 * Don't forget to call fixIOParametredVars() for add the new created var in current Parameters.
+	 * Add now in current Parameters the new add var only if not exists (you should call fixIOParametredVars, if you have add manually vars in Parametres)
 	 */
 	public FFbase addSimpleInputSource(final File file, final List<String> sourceOptions) {
 		requireNonNull(file, "\"file\" can't to be null");
 		requireNonNull(sourceOptions, "\"sourceOptions\" can't to be null");
 
 		final var varname = parameters.tagVar("IN_AUTOMATIC_" + inputSources.size());
+		addVarInParametersIfNotExists(varname);
 		addInputSource(file, varname,
 		        Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(toUnmodifiableList()));
 		return this;
+	}
+
+	private void addVarInParametersIfNotExists(final String varname) {
+		if (parameters.getParameters().contains(varname) == false) {
+			parameters.addParameters(varname);
+		}
+	}
+
+	/**
+	 * Define cmd var name like &lt;%OUT_AUTOMATIC_n%&gt; with "n" the # of setted destination.
+	 * Add now in current Parameters the new add var only if not exists (you should call fixIOParametredVars, if you have add manually vars in Parametres)
+	 */
+	@Override
+	public ConversionTool addSimpleOutputDestination(final String destinationName) {
+		final var varname = parameters.tagVar("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
+		addVarInParametersIfNotExists(varname);
+		return super.addSimpleOutputDestination(destinationName);
+	}
+
+	/**
+	 * Define cmd var name like &lt;%OUT_AUTOMATIC_n%&gt; with "n" the # of setted destination.
+	 * Add now in current Parameters the new add var only if not exists (you should call fixIOParametredVars, if you have add manually vars in Parametres)
+	 */
+	@Override
+	public ConversionTool addSimpleOutputDestination(final File destinationFile) {
+		final var varname = parameters.tagVar("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
+		addVarInParametersIfNotExists(varname);
+		return super.addSimpleOutputDestination(destinationFile);
 	}
 
 	public synchronized FFAbout getAbout(final ExecutableFinder executableFinder) {
