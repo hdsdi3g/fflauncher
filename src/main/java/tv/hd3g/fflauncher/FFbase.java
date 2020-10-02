@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -67,7 +66,7 @@ public class FFbase extends ConversionTool {
 	 */
 	public FFbase setLogLevel(final FFLogLevel level, final boolean repeat, final boolean display_level) {
 		parameters.ifHasNotParameter(() -> {
-			final StringBuilder sb = new StringBuilder();
+			final var sb = new StringBuilder();
 			if (repeat) {
 				sb.append("repeat+");
 			}
@@ -205,7 +204,7 @@ public class FFbase extends ConversionTool {
 
 	public synchronized FFAbout getAbout(final ExecutableFinder executableFinder) {
 		if (about == null) {
-			final ScheduledExecutorService maxExecTimeScheduler = getMaxExecTimeScheduler();
+			final var maxExecTimeScheduler = getMaxExecTimeScheduler();
 			if (maxExecTimeScheduler == null) {
 				about = new FFAbout(execName, executableFinder, Executors.newSingleThreadScheduledExecutor());
 			} else {
@@ -236,7 +235,7 @@ public class FFbase extends ConversionTool {
 	}
 
 	private static final Predicate<String> filterOutErrorLines = rawL -> {
-		final String l = rawL.trim();
+		final var l = rawL.trim();
 		if (l.startsWith("[")) {
 			return true;
 		} else if (l.startsWith("ffmpeg version")

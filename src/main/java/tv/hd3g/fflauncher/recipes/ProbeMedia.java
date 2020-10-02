@@ -53,8 +53,8 @@ public class ProbeMedia extends Recipe {
 	}
 
 	private FFprobe internal() {
-		final Parameters parameters = new Parameters();
-		final FFprobe ffprobe = new FFprobe(execName, parameters);
+		final var parameters = new Parameters();
+		final var ffprobe = new FFprobe(execName, parameters);
 
 		ffprobe.setPrintFormat(FFPrintFormat.XML).setShowStreams().setShowFormat().setShowChapters().isHidebanner();
 		ffprobe.setMaxExecTimeScheduler(maxExecTimeScheduler);
@@ -90,7 +90,7 @@ public class ProbeMedia extends Recipe {
 	 * @see FFprobe to get cool FfprobeType parsers
 	 */
 	public FFprobeJAXB doAnalysing(final String source) throws IOException {
-		final FFprobe ffprobe = internal();
+		final var ffprobe = internal();
 		ffprobe.addSimpleInputSource(source);
 		ffprobe.fixIOParametredVars(APPEND_PARAM_AT_END, APPEND_PARAM_AT_END);
 		return execute(ffprobe, source);
@@ -103,7 +103,7 @@ public class ProbeMedia extends Recipe {
 	 * @see FFprobe to get cool FfprobeType parsers
 	 */
 	public FFprobeJAXB doAnalysing(final File source) throws IOException {
-		final FFprobe ffprobe = internal();
+		final var ffprobe = internal();
 		ffprobe.addSimpleInputSource(source);
 		ffprobe.fixIOParametredVars(APPEND_PARAM_AT_END, APPEND_PARAM_AT_END);
 		return execute(ffprobe, source.getPath());

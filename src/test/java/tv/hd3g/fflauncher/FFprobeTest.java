@@ -29,10 +29,10 @@ class FFprobeTest {
 
 	@Test
 	void test() {
-		final Parameters parameters = new Parameters();
-		final FFprobe p = new FFprobe("ffprobe", parameters);
+		final var parameters = new Parameters();
+		final var p = new FFprobe("ffprobe", parameters);
 
-		final int skip_base_cmdline = parameters.toString().length();
+		final var skip_base_cmdline = parameters.toString().length();
 
 		assertFalse(p.isPretty());
 		p.setPretty();

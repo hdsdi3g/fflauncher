@@ -28,13 +28,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.ffmpeg.ffprobe.StreamType;
 import org.junit.jupiter.api.Test;
 
 import tv.hd3g.fflauncher.FFmpeg.FFHardwareCodec;
 import tv.hd3g.fflauncher.FFmpeg.Preset;
 import tv.hd3g.fflauncher.FFmpeg.Tune;
-import tv.hd3g.fflauncher.about.FFAbout;
 import tv.hd3g.fflauncher.enums.FFUnit;
 import tv.hd3g.fflauncher.recipes.ProbeMedia;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
@@ -59,7 +57,7 @@ class FFmpegTest {
 
 	@Test
 	void testSimpleOutputDestination() {
-		final FFmpeg ffmpeg = create();
+		final var ffmpeg = create();
 		ffmpeg.addSimpleOutputDestination("dest", "container");
 		ffmpeg.fixIOParametredVars(PREPEND_PARAM_AT_START, APPEND_PARAM_AT_END);
 
@@ -68,8 +66,8 @@ class FFmpegTest {
 
 	@Test
 	void testParameters() throws FileNotFoundException {
-		final FFmpeg ffmpeg = create();
-		final int header = ffmpeg.getInternalParameters().toString().length();
+		final var ffmpeg = create();
+		final var header = ffmpeg.getInternalParameters().toString().length();
 
 		ffmpeg.addPreset(Preset.PLACEBO).addTune(Tune.SSIM).addBitrate(123, FFUnit.GIGA, 1);
 		ffmpeg.addBitrateControl(10, 20, 30, FFUnit.MEGA).addCRF(40).addVideoCodecName("NoPe", 2);
@@ -87,15 +85,15 @@ class FFmpegTest {
 			return;
 		}
 
-		FFmpeg ffmpeg = create();
+		var ffmpeg = create();
 		ffmpeg.setOverwriteOutputFiles();
 		ffmpeg.setOnErrorDeleteOutFiles(true);
 
-		final FFAbout about = ffmpeg.getAbout(new ExecutableFinder());
+		final var about = ffmpeg.getAbout(new ExecutableFinder());
 
 		// this is buggy... assertTrue("NV Toolkit is not avaliable: " + about.getAvailableHWAccelerationMethods(), about.isNVToolkitIsAvaliable());
 
-		final Parameters cmd = ffmpeg.getInternalParameters();
+		final var cmd = ffmpeg.getInternalParameters();
 		cmd.addBulkParameters("-f lavfi -i smptehdbars=duration=" + 5 + ":size=1280x720:rate=25");
 
 		ffmpeg.addHardwareVideoEncoding("h264", -1, FFHardwareCodec.NV, about).addCRF(0);
@@ -103,7 +101,7 @@ class FFmpegTest {
 		        .findFirst()
 		        .orElseThrow(() -> new IllegalArgumentException("No codecs was added: " + cmd)).contains("nvenc"));
 
-		final File test_file = File.createTempFile("smptebars", ".mkv");
+		final var test_file = File.createTempFile("smptebars", ".mkv");
 		ffmpeg.addSimpleOutputDestination(test_file.getPath());
 
 		System.out.println("Generate test file to \"" + test_file.getPath() + "\"");
@@ -120,7 +118,7 @@ class FFmpegTest {
 		        FFHardwareCodec.NV, about);
 		ffmpeg.addHardwareVideoEncoding("h264", -1, FFHardwareCodec.NV, about).addCRF(40);
 
-		final File test_file2 = File.createTempFile("smptebars", ".mkv");
+		final var test_file2 = File.createTempFile("smptebars", ".mkv");
 		ffmpeg.addSimpleOutputDestination(test_file2.getPath());
 
 		System.out.println("Hardware decoding to \"" + test_file.getPath() + "\"");
@@ -137,15 +135,15 @@ class FFmpegTest {
 			return;
 		}
 
-		final FFmpeg ffmpeg = create();
+		final var ffmpeg = create();
 		ffmpeg.setOverwriteOutputFiles();
 		ffmpeg.setOnErrorDeleteOutFiles(true);
 
-		final Parameters cmd = ffmpeg.getInternalParameters();
+		final var cmd = ffmpeg.getInternalParameters();
 		cmd.addBulkParameters("-f lavfi -i smptehdbars=duration=" + 5 + ":size=1280x720:rate=25");
 		ffmpeg.addVideoCodecName("ffv1", -1);
 
-		final File test_file = File.createTempFile("smptebars", ".mkv");
+		final var test_file = File.createTempFile("smptebars", ".mkv");
 		ffmpeg.addSimpleOutputDestination(test_file.getPath());
 
 		System.out.println("Generate test file to \"" + test_file.getPath() + "\"");
@@ -153,7 +151,7 @@ class FFmpegTest {
 
 		assertTrue(test_file.exists());
 
-		final StreamType s = FFmpeg.getFirstVideoStream(probeMedia.doAnalysing(test_file.getPath())).get();
+		final var s = FFmpeg.getFirstVideoStream(probeMedia.doAnalysing(test_file.getPath())).get();
 		assertEquals("ffv1", s.getCodecName());
 	}
 

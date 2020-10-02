@@ -125,7 +125,7 @@ public class FFAboutVersion {
 
 	private static String extractLibavVersion(final String key, final List<String> lines) {
 
-		final String line = lines.stream().filter(l -> l.startsWith(key)).findFirst().orElse(key + "      ?.?.?");
+		final var line = lines.stream().filter(l -> l.startsWith(key)).findFirst().orElse(key + "      ?.?.?");
 
 		/**
 		 * libavutil 56. 14.100 / 56. 14.100

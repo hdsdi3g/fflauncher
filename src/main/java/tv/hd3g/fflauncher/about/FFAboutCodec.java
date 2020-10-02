@@ -85,7 +85,7 @@ public class FFAboutCodec {
 	}
 
 	FFAboutCodec(final String line) {
-		final String[] lineBlocs = line.split(" ");
+		final var lineBlocs = line.split(" ");
 
 		if (lineBlocs.length < 3) {
 			throw new UnknownFormatException(CAN_T_PARSE_LINE + line + "\"");
@@ -111,18 +111,18 @@ public class FFAboutCodec {
 		/**
 		 * Like "Dirac (decoders: dirac libschroedinger ) (encoders: vc2 libschroedinger )"
 		 */
-		final String raw_long_name = Arrays.stream(lineBlocs)
+		final var raw_long_name = Arrays.stream(lineBlocs)
 		        .filter(lb -> lb.trim().equals("") == false)
 		        .skip(2)
 		        .collect(Collectors.joining(" "));
 
 		final var parDecoders = "(decoders:";
-		final int decoders_tag_pos = raw_long_name.indexOf(parDecoders);
-		final int encoders_tag_pos = raw_long_name.indexOf("(encoders:");
+		final var decoders_tag_pos = raw_long_name.indexOf(parDecoders);
+		final var encoders_tag_pos = raw_long_name.indexOf("(encoders:");
 
 		if (decoders_tag_pos > -1 || encoders_tag_pos > -1) {
 			if (decoders_tag_pos > -1) {
-				final int decoders_tag_end_pos = raw_long_name.indexOf(')', decoders_tag_pos);
+				final var decoders_tag_end_pos = raw_long_name.indexOf(')', decoders_tag_pos);
 				negativeToOutOfBoundException(decoders_tag_end_pos, "Can't found \")\" in \"" + raw_long_name + "\"");
 				decoders = Collections.unmodifiableSet(Arrays.stream(raw_long_name.substring(decoders_tag_pos
 				                                                                             + parDecoders.length(),
@@ -132,7 +132,7 @@ public class FFAboutCodec {
 			}
 
 			if (encoders_tag_pos > -1) {
-				final int encoders_tag_end_pos = raw_long_name.indexOf(')', encoders_tag_pos);
+				final var encoders_tag_end_pos = raw_long_name.indexOf(')', encoders_tag_pos);
 				negativeToOutOfBoundException(encoders_tag_end_pos, "Can't found \")\" in \"" + raw_long_name + "\"");
 				encoders = Collections.unmodifiableSet(Arrays.stream(raw_long_name.substring(encoders_tag_pos
 				                                                                             + parDecoders.length(),
@@ -163,7 +163,7 @@ public class FFAboutCodec {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder();
+		final var sb = new StringBuilder();
 
 		sb.append(longName);
 		sb.append(" [");

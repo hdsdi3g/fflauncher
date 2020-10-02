@@ -27,7 +27,7 @@ class TestRecipe {
 
 	@Test
 	void test() {
-		final ToolRunner run = new ToolRunner(new ExecutableFinder());
+		final var run = new ToolRunner(new ExecutableFinder());
 
 		final Recipe r = new Recipe(run, "java") {};
 		assertEquals("java", r.getExecName());

@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.ffmpeg.ffprobe.StreamType;
 
 import tv.hd3g.fflauncher.about.FFAbout;
-import tv.hd3g.fflauncher.about.FFAboutCodec;
 import tv.hd3g.fflauncher.enums.FFUnit;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 import tv.hd3g.processlauncher.cmdline.Parameters;
@@ -53,7 +52,7 @@ public class FFmpeg extends FFbase {
 		requireNonNull(destinationName, "\"destinationName\" can't to be null");
 		requireNonNull(destinationContainer, "\"destinationContainer\" can't to be null");
 
-		final String varname = getInternalParameters()
+		final var varname = getInternalParameters()
 		        .tagVar("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
 		addOutputDestination(destinationName, varname, "-f", destinationContainer);
 		return this;
@@ -68,7 +67,7 @@ public class FFmpeg extends FFbase {
 		requireNonNull(destinationFile, "\"destinationFile\" can't to be null");
 		requireNonNull(destinationContainer, "\"destinationContainer\" can't to be null");
 
-		final String varname = getInternalParameters()
+		final var varname = getInternalParameters()
 		        .tagVar("OUT_AUTOMATIC_" + outputExpectedDestinations.size());
 		addOutputDestination(destinationFile, varname, "-f", destinationContainer);
 		return this;
@@ -93,7 +92,7 @@ public class FFmpeg extends FFbase {
 	 *        C=3/10)), super (Supersampling), lanczos ...
 	 */
 	public FFmpeg addHardwareNVScalerFilter(final Point newSize, final String pixelFormat, final String interpAlgo) {
-		final StringBuilder scale = new StringBuilder();
+		final var scale = new StringBuilder();
 
 		scale.append("scale_npp=");
 		scale.append("w=" + newSize.x + ":");
@@ -122,7 +121,7 @@ public class FFmpeg extends FFbase {
 			throw new IllegalArgumentException("\"configuration\" can't to be empty");
 		}
 
-		final StringBuilder nvresize = new StringBuilder();
+		final var nvresize = new StringBuilder();
 		nvresize.append("nvresize=outputs=" + configuration.size() + ":");
 		nvresize.append("size=" + configuration.keySet().stream().collect(Collectors.joining("|")) + ":");
 
@@ -140,7 +139,7 @@ public class FFmpeg extends FFbase {
 	}
 
 	public static Optional<StreamType> getFirstVideoStream(final FFprobeJAXB analysingResult) {
-		final Optional<StreamType> oVideoStream = analysingResult.getVideoStreams().findFirst();
+		final var oVideoStream = analysingResult.getVideoStreams().findFirst();
 
 		if (oVideoStream.isPresent() && oVideoStream.get().getDisposition().getAttachedPic() == 0) {
 			return oVideoStream;
@@ -181,29 +180,29 @@ public class FFmpeg extends FFbase {
 	                                       final FFprobeJAXB analysingResult,
 	                                       final FFHardwareCodec hardwareCodec,
 	                                       final FFAbout about) throws MediaException {
-		final Optional<StreamType> oVideoStream = getFirstVideoStream(analysingResult);
+		final var oVideoStream = getFirstVideoStream(analysingResult);
 
 		if (oVideoStream.isPresent() == false) {
 			throw new MediaException("Can't found \"valid\" video stream on \"" + source + "\"");
 		}
 
-		final StreamType videoStream = oVideoStream.get();
+		final var videoStream = oVideoStream.get();
 
-		final FFAboutCodec codec = about.getCodecs().stream()
+		final var codec = about.getCodecs().stream()
 		        .filter(c -> (c.decodingSupported && c.name.equals(videoStream.getCodecName())))
 		        .findFirst()
 		        .orElseThrow(() -> new MediaException("Can't found a valid decoder codec for " + videoStream
 		                .getCodecName() + " in \"" + source + "\""));
 
 		if (hardwareCodec == FFHardwareCodec.NV && about.isNVToolkitIsAvaliable()) {
-			final Optional<String> oSourceCuvidCodecEngine = codec.decoders.stream().filter(decoder -> decoder
+			final var oSourceCuvidCodecEngine = codec.decoders.stream().filter(decoder -> decoder
 			        .endsWith("_cuvid")).findFirst();
 
 			if (oSourceCuvidCodecEngine.isPresent()) {
 				/**
 				 * [-hwaccel_device 0] -hwaccel cuvid -c:v source_cuvid_codec [-vsync 0] -i source
 				 */
-				final ArrayList<String> sourceOptions = new ArrayList<>();
+				final var sourceOptions = new ArrayList<String>();
 				if (deviceIdToUse > -1) {
 					sourceOptions.add("-hwaccel_device");
 					sourceOptions.add(Integer.toString(deviceIdToUse));
@@ -241,7 +240,7 @@ public class FFmpeg extends FFbase {
 			throw new MediaException("\"copy\" codec can't be handled by hardware !");
 		}
 
-		final FFAboutCodec codec = about.getCodecs().stream().filter(c -> (c.encodingSupported && c.name.equals(
+		final var codec = about.getCodecs().stream().filter(c -> (c.encodingSupported && c.name.equals(
 		        destCodecName))).findFirst().orElseThrow(() -> new MediaException("Can't found a valid codec for "
 		                                                                          + destCodecName));
 

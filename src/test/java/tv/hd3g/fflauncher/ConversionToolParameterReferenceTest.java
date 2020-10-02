@@ -51,9 +51,9 @@ class ConversionToolParameterReferenceTest {
 
 	@Test
 	void testNullConstructor() {
-		final ConversionToolParameterReference ctprS = new ConversionToolParameterReference("reference", "<%var%>",
+		final var ctprS = new ConversionToolParameterReference("reference", "<%var%>",
 		        null);
-		final ConversionToolParameterReference ctprF = new ConversionToolParameterReference(tempFile, "<%var%>", null);
+		final var ctprF = new ConversionToolParameterReference(tempFile, "<%var%>", null);
 
 		assertEquals(Collections.emptyList(), ctprS.getParametersListBeforeRef());
 		assertEquals(Collections.emptyList(), ctprF.getParametersListBeforeRef());

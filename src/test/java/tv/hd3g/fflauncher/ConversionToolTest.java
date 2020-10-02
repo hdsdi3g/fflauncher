@@ -42,7 +42,7 @@ class ConversionToolTest {
 
 	@Test
 	void test() throws IOException {
-		final ConversionTool ct = new ConversionTool("java");
+		final var ct = new ConversionTool("java");
 		ct.getInternalParameters().addParameters("-firstparam");
 
 		assertFalse(ct.isRemoveParamsIfNoVarToInject());
@@ -54,7 +54,7 @@ class ConversionToolTest {
 		assertNotNull(ct.getExecutableName());
 
 		assertNull(ct.getMaxExecTimeScheduler());
-		final ScheduledThreadPoolExecutor max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1);
+		final var max_exec_time_scheduler = new ScheduledThreadPoolExecutor(1);
 		ct.setMaxExecTimeScheduler(max_exec_time_scheduler);
 		assertEquals(max_exec_time_scheduler, ct.getMaxExecTimeScheduler());
 
@@ -62,12 +62,12 @@ class ConversionToolTest {
 		ct.setMaxExecutionTimeForShortCommands(1, TimeUnit.SECONDS);
 		assertEquals(1, ct.getMaxExecTime(TimeUnit.SECONDS));
 
-		final File working_directory = new File(".");
+		final var working_directory = new File(".");
 		assertNull(ct.getWorkingDirectory());
 		ct.setWorkingDirectory(working_directory);
 		assertEquals(working_directory, ct.getWorkingDirectory());
 
-		final Parameters p = ct.getInternalParameters();
+		final var p = ct.getInternalParameters();
 		assertNotNull(p);
 		assertNotNull(ct.getReadyToRunParameters());
 
@@ -94,10 +94,10 @@ class ConversionToolTest {
 		ct.addSimpleOutputDestination("dest-simple");
 		assertEquals("dest1 dest2 dest-simple", ct.getDeclaredDestinations().stream().collect(Collectors.joining(" ")));
 
-		final String processed_cmdline = ct.getReadyToRunParameters().getParameters().stream().collect(Collectors
+		final var processed_cmdline = ct.getReadyToRunParameters().getParameters().stream().collect(Collectors
 		        .joining(" "));
 
-		final String expected = "-firstparam -pre1-source1 -pre2-source1 source1 -pre1-source2 -pre2-source2 source2 -pre1-dest1 -pre2-dest1 dest1 -pre1-dest2 -pre2-dest2 dest2";
+		final var expected = "-firstparam -pre1-source1 -pre2-source1 source1 -pre1-source2 -pre2-source2 source2 -pre1-dest1 -pre2-dest1 dest1 -pre1-dest2 -pre2-dest2 dest2";
 		assertEquals(expected, processed_cmdline);
 
 		assertEquals("source1", ct.getDeclaredSourceByVarName("<%varsource1%>").orElse("nope"));
@@ -106,7 +106,7 @@ class ConversionToolTest {
 
 	@Test
 	void testCatchMissingOutVar() {
-		final LinkedHashMap<String, String> catchs = new LinkedHashMap<>();
+		final var catchs = new LinkedHashMap<String, String>();
 
 		class CT extends ConversionTool {
 
@@ -122,8 +122,8 @@ class ConversionToolTest {
 			}
 		}
 
-		final CT ct = new CT();
-		final Parameters p = ct.getInternalParameters();
+		final var ct = new CT();
+		final var p = ct.getInternalParameters();
 		p.addParameters("-1", "<%not_found_var%>", "-2", "<%found_var%>");
 		ct.addInputSource("source", "found_var");
 		assertEquals("-1 -2 source", ct.getReadyToRunParameters().toString());
@@ -147,11 +147,11 @@ class ConversionToolTest {
 
 	@Test
 	void testManageOutFiles() throws IOException {
-		final File f1 = File.createTempFile("test", ".txt");
-		final File d1 = new File(f1.getParent() + File.separator + "sub1-" + f1.getName() + File.separator + "sub2");
+		final var f1 = File.createTempFile("test", ".txt");
+		final var d1 = new File(f1.getParent() + File.separator + "sub1-" + f1.getName() + File.separator + "sub2");
 		assertTrue(d1.mkdirs());
-		final File f2 = File.createTempFile("test", ".txt", d1.getParentFile());
-		final File f3 = File.createTempFile("test", ".txt", d1);
+		final var f2 = File.createTempFile("test", ".txt", d1.getParentFile());
+		final var f3 = File.createTempFile("test", ".txt", d1);
 
 		assertTrue(f1.exists());
 		assertTrue(f2.exists());
@@ -160,7 +160,7 @@ class ConversionToolTest {
 		assertTrue(d1.listFiles().length > 0);
 		assertTrue(d1.getParentFile().exists());
 
-		final ConversionTool ct = new ConversionTool("java");
+		final var ct = new ConversionTool("java");
 		ct.getInternalParameters().addParameters("-firstparam");
 		ct.addSimpleOutputDestination("nothing");
 		ct.addSimpleOutputDestination(f1.getAbsolutePath());
@@ -169,7 +169,7 @@ class ConversionToolTest {
 		ct.addSimpleOutputDestination(d1.getAbsolutePath());
 		ct.addSimpleOutputDestination("http://not.this/");
 
-		List<File> founded = ct.getOutputFiles(OutputFilePresencePolicy.ALL);
+		var founded = ct.getOutputFiles(OutputFilePresencePolicy.ALL);
 
 		assertEquals(5, founded.size());
 		assertEquals("nothing", founded.get(0).getPath());

@@ -369,7 +369,7 @@ public class ConversionTool implements ExecutableTool {
 		        .filter(ffletd -> ignoreAllLinesEventsToDisplay.equals(ffletd) == false)
 		        .ifPresent(
 		                filter -> {
-			                final CapturedStdOutErrToPrintStream psOut = new CapturedStdOutErrToPrintStream(
+			                final var psOut = new CapturedStdOutErrToPrintStream(
 			                        getStdOutPrintStreamToDisplayLinesEvents(),
 			                        getStdErrPrintStreamToDisplayLinesEvents());
 			                psOut.setFilter(filter);
@@ -450,7 +450,7 @@ public class ConversionTool implements ExecutableTool {
 		return outputExpectedDestinations.stream().map(ConversionToolParameterReference::getRessource).flatMap(
 		        ressource -> {
 			        try {
-				        final URL url = new URL(ressource);
+				        final var url = new URL(ressource);
 				        if (url.getProtocol().equals("file")) {
 					        return Stream.of(Paths.get(url.toURI()).toFile());
 				        }
@@ -572,8 +572,8 @@ public class ConversionTool implements ExecutableTool {
 		return this;
 	}
 
-	public static final BiConsumer<Parameters, String> APPEND_PARAM_AT_END = (p, arg) -> p.addParameters(arg);
-	public static final BiConsumer<Parameters, String> PREPEND_PARAM_AT_START = (p, arg) -> p.prependParameters(arg);
+	public static final BiConsumer<Parameters, String> APPEND_PARAM_AT_END = Parameters::addParameters;
+	public static final BiConsumer<Parameters, String> PREPEND_PARAM_AT_START = Parameters::prependParameters;
 
 	/**
 	 * Search and patch missing I/O parameter vars, and manageCollisionsParameters for each I/O entries.
@@ -607,14 +607,14 @@ public class ConversionTool implements ExecutableTool {
 		if (checkSourcesBeforeReady) {
 			checkSources();
 		}
-		final HashMap<String, String> allVarsToInject = new HashMap<>(parametersVariables);
+		final var allVarsToInject = new HashMap<>(parametersVariables);
 
-		final Parameters newerParameters = parameters.duplicate();
+		final var newerParameters = parameters.duplicate();
 
 		Stream.concat(inputSources.stream(), outputExpectedDestinations.stream()).forEach(paramRef -> {
 			final var taggedVarName = paramRef.getVarNameInParameters();
 
-			final boolean done = newerParameters.injectParamsAroundVariable(
+			final var done = newerParameters.injectParamsAroundVariable(
 			        newerParameters.extractVarNameFromTaggedParameter(taggedVarName),
 			        paramRef.getParametersListBeforeRef(),
 			        List.of());

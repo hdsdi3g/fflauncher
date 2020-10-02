@@ -46,7 +46,7 @@ public class FFAboutPixelFormat {
 
 	FFAboutPixelFormat(final String line) {
 
-		final List<String> lineBlocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(
+		final var lineBlocs = Arrays.stream(line.split(" ")).filter(lb -> lb.trim().equals("") == false).map(
 		        String::trim).collect(Collectors.toUnmodifiableList());
 
 		if (lineBlocs.size() != 4) {

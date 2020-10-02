@@ -18,7 +18,6 @@ package tv.hd3g.fflauncher;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
@@ -105,8 +104,8 @@ class ConversionToolParameterReference {
 		 * <<<----^--^ / <<<--^--^ => [a, b, c, d] / [e]
 		 */
 		log.trace("Compare collisions, actual: \"{}\", this: \"{}\"", actual, parametersList);
-		final ArrayList<Integer> toRemove = new ArrayList<>();
-		for (int pos = 0; pos < Math.min(parametersList.size(), allNParamBeforeThisVarCount); pos++) {
+		final var toRemove = new ArrayList<Integer>();
+		for (var pos = 0; pos < Math.min(parametersList.size(), allNParamBeforeThisVarCount); pos++) {
 			final var argActual = actual.get(allNParamBeforeThisVarCount - (pos + 1));
 			final var argThis = parametersList.get(parametersList.size() - (pos + 1));
 			if (argThis.equals(argActual)) {
@@ -129,7 +128,7 @@ class ConversionToolParameterReference {
 		 * ......=> [c] => Nope
 		 * ...=> [c, d] => Yes, trim => [a, b, c, d] / [e]
 		 */
-		for (int windowsWidth = 0; windowsWidth < Math.min(parametersList.size(),
+		for (var windowsWidth = 0; windowsWidth < Math.min(parametersList.size(),
 		        allNParamBeforeThisVarCount) - 1; windowsWidth++) {
 			final var actualMinBound = allNParamBeforeThisVarCount - (windowsWidth + 1);
 			final var actualMaxBound = allNParamBeforeThisVarCount;
@@ -167,14 +166,14 @@ class ConversionToolParameterReference {
 		if (ressourceAsFile == false) {
 			return;
 		}
-		final File file = new File(ressource);
+		final var file = new File(ressource);
 		if (file.isDirectory()) {
 			return;
 		}
 
-		for (int pos = 0; pos < TRY_COUNT_TO_OPEN_FILE; ++pos) {
+		for (var pos = 0; pos < TRY_COUNT_TO_OPEN_FILE; ++pos) {
 			if (file.canRead()) {
-				try (SeekableByteChannel sbc = Files.newByteChannel(file.toPath(), openOptionsReadOnly)) {
+				try (var sbc = Files.newByteChannel(file.toPath(), openOptionsReadOnly)) {
 					log.debug("Successfully open file \"{}\" for check access", file);
 					return;
 				} catch (final IOException e) {

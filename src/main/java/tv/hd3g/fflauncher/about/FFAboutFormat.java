@@ -61,7 +61,7 @@ public class FFAboutFormat {
 
 	FFAboutFormat(final String line) {
 
-		final List<String> lineBlocs = Arrays.stream(line.split(" "))
+		final var lineBlocs = Arrays.stream(line.split(" "))
 		        .filter(lb -> lb.trim().equals("") == false)
 		        .map(String::trim)
 		        .collect(Collectors.toUnmodifiableList());
@@ -86,7 +86,7 @@ public class FFAboutFormat {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder();
+		final var sb = new StringBuilder();
 
 		if (longName.isBlank() == false) {
 			sb.append(longName);
