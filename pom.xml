@@ -42,7 +42,7 @@
 		<dependency>
 			<groupId>tv.hd3g</groupId>
 			<artifactId>ffprobejaxb</artifactId>
-			<version>4.2.2-2</version>
+			<version>4.2.2-3</version>
 		</dependency>
 		<dependency>
 			<groupId>tv.hd3g</groupId>

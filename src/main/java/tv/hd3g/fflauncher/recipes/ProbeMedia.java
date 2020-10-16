@@ -19,7 +19,6 @@ package tv.hd3g.fflauncher.recipes;
 import static tv.hd3g.fflauncher.ConversionTool.APPEND_PARAM_AT_END;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -65,22 +64,11 @@ public class ProbeMedia extends Recipe {
 		return ffprobe;
 	}
 
-	public static class InvalidFFprobeReturn extends RuntimeException {
-		private InvalidFFprobeReturn(final String source, final IOException origin) {
-			super("Can't analyst " + source, origin);
-		}
-	}
-
-	private FFprobeJAXB execute(final FFprobe ffprobe, final String source) throws IOException {
+	private FFprobeJAXB execute(final FFprobe ffprobe) {
 		final var rtFFprobe = toolRun.execute(ffprobe);
 		final var textRetention = rtFFprobe.checkExecutionGetText();
 		final var stdOut = textRetention.getStdout(false, System.lineSeparator());
-		try {
-			return new FFprobeJAXB(stdOut, warn -> log.warn(warn));
-		} catch (final IOException e) {
-			log.error("FilterParserBaseChainFilter ffprobe return: \"{}\"", stdOut);
-			throw new InvalidFFprobeReturn(source, e);
-		}
+		return new FFprobeJAXB(stdOut, warn -> log.warn(warn));
 	}
 
 	/**
@@ -89,11 +77,11 @@ public class ProbeMedia extends Recipe {
 	 * Can throw an InvalidExecution in CompletableFuture, with stderr embedded.
 	 * @see FFprobe to get cool FfprobeType parsers
 	 */
-	public FFprobeJAXB doAnalysing(final String source) throws IOException {
+	public FFprobeJAXB doAnalysing(final String source) {
 		final var ffprobe = internal();
 		ffprobe.addSimpleInputSource(source);
 		ffprobe.fixIOParametredVars(APPEND_PARAM_AT_END, APPEND_PARAM_AT_END);
-		return execute(ffprobe, source);
+		return execute(ffprobe);
 	}
 
 	/**
@@ -102,11 +90,11 @@ public class ProbeMedia extends Recipe {
 	 * Can throw an InvalidExecution in CompletableFuture, with stderr embedded.
 	 * @see FFprobe to get cool FfprobeType parsers
 	 */
-	public FFprobeJAXB doAnalysing(final File source) throws IOException {
+	public FFprobeJAXB doAnalysing(final File source) {
 		final var ffprobe = internal();
 		ffprobe.addSimpleInputSource(source);
 		ffprobe.fixIOParametredVars(APPEND_PARAM_AT_END, APPEND_PARAM_AT_END);
-		return execute(ffprobe, source.getPath());
+		return execute(ffprobe);
 	}
 
 }
