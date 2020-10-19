@@ -120,4 +120,37 @@ class FFbaseTest {
 		assertTrue(b.isNeverOverwriteOutputFiles());
 	}
 
+	@Test
+	void testAddVarInParametersIfNotExists_withParams() throws IOException {
+		final var b = new FFbaseImpl(new Parameters("-param0 -param1 param2"));
+		b.addSimpleInputSource("s0");
+		assertEquals("<%IN_AUTOMATIC_0%> -param0 -param1 param2",
+		        b.getInternalParameters().toString());
+		b.addSimpleInputSource("s1");
+		assertEquals("<%IN_AUTOMATIC_0%> <%IN_AUTOMATIC_1%> -param0 -param1 param2",
+		        b.getInternalParameters().toString());
+	}
+
+	@Test
+	void testAddVarInParametersIfNotExists_withoutParams() throws IOException {
+		final var b = new FFbaseImpl(new Parameters());
+		b.addSimpleInputSource("s0");
+		assertEquals("<%IN_AUTOMATIC_0%>",
+		        b.getInternalParameters().toString());
+		b.addSimpleInputSource("s1");
+		assertEquals("<%IN_AUTOMATIC_0%> <%IN_AUTOMATIC_1%>",
+		        b.getInternalParameters().toString());
+	}
+
+	@Test
+	void testAddVarInParametersIfNotExists_varExists() throws IOException {
+		final var b = new FFbaseImpl(new Parameters("<%IN_AUTOMATIC_0%>"));
+		b.addSimpleInputSource("s0");
+		assertEquals("<%IN_AUTOMATIC_0%>",
+		        b.getInternalParameters().toString());
+		b.addSimpleInputSource("s1");
+		assertEquals("<%IN_AUTOMATIC_0%> <%IN_AUTOMATIC_1%>",
+		        b.getInternalParameters().toString());
+	}
+
 }

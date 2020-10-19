@@ -40,6 +40,7 @@ import tv.hd3g.processlauncher.cmdline.Parameters;
 
 public class FFbase extends ConversionTool {
 
+	private static final String IN_AUTOMATIC = "IN_AUTOMATIC_";
 	private static final String P_LOGLEVEL = "-loglevel";
 	private static final String P_HIDE_BANNER = "-hide_banner";
 	private FFAbout about;
@@ -151,7 +152,7 @@ public class FFbase extends ConversionTool {
 		requireNonNull(sourceName, "\"sourceName\" can't to be null");
 		requireNonNull(sourceOptions, "\"sourceOptions\" can't to be null");
 
-		final var varname = parameters.tagVar("IN_AUTOMATIC_" + inputSources.size());
+		final var varname = parameters.tagVar(IN_AUTOMATIC + inputSources.size());
 		addVarInParametersIfNotExists(varname);
 		addInputSource(sourceName, varname,
 		        Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(toUnmodifiableList()));
@@ -167,7 +168,7 @@ public class FFbase extends ConversionTool {
 		requireNonNull(file, "\"file\" can't to be null");
 		requireNonNull(sourceOptions, "\"sourceOptions\" can't to be null");
 
-		final var varname = parameters.tagVar("IN_AUTOMATIC_" + inputSources.size());
+		final var varname = parameters.tagVar(IN_AUTOMATIC + inputSources.size());
 		addVarInParametersIfNotExists(varname);
 		addInputSource(file, varname,
 		        Stream.concat(sourceOptions.stream(), Stream.of("-i")).collect(toUnmodifiableList()));
@@ -176,7 +177,31 @@ public class FFbase extends ConversionTool {
 
 	private void addVarInParametersIfNotExists(final String varname) {
 		if (parameters.getParameters().contains(varname) == false) {
-			parameters.addParameters(varname);
+			final var defaultInVar = parameters.extractVarNameFromTaggedParameter(varname);
+			if (defaultInVar.startsWith(IN_AUTOMATIC)) {
+				final var indexInput = Integer.valueOf(defaultInVar.substring(IN_AUTOMATIC.length()));
+
+				if (indexInput > 0) {
+					final var expectedPreviousVarName = parameters.tagVar(IN_AUTOMATIC + (indexInput - 1));
+					final var posInParams = parameters.getParameters().indexOf(expectedPreviousVarName);
+					if (posInParams == parameters.count() - 1) {
+						parameters.addParameters(varname);
+					} else {
+						final var newList = List.of(
+						        parameters.getParameters().stream().limit(posInParams + 1L),
+						        Stream.of(varname),
+						        parameters.getParameters().stream().skip(posInParams + 1L))
+						        .stream()
+						        .flatMap(s -> s)
+						        .collect(toUnmodifiableList());
+						parameters.replaceParameters(newList);
+					}
+				} else {
+					parameters.prependParameters(varname);
+				}
+			} else {
+				parameters.addParameters(varname);
+			}
 		}
 	}
 
