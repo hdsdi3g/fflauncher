@@ -17,10 +17,18 @@
 package tv.hd3g.fflauncher.filtering;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static tv.hd3g.fflauncher.enums.ChannelLayout.CH3_0_BACK;
+import static tv.hd3g.fflauncher.enums.ChannelLayout.CH5_0_SIDE;
+import static tv.hd3g.fflauncher.enums.ChannelLayout.DOWNMIX;
+import static tv.hd3g.fflauncher.enums.ChannelLayout.MONO;
+import static tv.hd3g.fflauncher.enums.ChannelLayout.QUAD;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class FilterTest {
@@ -166,4 +174,89 @@ class FilterTest {
 		assertThrows(IllegalArgumentException.class, () -> new Filter("[i]overlay=w:h[o],ddd"));
 	}
 
+	@Nested
+	class AddArgument {
+
+		String key;
+
+		@BeforeEach
+		void init() {
+			key = String.valueOf(System.nanoTime());
+			f = new Filter("somefilter");
+		}
+
+		@Test
+		void testFilterArgument() {
+			f.addArgument(key);
+			assertEquals(1, f.getArguments().size());
+
+			final var filterArgument = f.getArguments().get(0);
+			assertEquals(key, filterArgument.getKey());
+			assertNull(filterArgument.getValue());
+		}
+
+		@Test
+		void testFilterArgument_string() {
+			final var str = String.valueOf(System.nanoTime());
+			f.addArgument(key, str);
+			assertEquals(1, f.getArguments().size());
+
+			final var filterArgument = f.getArguments().get(0);
+			assertEquals(key, filterArgument.getKey());
+			assertEquals(str, filterArgument.getValue());
+		}
+
+		@Test
+		void testFilterArgument_number() {
+			f.addArgument(key, 42);
+			assertEquals(1, f.getArguments().size());
+
+			final var filterArgument = f.getArguments().get(0);
+			assertEquals(key, filterArgument.getKey());
+			assertEquals(String.valueOf(42), filterArgument.getValue());
+		}
+
+		@Test
+		void testFilterArgument_enum() {
+			f.addArgument(key, CH3_0_BACK);
+			assertEquals(1, f.getArguments().size());
+
+			final var filterArgument = f.getArguments().get(0);
+			assertEquals(key, filterArgument.getKey());
+			assertEquals(CH3_0_BACK.toString(), filterArgument.getValue());
+		}
+
+		@Test
+		void testFilterArgument_collection_single() {
+			final var list = List.of(MONO);
+			f.addArgument(key, list, "*");
+			assertEquals(1, f.getArguments().size());
+
+			final var filterArgument = f.getArguments().get(0);
+			assertEquals(key, filterArgument.getKey());
+			assertEquals(MONO.toString(), filterArgument.getValue());
+		}
+
+		@Test
+		void testFilterArgument_collection() {
+			final var list = List.of(MONO, QUAD);
+			f.addArgument(key, list, "*");
+			assertEquals(1, f.getArguments().size());
+
+			final var filterArgument = f.getArguments().get(0);
+			assertEquals(key, filterArgument.getKey());
+			assertEquals(MONO.toString() + "*" + QUAD.toString(), filterArgument.getValue());
+		}
+
+		@Test
+		void testFilterArgument_stream() {
+			final var list = List.of(CH5_0_SIDE, DOWNMIX);
+			f.addArgument(key, list.stream(), "~");
+			assertEquals(1, f.getArguments().size());
+
+			final var filterArgument = f.getArguments().get(0);
+			assertEquals(key, filterArgument.getKey());
+			assertEquals(CH5_0_SIDE.toString() + "~" + DOWNMIX.toString(), filterArgument.getValue());
+		}
+	}
 }

@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import tv.hd3g.fflauncher.filtering.parser.FilterParser;
 import tv.hd3g.fflauncher.filtering.parser.FilterParserDefinition;
@@ -58,7 +59,7 @@ public class Filter implements FilterParserDefinition {
 	public Filter(final String filterName, final FilterArgument... arguments) {
 		this.filterName = filterName;
 
-		for (int pos = 0; pos < arguments.length; pos++) {
+		for (var pos = 0; pos < arguments.length; pos++) {
 			Objects.requireNonNull(arguments[pos], "arguments can't contain null elements: #" + pos);
 		}
 
@@ -149,6 +150,36 @@ public class Filter implements FilterParserDefinition {
 	@Override
 	public void setArguments(final List<FilterArgument> arguments) {
 		this.arguments = arguments;
+	}
+
+	public void addArgument(final String key, final String value) {
+		getArguments().add(new FilterArgument(key, value));
+	}
+
+	public void addArgument(final String key, final Number value) {
+		getArguments().add(new FilterArgument(key, value));
+	}
+
+	public void addArgument(final String key, final Enum<?> value) {
+		getArguments().add(new FilterArgument(key, value));
+	}
+
+	/**
+	 * map with toString
+	 */
+	public void addArgument(final String key, final Collection<?> values, final String join) {
+		getArguments().add(new FilterArgument(key, values, join));
+	}
+
+	/**
+	 * map with toString
+	 */
+	public void addArgument(final String key, final Stream<?> values, final String join) {
+		getArguments().add(new FilterArgument(key, values, join));
+	}
+
+	public void addArgument(final String key) {
+		getArguments().add(new FilterArgument(key));
 	}
 
 }

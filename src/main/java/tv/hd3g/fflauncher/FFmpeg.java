@@ -34,7 +34,7 @@ import tv.hd3g.fflauncher.enums.FFUnit;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
-public class FFmpeg extends FFbase {
+public class FFmpeg extends FFbase implements InputGeneratorsTraits {
 
 	private static final Logger log = LogManager.getLogger();
 	private int deviceIdToUse = -1;
