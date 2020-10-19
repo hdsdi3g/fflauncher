@@ -600,6 +600,13 @@ public class ConversionTool implements ExecutableTool {
 	}
 
 	/**
+	 * Default with prependBulkParameters and prependParameters
+	 */
+	public void fixIOParametredVars() {
+		fixIOParametredVars(Parameters::prependBulkParameters, APPEND_PARAM_AT_END);
+	}
+
+	/**
 	 * @return a copy form internal parameters, with variable injection
 	 */
 	@Override

@@ -264,6 +264,19 @@ class ConversionToolTest {
 			assertEquals("-pre -i keepme <%in%> -o <%out%> -post", ct.parameters.toString());
 			assertEquals("-pre -i keepme -i beforeI src -o beforeO dst -post", ct.getReadyToRunParameters().toString());
 		}
+
+		@Test
+		void defaultIoRef_noCollision() {
+			final var ct = new ConversionTool("java");
+			ct.parameters.addBulkParameters("-pre -i <%in%> -o <%out%> -post");
+			ct.addInputSource("src", "in", "-i");
+			ct.addOutputDestination("dst", "out", "-o");
+
+			ct.fixIOParametredVars();
+			assertEquals("-pre -i <%in%> -o <%out%> -post", ct.parameters.toString());
+			assertEquals("-pre -i src -o dst -post", ct.getReadyToRunParameters().toString());
+		}
+
 	}
 
 	private static final BiConsumer<Parameters, String> neverTriggMe = (p, k) -> {
