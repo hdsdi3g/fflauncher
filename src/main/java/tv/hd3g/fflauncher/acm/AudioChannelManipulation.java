@@ -27,14 +27,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.ffmpeg.ffprobe.StreamType;
 
 import tv.hd3g.fflauncher.acm.ACMSplitInStreamDefinitionFilter.SplittedOut;
 import tv.hd3g.fflauncher.acm.OutputAudioStream.OutputAudioChannel;
 import tv.hd3g.fflauncher.enums.ChannelLayout;
 import tv.hd3g.fflauncher.filtering.FilterChains;
+import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
 /**
@@ -248,18 +252,52 @@ public class AudioChannelManipulation {
 		return unmodifiableList(fileParameters);
 	}
 
+	private static Parameters getMapStreamParam(final String mapRef) {
+		if (checkClassicStreamDesc.matcher(mapRef).find()) {
+			return new Parameters("-map", mapRef);
+		}
+		return new Parameters("-map", "[" + mapRef + "]");
+	}
+
 	/**
 	 * Only add -map "-map stream_ref"...
 	 * @return one item by output file
 	 */
 	public List<Parameters> getMapParameters() {
-		return getMapParameters((pos, astream) -> {
-			final var mapRef = astream.toMapReferenceAsInput();
-			if (checkClassicStreamDesc.matcher(mapRef).find()) {
-				return new Parameters("-map", mapRef);
-			}
-			return new Parameters("-map", "[" + mapRef + "]");
-		});
+		return getMapParameters((pos, astream) -> getMapStreamParam(astream.toMapReferenceAsInput()));
+	}
+
+	public List<Parameters> getMapParameters(final List<String> prependToMapList) {
+		final var prepend = prependToMapList.stream().map(AudioChannelManipulation::getMapStreamParam);
+		return Stream.of(prepend, getMapParameters().stream())
+		        .flatMap(p -> p)
+		        .collect(toUnmodifiableList());
+	}
+
+	/**
+	 * @param sourceFiles original file analysing
+	 * @param addNonAudioStreamFromSources: File index in sourceFiles, non-audio stream in file -&gt; add to map list
+	 * @return add non-audio sources (video, data) + getMapParameters
+	 */
+	public List<Parameters> getMapParameters(final List<FFprobeJAXB> sourceFiles,
+	                                         final BiPredicate<Integer, StreamType> addNonAudioStreamFromSources) {
+
+		final var selectedFileStreams = new LinkedHashMap<Integer, StreamType>();
+		for (var pos = 0; pos < sourceFiles.size(); pos++) {
+			final var fileIndex = pos;
+			sourceFiles.get(pos).getStreams().stream()
+			        .filter(s -> FFprobeJAXB.filterVideoStream.test(s) || FFprobeJAXB.filterDataStream.test(s))
+			        .filter(s -> addNonAudioStreamFromSources.test(fileIndex, s))
+			        .forEach(s -> selectedFileStreams.put(fileIndex, s));
+		}
+
+		return getMapParameters(selectedFileStreams.entrySet().stream()
+		        .map(entry -> {
+			        final var fileIndex = entry.getKey();
+			        final var streamInFile = entry.getValue();
+			        return fileIndex + ":" + streamInFile.getIndex();
+		        })
+		        .collect(toUnmodifiableList()));
 	}
 
 	public FilterChains getFilterChains(final boolean useJoinInsteadOfMerge) {

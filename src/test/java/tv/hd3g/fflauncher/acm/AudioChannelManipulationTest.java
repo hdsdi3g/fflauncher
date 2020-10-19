@@ -11,10 +11,15 @@ import static tv.hd3g.fflauncher.enums.ChannelLayout.DOWNMIX;
 import static tv.hd3g.fflauncher.enums.ChannelLayout.MONO;
 import static tv.hd3g.fflauncher.enums.ChannelLayout.STEREO;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.ffmpeg.ffprobe.StreamType;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import tv.hd3g.ffprobejaxb.FFprobeJAXB;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
 class AudioChannelManipulationTest {
@@ -216,43 +221,89 @@ class AudioChannelManipulationTest {
 		assertEquals("join", fChain.getChain(1).get(0).getFilterName());
 	}
 
-	@Test
-	void testGetMapParameters() {
-		final var acm = new AudioChannelManipulation(List.of(outStreamStereo0, outStreamMono0, outStreamStereo1));
-		final var pList = acm.getMapParameters();
-		assertNotNull(pList);
-		assertEquals(2, pList.size());
-		assertEquals("-map [mergjoin0] -map [split0]", pList.get(0).toString());
-		assertEquals("-map [mergjoin1]", pList.get(1).toString());
-	}
+	@Nested
+	class GetMapParameters {
 
-	@Test
-	void testGetMapParameters_directMap() {
-		final var acm = new AudioChannelManipulation(List.of(outStreamSimpleMono));
-		final var pList = acm.getMapParameters();
-		assertNotNull(pList);
-		assertEquals(1, pList.size());
-		assertEquals("-map 0:1", pList.get(0).toString());
-	}
+		@Test
+		void testGetMapParameters() {
+			final var acm = new AudioChannelManipulation(List.of(outStreamStereo0, outStreamMono0, outStreamStereo1));
+			final var pList = acm.getMapParameters();
+			assertNotNull(pList);
+			assertEquals(2, pList.size());
+			assertEquals("-map [mergjoin0] -map [split0]", pList.get(0).toString());
+			assertEquals("-map [mergjoin1]", pList.get(1).toString());
+		}
 
-	@Test
-	void testGetMapParameters_manual() {
-		final var acm = new AudioChannelManipulation(List.of(outStreamStereo0, outStreamMono0, outStreamStereo1));
-		final var pList = acm.getMapParameters(
-		        (idx, outStream) -> new Parameters(String.valueOf(idx), outStream.toMapReferenceAsInput()));
-		assertNotNull(pList);
-		assertEquals(2, pList.size());
-		assertEquals("0 mergjoin0 1 split0", pList.get(0).toString());
-		assertEquals("2 mergjoin1", pList.get(1).toString());
-	}
+		@Test
+		void testGetMapParameters_directMap() {
+			final var acm = new AudioChannelManipulation(List.of(outStreamSimpleMono));
+			final var pList = acm.getMapParameters();
+			assertNotNull(pList);
+			assertEquals(1, pList.size());
+			assertEquals("-map 0:1", pList.get(0).toString());
+		}
 
-	@Test
-	void testRegexCheckClassicStreamDesc() {
-		assertTrue(checkClassicStreamDesc.matcher("5:3").find());
-		assertTrue(checkClassicStreamDesc.matcher("44:554").find());
-		assertFalse(checkClassicStreamDesc.matcher("44:554:6").find());
-		assertFalse(checkClassicStreamDesc.matcher("fd:4").find());
-		assertFalse(checkClassicStreamDesc.matcher("f4:dd:5").find());
+		@Test
+		void testGetMapParameters_manual() {
+			final var acm = new AudioChannelManipulation(List.of(outStreamStereo0, outStreamMono0, outStreamStereo1));
+			final var pList = acm.getMapParameters(
+			        (idx, outStream) -> new Parameters(String.valueOf(idx), outStream.toMapReferenceAsInput()));
+			assertNotNull(pList);
+			assertEquals(2, pList.size());
+			assertEquals("0 mergjoin0 1 split0", pList.get(0).toString());
+			assertEquals("2 mergjoin1", pList.get(1).toString());
+		}
+
+		@Test
+		void testRegexCheckClassicStreamDesc() {
+			assertTrue(checkClassicStreamDesc.matcher("5:3").find());
+			assertTrue(checkClassicStreamDesc.matcher("44:554").find());
+			assertFalse(checkClassicStreamDesc.matcher("44:554:6").find());
+			assertFalse(checkClassicStreamDesc.matcher("fd:4").find());
+			assertFalse(checkClassicStreamDesc.matcher("f4:dd:5").find());
+		}
+
+		@Test
+		void testGetMapParameters_ListString() {
+			final var acm = new AudioChannelManipulation(List.of(outStreamStereo0, outStreamMono0, outStreamStereo1));
+			final var pList = acm.getMapParameters(List.of("0:0", "0:1"));
+			assertNotNull(pList);
+			assertEquals(4, pList.size());
+			assertEquals("-map 0:0", pList.get(0).toString());
+			assertEquals("-map 0:1", pList.get(1).toString());
+			assertEquals("-map [mergjoin0] -map [split0]", pList.get(2).toString());
+			assertEquals("-map [mergjoin1]", pList.get(3).toString());
+		}
+
+		@Test
+		void testGetMapParameters_InputStreams() {
+			final var probe = Mockito.mock(FFprobeJAXB.class);
+
+			final var streamTypeVideo = new StreamType();
+			streamTypeVideo.setIndex(0);
+			streamTypeVideo.setCodecType("video");
+			final var streamTypeAudio = new StreamType();
+			streamTypeAudio.setIndex(1);
+			streamTypeAudio.setCodecType("audio");
+			Mockito.when(probe.getStreams()).thenReturn(List.of(streamTypeVideo, streamTypeAudio));
+
+			final var acm = new AudioChannelManipulation(List.of(outStreamStereo0, outStreamMono0, outStreamStereo1));
+			final var tested = new LinkedHashMap<Integer, StreamType>();
+			final var pList = acm.getMapParameters(List.of(probe), (i, s) -> {
+				tested.put(i, s);
+				return true;
+			});
+
+			assertNotNull(pList);
+			assertEquals(3, pList.size());
+			assertEquals("-map 0:0", pList.get(0).toString());
+			assertEquals("-map [mergjoin0] -map [split0]", pList.get(1).toString());
+			assertEquals("-map [mergjoin1]", pList.get(2).toString());
+			assertEquals(1, tested.size());
+			assertTrue(tested.containsKey(0));
+			assertEquals(streamTypeVideo, tested.get(0));
+		}
+
 	}
 
 }
