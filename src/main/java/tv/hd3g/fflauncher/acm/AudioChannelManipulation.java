@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,6 +42,8 @@ import tv.hd3g.processlauncher.cmdline.Parameters;
  * One by setup and source file (OutputAudioStream is relative to input stream, retative to sources files).
  */
 public class AudioChannelManipulation {
+
+	static final Pattern checkClassicStreamDesc = Pattern.compile("^[0-9]*\\:[0-9]*$");
 
 	private final List<ACMSplitInStreamDefinitionFilter> toSplitFilterList;
 	private final List<ACMMergeJoinToStreamDefinitionFilter> amergeJoinList;
@@ -250,7 +253,13 @@ public class AudioChannelManipulation {
 	 * @return one item by output file
 	 */
 	public List<Parameters> getMapParameters() {
-		return getMapParameters((pos, astream) -> new Parameters("-map", "[" + astream.toMapReferenceAsInput() + "]"));
+		return getMapParameters((pos, astream) -> {
+			final var mapRef = astream.toMapReferenceAsInput();
+			if (checkClassicStreamDesc.matcher(mapRef).find()) {
+				return new Parameters("-map", mapRef);
+			}
+			return new Parameters("-map", "[" + mapRef + "]");
+		});
 	}
 
 	public FilterChains getFilterChains(final boolean useJoinInsteadOfMerge) {

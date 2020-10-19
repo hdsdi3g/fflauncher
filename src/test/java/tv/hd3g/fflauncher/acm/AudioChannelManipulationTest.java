@@ -1,8 +1,10 @@
 package tv.hd3g.fflauncher.acm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static tv.hd3g.fflauncher.acm.AudioChannelManipulation.checkClassicStreamDesc;
 import static tv.hd3g.fflauncher.acm.InputAudioChannelSelector.IN_CH0;
 import static tv.hd3g.fflauncher.acm.InputAudioChannelSelector.IN_CH1;
 import static tv.hd3g.fflauncher.enums.ChannelLayout.DOWNMIX;
@@ -31,6 +33,8 @@ class AudioChannelManipulationTest {
 	final static OutputAudioStream outStreamStereo1 = new OutputAudioStream(STEREO, 2, 1)
 	        .mapChannel(inMono2, IN_CH0)
 	        .mapChannel(inMono3, IN_CH0);
+	final static OutputAudioStream outStreamSimpleMono = new OutputAudioStream(MONO, 0, 1)
+	        .mapChannel(inMono0, IN_CH0);
 
 	@Test
 	void testEmpty() {
@@ -223,6 +227,15 @@ class AudioChannelManipulationTest {
 	}
 
 	@Test
+	void testGetMapParameters_directMap() {
+		final var acm = new AudioChannelManipulation(List.of(outStreamSimpleMono));
+		final var pList = acm.getMapParameters();
+		assertNotNull(pList);
+		assertEquals(1, pList.size());
+		assertEquals("-map 0:1", pList.get(0).toString());
+	}
+
+	@Test
 	void testGetMapParameters_manual() {
 		final var acm = new AudioChannelManipulation(List.of(outStreamStereo0, outStreamMono0, outStreamStereo1));
 		final var pList = acm.getMapParameters(
@@ -231,6 +244,15 @@ class AudioChannelManipulationTest {
 		assertEquals(2, pList.size());
 		assertEquals("0 mergjoin0 1 split0", pList.get(0).toString());
 		assertEquals("2 mergjoin1", pList.get(1).toString());
+	}
+
+	@Test
+	void testRegexCheckClassicStreamDesc() {
+		assertTrue(checkClassicStreamDesc.matcher("5:3").find());
+		assertTrue(checkClassicStreamDesc.matcher("44:554").find());
+		assertFalse(checkClassicStreamDesc.matcher("44:554:6").find());
+		assertFalse(checkClassicStreamDesc.matcher("fd:4").find());
+		assertFalse(checkClassicStreamDesc.matcher("f4:dd:5").find());
 	}
 
 }
