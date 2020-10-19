@@ -129,7 +129,9 @@ public class FilterChains {
 	 * @param varName declared on ffbase. Use toString.
 	 */
 	public void setFilterChainToVar(final String varName, final FFbase ffbase) {
-		ffbase.getParametersVariables().put(varName, toString());
+		if (getChainsCount() > 0) {
+			ffbase.getParametersVariables().put(varName, toString());
+		}
 	}
 
 	/**
