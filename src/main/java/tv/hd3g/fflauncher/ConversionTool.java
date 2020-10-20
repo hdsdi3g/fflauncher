@@ -68,7 +68,7 @@ public class ConversionTool implements ExecutableTool {
 	protected final List<ConversionToolParameterReference> inputSources;
 	protected final List<ConversionToolParameterReference> outputExpectedDestinations;
 
-	private final LinkedHashMap<String, String> parametersVariables;
+	private final LinkedHashMap<String, Parameters> parametersVariables;
 
 	private File workingDirectory;
 	private long maxExecTimeMs;
@@ -139,7 +139,7 @@ public class ConversionTool implements ExecutableTool {
 	/**
 	 * Set values for variables like &lt;%myvar%&gt; in the command line, do NOT set input/output references if they was set with addInputSource/addOutputDestination.
 	 */
-	public Map<String, String> getParametersVariables() {
+	public Map<String, Parameters> getParametersVariables() {
 		return parametersVariables;
 	}
 
@@ -632,7 +632,7 @@ public class ConversionTool implements ExecutableTool {
 					                                + "\" was already set to \""
 					                                + allVarsToInject.get(taggedVarName) + "\" in " + newerParameters);
 				}
-				allVarsToInject.put(taggedVarName, paramRef.getRessource());
+				allVarsToInject.put(taggedVarName, new Parameters(paramRef.getRessource()));
 			} else {
 				onMissingInputOutputVar(taggedVarName, paramRef.getRessource());
 			}

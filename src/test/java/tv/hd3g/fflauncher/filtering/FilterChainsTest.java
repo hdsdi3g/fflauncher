@@ -168,11 +168,11 @@ class FilterChainsTest {
 	@Test
 	void testSetFilterChainToVar() {
 		final var ffbase = Mockito.mock(FFbase.class);
-		final var parameterVars = new HashMap<String, String>();
+		final var parameterVars = new HashMap<String, Parameters>();
 		Mockito.when(ffbase.getParametersVariables()).thenReturn(parameterVars);
 
 		filterChains.setFilterChainToVar("fparam", ffbase);
-		assertEquals(condensedChain, parameterVars.get("fparam"));
+		assertEquals(condensedChain, parameterVars.get("fparam").toString());
 	}
 
 	@Test
