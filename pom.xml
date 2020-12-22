@@ -21,7 +21,7 @@
 		<dependency>
 			<groupId>tv.hd3g.commons</groupId>
 			<artifactId>interfaces</artifactId>
-			<version>0.3.0</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -42,17 +42,17 @@
 		<dependency>
 			<groupId>tv.hd3g</groupId>
 			<artifactId>ffprobejaxb</artifactId>
-			<version>4.2.2-3</version>
+			<version>4.2.2-4</version>
 		</dependency>
 		<dependency>
 			<groupId>tv.hd3g</groupId>
 			<artifactId>processlauncher</artifactId>
-			<version>4.0.0</version>
+			<version>4.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>tv.hd3g.commons</groupId>
 			<artifactId>codepolicyvalidation</artifactId>
-			<version>0.2.0</version>
+			<version>0.4.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

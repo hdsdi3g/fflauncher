@@ -91,7 +91,7 @@ public class ConversionTool implements ExecutableTool {
 		outputExpectedDestinations = new ArrayList<>();
 		parametersVariables = new LinkedHashMap<>();
 		checkSourcesBeforeReady = true;
-		filterForLinesEventsToDisplay = Optional.of(ignoreAllLinesEventsToDisplay);
+		filterForLinesEventsToDisplay = Optional.ofNullable(ignoreAllLinesEventsToDisplay);
 	}
 
 	public boolean isRemoveParamsIfNoVarToInject() {

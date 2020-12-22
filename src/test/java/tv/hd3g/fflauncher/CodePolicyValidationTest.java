@@ -2,7 +2,7 @@ package tv.hd3g.fflauncher;
 
 import tv.hd3g.commons.codepolicyvalidation.CheckPolicy;
 
-class CodePolicyValidation extends CheckPolicy {
+class CodePolicyValidationTest extends CheckPolicy {
 
 	/**
 	 * Disable noSysOutSysErr checks
