@@ -27,24 +27,22 @@ import org.junit.jupiter.api.Test;
 
 import tv.hd3g.fflauncher.enums.OutputFilePresencePolicy;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
-import tv.hd3g.processlauncher.tool.ToolRunner;
 
 class ProbeMediaTest {
 
-	final ToolRunner run;
+	final ExecutableFinder executableFinder;
 
 	ProbeMediaTest() {
-		run = new ToolRunner(new ExecutableFinder());
+		executableFinder = new ExecutableFinder();
 	}
 
 	@Test
 	void test() throws Exception {
-		final var gvf = new GenerateVideoFile(run);
+		final var gvf = new GenerateVideoFile(executableFinder);
 
 		final var tDir = System.getProperty("java.io.tmpdir");
 		final var test_file_to_create = new File(tDir + File.separator + "smptebars-" + System.nanoTime() + ".mkv");
-		final var ffmpeg = gvf.generateBarsAnd1k(test_file_to_create, 1, new Point(768, 432))
-		        .getExecutableToolSource();
+		final var ffmpeg = gvf.generateBarsAnd1k(test_file_to_create, 1, new Point(768, 432));
 
 		ffmpeg.checkDestinations();
 		final var outputFiles = ffmpeg.getOutputFiles(OutputFilePresencePolicy.ALL);
@@ -52,7 +50,7 @@ class ProbeMediaTest {
 		assertEquals(1, outputFiles.size());
 		assertNotSame(0, test_file_to_create.length());
 
-		final var probe = new ProbeMedia(run, Executors.newSingleThreadScheduledExecutor());
+		final var probe = new ProbeMedia(executableFinder, Executors.newSingleThreadScheduledExecutor());
 		final var result = probe.doAnalysing(test_file_to_create);
 
 		assertEquals(1, result.getFormat().getDuration().intValue());

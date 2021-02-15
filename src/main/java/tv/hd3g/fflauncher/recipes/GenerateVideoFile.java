@@ -21,20 +21,24 @@ import static tv.hd3g.fflauncher.ConversionTool.APPEND_PARAM_AT_END;
 import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 import tv.hd3g.fflauncher.FFmpeg;
+import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.cmdline.Parameters;
-import tv.hd3g.processlauncher.tool.ToolRunner;
-import tv.hd3g.processlauncher.tool.ToolRunner.RunningTool;
 
-public class GenerateVideoFile extends Recipe {
+public class GenerateVideoFile {
 
-	public GenerateVideoFile(final ToolRunner toolRun) {
-		super(toolRun, "ffmpeg");
+	private final String execName;
+	private final ExecutableFinder executableFinder;
+
+	public GenerateVideoFile(final ExecutableFinder executableFinder) {
+		this("ffmpeg", executableFinder);
 	}
 
-	public GenerateVideoFile(final ToolRunner toolRun, final String execName) {
-		super(toolRun, execName);
+	public GenerateVideoFile(final String execName, final ExecutableFinder executableFinder) {
+		this.execName = Objects.requireNonNull(execName);
+		this.executableFinder = Objects.requireNonNull(executableFinder);
 	}
 
 	/**
@@ -44,10 +48,10 @@ public class GenerateVideoFile extends Recipe {
 		final var parameters = new Parameters();
 		final var ffmpeg = new FFmpeg(execName, parameters);
 
-		final var about = ffmpeg.getAbout(toolRun.getExecutableFinder());
+		final var about = ffmpeg.getAbout(executableFinder);
 		if (about.isFromFormatIsAvaliable("lavfi") == false) {
-			throw new IOException("This ffmpeg (" + toolRun.getExecutableFinder().get(ffmpeg.getExecutableName())
-			                      + ") can't handle \"lavfi\"");
+			final var exec = executableFinder.get(ffmpeg.getExecutableName());
+			throw new IOException("This ffmpeg (" + exec + ") can't handle \"lavfi\"");
 		}
 
 		ffmpeg.setOverwriteOutputFiles();
@@ -77,25 +81,27 @@ public class GenerateVideoFile extends Recipe {
 	/**
 	 * Stateless
 	 */
-	public RunningTool<FFmpeg> generateBarsAnd1k(final String destination,
-	                                             final int duration_in_sec,
-	                                             final Point resolution) throws IOException {
+	public FFmpeg generateBarsAnd1k(final String destination,
+	                                final int duration_in_sec,
+	                                final Point resolution) throws IOException {
 		final var ffmpeg = internal(duration_in_sec, resolution);
 		ffmpeg.addSimpleOutputDestination(destination);
 		ffmpeg.fixIOParametredVars(APPEND_PARAM_AT_END, APPEND_PARAM_AT_END);
-		return toolRun.execute(ffmpeg).waitForEndAndCheckExecution();
+		ffmpeg.execute(executableFinder).waitForEndAndCheckExecution();
+		return ffmpeg;
 	}
 
 	/**
 	 * Stateless
 	 */
-	public RunningTool<FFmpeg> generateBarsAnd1k(final File destination,
-	                                             final int duration_in_sec,
-	                                             final Point resolution) throws IOException {
+	public FFmpeg generateBarsAnd1k(final File destination,
+	                                final int duration_in_sec,
+	                                final Point resolution) throws IOException {
 		final var ffmpeg = internal(duration_in_sec, resolution);
 		ffmpeg.addSimpleOutputDestination(destination);
 		ffmpeg.fixIOParametredVars(APPEND_PARAM_AT_END, APPEND_PARAM_AT_END);
-		return toolRun.execute(ffmpeg).waitForEndAndCheckExecution();
+		ffmpeg.execute(executableFinder).waitForEndAndCheckExecution();
+		return ffmpeg;
 	}
 
 }

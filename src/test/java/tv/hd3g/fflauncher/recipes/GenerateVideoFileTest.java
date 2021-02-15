@@ -27,18 +27,17 @@ import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.Test;
 
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
-import tv.hd3g.processlauncher.tool.ToolRunner;
 
 class GenerateVideoFileTest {
 
 	@Test
 	void test() throws InterruptedException, ExecutionException, IOException {
-		final var run = new ToolRunner(new ExecutableFinder());
-		final var gvf = new GenerateVideoFile(run);
+		final var executableFinder = new ExecutableFinder();
+		final var gvf = new GenerateVideoFile(executableFinder);
 
 		final var test_file = File.createTempFile("smptebars", ".mkv");
 
-		final var ffmpeg = gvf.generateBarsAnd1k(test_file, 5, new Point(1280, 720)).getExecutableToolSource();
+		final var ffmpeg = gvf.generateBarsAnd1k(test_file, 5, new Point(1280, 720));
 
 		assertTrue(test_file.exists());
 

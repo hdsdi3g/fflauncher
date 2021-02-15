@@ -29,26 +29,26 @@ import tv.hd3g.fflauncher.FFprobe;
 import tv.hd3g.fflauncher.FFprobe.FFPrintFormat;
 import tv.hd3g.fflauncher.enums.FFLogLevel;
 import tv.hd3g.ffprobejaxb.FFprobeJAXB;
+import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.cmdline.Parameters;
-import tv.hd3g.processlauncher.tool.ToolRunner;
 
-public class ProbeMedia extends Recipe {
+public class ProbeMedia {
 
 	private static Logger log = LogManager.getLogger();
 
+	private final String execName;
+	private final ExecutableFinder executableFinder;
 	private final ScheduledExecutorService maxExecTimeScheduler;
 
-	public ProbeMedia(final ToolRunner toolRun, final ScheduledExecutorService maxExecTimeScheduler) {
-		super(toolRun, "ffprobe");
-		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler,
-		        "\"maxExecTimeScheduler\" can't to be null");
+	public ProbeMedia(final ExecutableFinder executableFinder, final ScheduledExecutorService maxExecTimeScheduler) {
+		this("ffprobe", executableFinder, maxExecTimeScheduler);
 	}
 
-	public ProbeMedia(final ToolRunner toolRun, final String execName,
+	public ProbeMedia(final String execName, final ExecutableFinder executableFinder,
 	                  final ScheduledExecutorService maxExecTimeScheduler) {
-		super(toolRun, execName);
-		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler,
-		        "\"maxExecTimeScheduler\" can't to be null");
+		this.execName = Objects.requireNonNull(execName);
+		this.executableFinder = Objects.requireNonNull(executableFinder);
+		this.maxExecTimeScheduler = Objects.requireNonNull(maxExecTimeScheduler);
 	}
 
 	private FFprobe internal() {
@@ -65,7 +65,7 @@ public class ProbeMedia extends Recipe {
 	}
 
 	private FFprobeJAXB execute(final FFprobe ffprobe) {
-		final var rtFFprobe = toolRun.execute(ffprobe);
+		final var rtFFprobe = ffprobe.execute(executableFinder);
 		final var textRetention = rtFFprobe.checkExecutionGetText();
 		final var stdOut = textRetention.getStdout(false, System.lineSeparator());
 		return new FFprobeJAXB(stdOut, warn -> log.warn(warn));

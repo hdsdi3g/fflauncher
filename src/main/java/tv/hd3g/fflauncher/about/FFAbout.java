@@ -16,7 +16,6 @@
  */
 package tv.hd3g.fflauncher.about;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,10 +29,8 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tv.hd3g.commons.IORuntimeException;
 import tv.hd3g.fflauncher.FFbase;
 import tv.hd3g.processlauncher.CapturedStdOutErrTextRetention;
-import tv.hd3g.processlauncher.Exec;
 import tv.hd3g.processlauncher.InvalidExecution;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.cmdline.Parameters;
@@ -52,7 +49,8 @@ public class FFAbout {
 	private final ExecutableFinder executableFinder;
 	private final ScheduledExecutorService maxExecTimeScheduler;
 
-	public FFAbout(final String execName, final ExecutableFinder executableFinder,
+	public FFAbout(final String execName,
+	               final ExecutableFinder executableFinder,
 	               final ScheduledExecutorService maxExecTimeScheduler) {
 		this.execName = Objects.requireNonNull(execName, "\"execName\" can't to be null");
 		this.executableFinder = Objects.requireNonNull(executableFinder, "\"executableFinder\" can't to be null");
@@ -64,14 +62,12 @@ public class FFAbout {
 		try {
 			final var referer = new FFbase(execName, new Parameters(bulkParameters));
 			referer.setMaxExecTimeScheduler(maxExecTimeScheduler);
-			return new Exec(referer, executableFinder).runWaitGetText(null);
+			return referer.execute(executableFinder).checkExecutionGetText();
 		} catch (final InvalidExecution e) {
 			if (log.isDebugEnabled()) {
 				log.debug("Can't execute {}, it return: {}", execName, e.getStdErr());
 			}
 			throw e;
-		} catch (final IOException e) {
-			throw new IORuntimeException("Can't execute " + execName, e);
 		}
 	}
 

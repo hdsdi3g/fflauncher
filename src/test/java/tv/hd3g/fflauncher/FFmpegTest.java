@@ -37,18 +37,17 @@ import tv.hd3g.fflauncher.enums.FFUnit;
 import tv.hd3g.fflauncher.recipes.ProbeMedia;
 import tv.hd3g.processlauncher.cmdline.ExecutableFinder;
 import tv.hd3g.processlauncher.cmdline.Parameters;
-import tv.hd3g.processlauncher.tool.ToolRunner;
 
 class FFmpegTest {
 
-	final ToolRunner toolRun;
+	final ExecutableFinder executableFinder;
 	final ScheduledExecutorService maxExecTimeScheduler;
 	final ProbeMedia probeMedia;
 
 	FFmpegTest() {
-		toolRun = new ToolRunner(new ExecutableFinder());
+		executableFinder = new ExecutableFinder();
 		maxExecTimeScheduler = Executors.newSingleThreadScheduledExecutor();
-		probeMedia = new ProbeMedia(toolRun, maxExecTimeScheduler);
+		probeMedia = new ProbeMedia(executableFinder, maxExecTimeScheduler);
 	}
 
 	private FFmpeg create() {
@@ -106,7 +105,7 @@ class FFmpegTest {
 
 		System.out.println("Generate test file to \"" + test_file.getPath() + "\"");
 
-		toolRun.execute(ffmpeg).checkExecutionGetText();
+		ffmpeg.execute(executableFinder).checkExecutionGetText();
 
 		assertTrue(test_file.exists());
 
@@ -122,7 +121,7 @@ class FFmpegTest {
 		ffmpeg.addSimpleOutputDestination(test_file2.getPath());
 
 		System.out.println("Hardware decoding to \"" + test_file.getPath() + "\"");
-		toolRun.execute(ffmpeg).checkExecutionGetText();
+		ffmpeg.execute(executableFinder).checkExecutionGetText();
 
 		assertTrue(test_file2.exists());
 		assertTrue(test_file.delete());
@@ -147,7 +146,7 @@ class FFmpegTest {
 		ffmpeg.addSimpleOutputDestination(test_file.getPath());
 
 		System.out.println("Generate test file to \"" + test_file.getPath() + "\"");
-		toolRun.execute(ffmpeg).checkExecutionGetText();
+		ffmpeg.execute(executableFinder).checkExecutionGetText();
 
 		assertTrue(test_file.exists());
 
