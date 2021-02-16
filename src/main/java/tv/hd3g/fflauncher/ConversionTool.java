@@ -603,7 +603,7 @@ public class ConversionTool implements ExecutableTool {
 	 * Default with prependBulkParameters and prependParameters
 	 */
 	public void fixIOParametredVars() {
-		fixIOParametredVars(Parameters::prependBulkParameters, APPEND_PARAM_AT_END);
+		fixIOParametredVars(PREPEND_PARAM_AT_START, APPEND_PARAM_AT_END);
 	}
 
 	/**
@@ -632,7 +632,7 @@ public class ConversionTool implements ExecutableTool {
 					                                + "\" was already set to \""
 					                                + allVarsToInject.get(taggedVarName) + "\" in " + newerParameters);
 				}
-				allVarsToInject.put(taggedVarName, new Parameters(paramRef.getRessource()));
+				allVarsToInject.put(taggedVarName, Parameters.of(paramRef.getRessource()));
 			} else {
 				onMissingInputOutputVar(taggedVarName, paramRef.getRessource());
 			}

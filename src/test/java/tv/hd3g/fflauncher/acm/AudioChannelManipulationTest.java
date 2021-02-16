@@ -247,7 +247,7 @@ class AudioChannelManipulationTest {
 		void testGetMapParameters_manual() {
 			final var acm = new AudioChannelManipulation(List.of(outStreamStereo0, outStreamMono0, outStreamStereo1));
 			final var pList = acm.getMapParameters(
-			        (idx, outStream) -> new Parameters(String.valueOf(idx), outStream.toMapReferenceAsInput()));
+			        (idx, outStream) -> Parameters.of(String.valueOf(idx), outStream.toMapReferenceAsInput()));
 			assertNotNull(pList);
 			assertEquals(2, pList.size());
 			assertEquals("0 mergjoin0 1 split0", pList.get(0).toString());

@@ -122,7 +122,7 @@ class FFbaseTest {
 
 	@Test
 	void testAddVarInParametersIfNotExists_withParams() throws IOException {
-		final var b = new FFbaseImpl(new Parameters("-param0 -param1 param2"));
+		final var b = new FFbaseImpl(Parameters.bulk("-param0 -param1 param2"));
 		b.addSimpleInputSource("s0");
 		assertEquals("<%IN_AUTOMATIC_0%> -param0 -param1 param2",
 		        b.getInternalParameters().toString());
@@ -144,7 +144,7 @@ class FFbaseTest {
 
 	@Test
 	void testAddVarInParametersIfNotExists_varExists() throws IOException {
-		final var b = new FFbaseImpl(new Parameters("<%IN_AUTOMATIC_0%>"));
+		final var b = new FFbaseImpl(Parameters.of("<%IN_AUTOMATIC_0%>"));
 		b.addSimpleInputSource("s0");
 		assertEquals("<%IN_AUTOMATIC_0%>",
 		        b.getInternalParameters().toString());

@@ -56,8 +56,8 @@ class ConversionToolParameterReference {
 		this.varNameInParameters = Objects.requireNonNull(varNameInParameters,
 		        "\"var_name_in_parameters\" can't to be null");
 		this.parametersBeforeRef = Optional.ofNullable(parametersBeforeRef)
-		        .map(Parameters::new)
-		        .orElseGet(Parameters::new);
+		        .map(Parameters::of)
+		        .orElseGet(Parameters::of);
 		ressourceAsFile = false;
 	}
 
@@ -70,8 +70,8 @@ class ConversionToolParameterReference {
 		this.varNameInParameters = Objects.requireNonNull(varNameInParameters,
 		        "\"var_name_in_parameters\" can't to be null");
 		this.parametersBeforeRef = Optional.ofNullable(parametersBeforeRef)
-		        .map(Parameters::new)
-		        .orElseGet(Parameters::new);
+		        .map(Parameters::of)
+		        .orElseGet(Parameters::of);
 		ressourceAsFile = true;
 	}
 

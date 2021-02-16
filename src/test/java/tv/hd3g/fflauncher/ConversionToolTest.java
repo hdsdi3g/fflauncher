@@ -16,6 +16,7 @@
  */
 package tv.hd3g.fflauncher;
 
+import static java.util.stream.Collectors.toUnmodifiableList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,10 +33,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import tv.hd3g.commons.IORuntimeException;
 import tv.hd3g.fflauncher.enums.OutputFilePresencePolicy;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
@@ -283,4 +287,44 @@ class ConversionToolTest {
 		throw new IllegalStateException("You never should manage here missing keys: " + k);
 	};
 
+	@Test
+	void testSpacesInInputOutputFileNames() {
+		final var parameters = new Parameters();
+		IntStream.range(0, 4).forEach(i -> parameters.addParameters("<%IN" + i + "%>"));
+		IntStream.range(4, 8).forEach(i -> parameters.addParameters("<%OUT" + i + "%>"));
+
+		final var ct = new ConversionTool("java", parameters);
+
+		final var files = IntStream.range(0, 10)
+		        .mapToObj(i -> {
+			        try {
+				        return File.createTempFile("temp FF name [" + i + "]", ".ext");
+			        } catch (final IOException e) {
+				        throw new IORuntimeException(e);
+			        }
+		        })
+		        .collect(toUnmodifiableList());
+
+		ct.addInputSource(files.get(0), "IN0");
+		ct.addInputSource(files.get(1), "IN1", List.of());
+		ct.addInputSource(files.get(2).getPath(), "IN2");
+		ct.addInputSource(files.get(3).getPath(), "IN3", List.of());
+		ct.addOutputDestination(files.get(4), "OUT4");
+		ct.addOutputDestination(files.get(5), "OUT5", List.of());
+		ct.addOutputDestination(files.get(6).getPath(), "OUT6");
+		ct.addOutputDestination(files.get(7).getPath(), "OUT7", List.of());
+		ct.addSimpleOutputDestination(files.get(8));
+		ct.addSimpleOutputDestination(files.get(9).getPath());
+		ct.fixIOParametredVars();
+
+		final var p = ct.getReadyToRunParameters();
+		final var filesNames = files.stream().map(File::getPath).collect(Collectors.toUnmodifiableList());
+
+		final var params = new ArrayList<>();
+		for (var pos = 0; pos < 10; pos++) {
+			params.add(filesNames.get(pos));
+		}
+
+		assertEquals(params, p.getParameters());
+	}
 }

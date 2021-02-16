@@ -16,6 +16,7 @@
  */
 package tv.hd3g.fflauncher;
 
+import static java.util.stream.Collectors.toUnmodifiableList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static tv.hd3g.fflauncher.ConversionTool.APPEND_PARAM_AT_END;
@@ -24,12 +25,17 @@ import static tv.hd3g.fflauncher.ConversionTool.PREPEND_PARAM_AT_START;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 
+import tv.hd3g.commons.IORuntimeException;
 import tv.hd3g.fflauncher.FFmpeg.FFHardwareCodec;
 import tv.hd3g.fflauncher.FFmpeg.Preset;
 import tv.hd3g.fflauncher.FFmpeg.Tune;
@@ -152,6 +158,50 @@ class FFmpegTest {
 
 		final var s = FFmpeg.getFirstVideoStream(probeMedia.doAnalysing(test_file.getPath())).get();
 		assertEquals("ffv1", s.getCodecName());
+	}
+
+	@Test
+	void testSpacesInInputOutputFileNames() {
+		final var ffmpeg = create();
+
+		final var files = IntStream.range(0, 8)
+		        .mapToObj(i -> {
+			        try {
+				        return File.createTempFile("temp FF name [" + i + "]", ".ext");
+			        } catch (final IOException e) {
+				        throw new IORuntimeException(e);
+			        }
+		        })
+		        .collect(toUnmodifiableList());
+
+		ffmpeg.addSimpleInputSource(files.get(0));
+		ffmpeg.addSimpleInputSource(files.get(1).getPath());
+		ffmpeg.addSimpleInputSource(files.get(2), List.of());
+		ffmpeg.addSimpleInputSource(files.get(3).getPath(), List.of());
+		ffmpeg.addSimpleOutputDestination(files.get(4));
+		ffmpeg.addSimpleOutputDestination(files.get(5).getPath());
+		ffmpeg.addSimpleOutputDestination(files.get(6), "-opts6");
+		ffmpeg.addSimpleOutputDestination(files.get(7).getPath(), "-opts7");
+		ffmpeg.fixIOParametredVars();
+
+		final var p = ffmpeg.getReadyToRunParameters();
+		final var filesNames = files.stream().map(File::getPath).collect(Collectors.toUnmodifiableList());
+
+		final var params = new ArrayList<>();
+		for (var pos = 0; pos < 4; pos++) {
+			params.add("-i");
+			params.add(filesNames.get(pos));
+		}
+		for (var pos = 4; pos < 6; pos++) {
+			params.add(filesNames.get(pos));
+		}
+		for (var pos = 6; pos < 8; pos++) {
+			params.add("-f");
+			params.add("-opts" + pos);
+			params.add(filesNames.get(pos));
+		}
+
+		assertEquals(params, p.getParameters());
 	}
 
 }

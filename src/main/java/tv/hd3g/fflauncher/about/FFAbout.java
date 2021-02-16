@@ -60,7 +60,7 @@ public class FFAbout {
 
 	private CapturedStdOutErrTextRetention internalRun(final String bulkParameters) {
 		try {
-			final var referer = new FFbase(execName, new Parameters(bulkParameters));
+			final var referer = new FFbase(execName, Parameters.bulk(bulkParameters));
 			referer.setMaxExecTimeScheduler(maxExecTimeScheduler);
 			return referer.execute(executableFinder).checkExecutionGetText();
 		} catch (final InvalidExecution e) {

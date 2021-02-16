@@ -254,9 +254,9 @@ public class AudioChannelManipulation {
 
 	private static Parameters getMapStreamParam(final String mapRef) {
 		if (checkClassicStreamDesc.matcher(mapRef).find()) {
-			return new Parameters("-map", mapRef);
+			return Parameters.of("-map", mapRef);
 		}
-		return new Parameters("-map", "[" + mapRef + "]");
+		return Parameters.of("-map", "[" + mapRef + "]");
 	}
 
 	/**
