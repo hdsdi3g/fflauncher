@@ -157,7 +157,7 @@ public class AudioChannelManipulation {
 			        final var mergeJoinCurrentList = new ArrayList<ACMExportableMapReference>();
 			        outStream.getChannels().stream().sorted().forEach(channel -> {
 				        final var toMergeJoin = toSplit.search(channel)
-				                .map(s -> (ACMExportableMapReference) s)
+				                .map(ACMExportableMapReference.class::cast)
 				                .orElseGet(channel::getInputAudioStream);
 				        mergeJoinCurrentList.add(toMergeJoin);
 			        });

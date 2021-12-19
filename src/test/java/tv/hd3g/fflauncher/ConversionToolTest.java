@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -38,7 +39,6 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import tv.hd3g.commons.IORuntimeException;
 import tv.hd3g.fflauncher.enums.OutputFilePresencePolicy;
 import tv.hd3g.processlauncher.cmdline.Parameters;
 
@@ -300,7 +300,7 @@ class ConversionToolTest {
 			        try {
 				        return File.createTempFile("temp FF name [" + i + "]", ".ext");
 			        } catch (final IOException e) {
-				        throw new IORuntimeException(e);
+				        throw new UncheckedIOException(e);
 			        }
 		        })
 		        .collect(toUnmodifiableList());

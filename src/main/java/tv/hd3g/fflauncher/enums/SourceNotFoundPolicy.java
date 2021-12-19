@@ -1,14 +1,15 @@
 package tv.hd3g.fflauncher.enums;
 
-import tv.hd3g.commons.IORuntimeException;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 
 public enum SourceNotFoundPolicy {
 	ERROR,
 	REMOVE_OUT_STREAM;
 
-	public static class SourceNotFoundException extends IORuntimeException {
+	public static class SourceNotFoundException extends UncheckedIOException {
 		public SourceNotFoundException(final String message) {
-			super(message);
+			super(new IOException(message));
 		}
 	}
 }

@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +31,6 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import tv.hd3g.commons.IORuntimeException;
 import tv.hd3g.fflauncher.about.FFAboutCodec.CodecType;
 import tv.hd3g.fflauncher.enums.FilterConnectorType;
 
@@ -40,7 +40,7 @@ class AboutTest {
 		try {
 			return Files.readAllLines(new File("src/test/resources/" + resource).toPath(), UTF_8);
 		} catch (final IOException e) {
-			throw new IORuntimeException("Can't get resource " + resource, e);
+			throw new UncheckedIOException("Can't get resource " + resource, e);
 		}
 	}
 

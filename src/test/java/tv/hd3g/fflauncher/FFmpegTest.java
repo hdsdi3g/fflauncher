@@ -25,6 +25,7 @@ import static tv.hd3g.fflauncher.ConversionTool.PREPEND_PARAM_AT_START;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -35,7 +36,6 @@ import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 
-import tv.hd3g.commons.IORuntimeException;
 import tv.hd3g.fflauncher.FFmpeg.FFHardwareCodec;
 import tv.hd3g.fflauncher.FFmpeg.Preset;
 import tv.hd3g.fflauncher.FFmpeg.Tune;
@@ -169,7 +169,7 @@ class FFmpegTest {
 			        try {
 				        return File.createTempFile("temp FF name [" + i + "]", ".ext");
 			        } catch (final IOException e) {
-				        throw new IORuntimeException(e);
+				        throw new UncheckedIOException(e);
 			        }
 		        })
 		        .collect(toUnmodifiableList());

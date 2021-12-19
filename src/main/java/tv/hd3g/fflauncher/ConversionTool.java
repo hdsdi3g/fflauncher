@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -50,7 +51,6 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tv.hd3g.commons.IORuntimeException;
 import tv.hd3g.fflauncher.enums.OutputFilePresencePolicy;
 import tv.hd3g.processlauncher.CapturedStdOutErrToPrintStream;
 import tv.hd3g.processlauncher.ExecutableTool;
@@ -493,7 +493,7 @@ public class ConversionTool implements ExecutableTool {
 			if (file.isFile()) {
 				log.info("Delete file \"{}\"", file);
 				if (file.delete() == false) {
-					throw new IORuntimeException("Can't delete file \"" + file + "\"");
+					throw new UncheckedIOException(new IOException("Can't delete file \"" + file + "\""));
 				}
 				return false;
 			}
@@ -508,7 +508,7 @@ public class ConversionTool implements ExecutableTool {
 		}).forEach(file -> {
 			log.info("Delete \"{}\"", file);
 			if (file.delete() == false) {
-				throw new IORuntimeException("Can't delete \"" + file + "\"");
+				throw new UncheckedIOException(new IOException("Can't delete \"" + file + "\""));
 			}
 		});
 
@@ -547,7 +547,7 @@ public class ConversionTool implements ExecutableTool {
 			try {
 				s.checkOpenRessourceAsFile();
 			} catch (final IOException e) {
-				throw new IORuntimeException("Can't open file \"" + s + "\" for check reading", e);
+				throw new UncheckedIOException(new IOException("Can't open file \"" + s + "\" for check reading", e));
 			} catch (final InterruptedException e) {// NOSONAR
 				throw new IllegalStateException(e);
 			}
@@ -564,7 +564,7 @@ public class ConversionTool implements ExecutableTool {
 			try {
 				s.checkOpenRessourceAsFile();
 			} catch (final IOException e) {
-				throw new IORuntimeException("Can't open file \"" + s + "\" for check reading", e);
+				throw new UncheckedIOException(new IOException("Can't open file \"" + s + "\" for check reading", e));
 			} catch (final InterruptedException e) {// NOSONAR
 				throw new IllegalStateException(e);
 			}
