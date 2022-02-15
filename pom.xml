@@ -14,9 +14,15 @@
 	<parent>
 		<groupId>tv.hd3g.commons</groupId>
 		<artifactId>starter</artifactId>
-		<version>7.0.0</version>
+		<version>8.0.0</version>
 		<relativePath />
 	</parent>
+	
+    <properties>
+        <interfaces.version>8.0.0</interfaces.version>
+        <ffprobejaxb.version>5.0.3</ffprobejaxb.version>
+        <processlauncher.version>6.0.5</processlauncher.version>
+    </properties>
 
 	<dependencies>
 		<dependency>
@@ -27,12 +33,12 @@
 		<dependency>
 			<groupId>tv.hd3g</groupId>
 			<artifactId>ffprobejaxb</artifactId>
-			<version>5.0.2</version>
+			<version>${ffprobejaxb.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>tv.hd3g</groupId>
 			<artifactId>processlauncher</artifactId>
-			<version>6.0.4</version>
+			<version>${processlauncher.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>tv.hd3g.commons</groupId>
